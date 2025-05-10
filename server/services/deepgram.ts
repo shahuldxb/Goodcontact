@@ -134,7 +134,7 @@ export class DgClassTopicDetection {
       }
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for transcription (Topic Detection)...`);
-      const response = await this.deepgram.transcription.prerecorded(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
       return response;
     } catch (e) {
       console.error(`Error during transcription (Topic Detection) for ${audio_file_path}: ${e}`);
@@ -211,7 +211,7 @@ export class DgClassSpeakerDiarization {
       };
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for diarization...`);
-      const response = await this.deepgram.transcription.prerecorded(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
       return response;
     } catch (e) {
       console.error(`Error during transcription with diarization: ${e}`);
@@ -294,7 +294,7 @@ export class DeepgramService {
       };
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for transcription...`);
-      const response = await this.deepgram.transcription.prerecorded(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
       return response;
     } catch (e) {
       console.error(`Error during transcription: ${e}`);
