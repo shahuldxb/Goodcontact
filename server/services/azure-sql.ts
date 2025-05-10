@@ -1,4 +1,4 @@
-import * as sql from 'mssql';
+import sql from 'mssql';
 import { azureConfig } from '@shared/schema';
 
 // SQL configuration

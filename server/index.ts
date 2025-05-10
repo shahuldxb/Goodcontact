@@ -44,7 +44,7 @@ app.use((req, res, next) => {
     await createAzureTables();
     log('Azure SQL tables initialized successfully');
   } catch (error) {
-    log('Error initializing Azure SQL tables:', error);
+    log('Error initializing Azure SQL tables:', String(error));
     // Continue execution even if table creation fails
   }
 
