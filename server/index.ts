@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createAzureTables } from "./create-azure-tables";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Create Azure SQL tables
+  try {
+    log('Initializing Azure SQL tables...');
+    await createAzureTables();
+    log('Azure SQL tables initialized successfully');
+  } catch (error) {
+    log('Error initializing Azure SQL tables:', error);
+    // Continue execution even if table creation fails
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
