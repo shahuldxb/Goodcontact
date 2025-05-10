@@ -197,6 +197,6 @@ export const azureConfig = {
   sqlPort: 1433,
   sqlDatabase: "call",
   sqlUser: "shahul",
-  sqlPassword: "apple123",
+  sqlPassword: "apple123!@#",
   deepgramKey: "d6290865c35bddd50928c5d26983769682fca987"
 };
