@@ -1,0 +1,85 @@
+Call Center Project
+
+
+Use case
+
+I need a connection to azure storage.
+
+AZURE_STORAGE_ACCOUNT_URL = "https://infolder.blob.core.windows.net"
+AZURE_STORAGE_ACCOUNT_KEY = "NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw=="
+AZURE_SOURCE_CONTAINER_NAME = "shahulin"
+AZURE_DESTINATION_CONTAINER_NAME = "shahulout"
+
+I need a connection to azure sql server.
+conn = pymssql.connect(
+        server='callcenter1.database.windows.net',
+        port=1433,
+        database='call',
+        user='shahul',
+        password='apple123',
+        tds_version='7.4',
+        as_dict=True
+    )
+
+
+I need a deepgram connection
+deepgram_key = "d6290865c35bddd50928c5d26983769682fca987"
+
+
+
+I need two grids. One populated from "shahulin" as source  and other populated by "shahulout" source
+
+populate the blobs from azure storage
+
+
+
+I need a single command buttons, which will do deepgram transcription all types, deepgram topic modelling all types
+After transcrioption is done move the blob to shahulout
+
+
+All deepgram, azure storage, azure server should be in python.
+use node.js and react for front end. bootstrap is fallback option.
+
+store all the transcriptions in a table created by you in azure call database with name starting from RDT.
+
+give me second menu option which shows the transcription and topic modelling.
+sorted by created_date in desc order
+
+
+This is a deepgram, azure storage, azure sql server project. Dont use any other libraries regarding without my permission 
+
+theme should be responsive and metronics style. refer to the themeforest site for metronics theme.
+
+Transcription should be done once. Generate a unique key {fileid} and pass the key as foreign key to the below creation of tables.
+We should know from the below tables, link back to master table
+create a table named rdt_assets and store the transcription and all the response attributes of the function.
+
+
+
+Based on the transcription done, do the following functions by deepgram. 
+After each job is done, i need a comprehensive persistence logic in azure sql server. 
+{fileid} should be retrieved from rdt_assets
+each table should have their own uniqueid   create_dt  created_by {default to 1} status {default to completed}
+each table created for each function should cover all the response attributes of the function. stored all. 
+if one to many scenario, create a sub table.
+
+1. sentiment analysis
+2. language detection
+2. call summarization
+4. forbidden phrases
+5. topic modelling
+6. speaker diarization
+
+we will add more functionality in future. each of the above is category.
+
+
+i shall add sample code for each item. strictly they are for guidance. Dont copy paste it. You do your job.
+Please keep in mind in design, in future, we will do with azure speech and voice and in a different class, table and sp.
+
+
+
+
+
+
+
+
