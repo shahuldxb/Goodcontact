@@ -2,7 +2,14 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { deepgramService } from "./services/deepgram";
-import { getSourceFiles, getProcessedFiles, moveFileToProcessed } from "./services/azure-storage";
+import { 
+  getSourceFiles, 
+  getProcessedFiles, 
+  moveFileToProcessed,
+  generateSourceBlobSasUrl,
+  generateDestinationBlobSasUrl,
+  createContainerIfNotExists
+} from "./services/azure-storage";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 
@@ -17,6 +24,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch source files" });
     }
   });
+  
+  // Get SAS URL for source file
+  app.get("/api/files/source/:filename/sas", async (req: Request, res: Response) => {
+    try {
+      const { filename } = req.params;
+      const expiryHours = req.query.expiry ? Number(req.query.expiry) : 1;
+      
+      // Generate SAS URL
+      const sasUrl = generateSourceBlobSasUrl(filename, expiryHours);
+      
+      res.json({ 
+        filename,
+        sasUrl,
+        expiryHours
+      });
+    } catch (error) {
+      console.error(`Error generating SAS URL for ${req.params.filename}:`, error);
+      res.status(500).json({ error: "Failed to generate SAS URL" });
+    }
+  });
 
   // Get Azure processed files (shahulout container)
   app.get("/api/files/processed", async (req: Request, res: Response) => {
@@ -26,6 +53,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching processed files:", error);
       res.status(500).json({ error: "Failed to fetch processed files" });
+    }
+  });
+  
+  // Get SAS URL for processed file
+  app.get("/api/files/processed/:filename/sas", async (req: Request, res: Response) => {
+    try {
+      const { filename } = req.params;
+      const expiryHours = req.query.expiry ? Number(req.query.expiry) : 1;
+      
+      // Generate SAS URL
+      const sasUrl = generateDestinationBlobSasUrl(filename, expiryHours);
+      
+      res.json({ 
+        filename,
+        sasUrl,
+        expiryHours
+      });
+    } catch (error) {
+      console.error(`Error generating SAS URL for ${req.params.filename}:`, error);
+      res.status(500).json({ error: "Failed to generate SAS URL" });
+    }
+  });
+  
+  // Ensure container exists endpoint
+  app.post("/api/containers/ensure", async (req: Request, res: Response) => {
+    try {
+      const { containerName } = req.body;
+      
+      if (!containerName) {
+        return res.status(400).json({ error: "Container name is required" });
+      }
+      
+      const result = await createContainerIfNotExists(containerName);
+      
+      res.json({ 
+        containerName,
+        created: result
+      });
+    } catch (error) {
+      console.error(`Error ensuring container ${req.body.containerName}:`, String(error));
+      res.status(500).json({ error: "Failed to ensure container exists" });
     }
   });
 
