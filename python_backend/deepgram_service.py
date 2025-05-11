@@ -338,6 +338,11 @@ class DeepgramService:
                 transcript_text = transcription_response['transcript']
                 extraction_path = "transcript (root level)"
                 self.logger.info(f"Found transcript at root level: {transcript_text[:50]}...")
+            # Method 0.1: Check if there's a result key containing transcript (from shortcut method)
+            elif 'result' in transcription_response and isinstance(transcription_response['result'], dict) and 'transcript' in transcription_response['result']:
+                transcript_text = transcription_response['result']['transcript']
+                extraction_path = "result.transcript"
+                self.logger.info(f"Found transcript in result.transcript: {transcript_text[:50]}...")
             
             # Method 1: Standard path in Deepgram schema (results.channels[].alternatives[].transcript)
             elif 'results' in transcription_response and 'channels' in transcription_response['results']:
