@@ -17,6 +17,9 @@ export default function Dashboard() {
   const [processingProgress, setProcessingProgress] = useState<Record<string, number>>({
     transcription: 0,
     sentimentAnalysis: 0,
+    languageDetection: 0,
+    summarization: 0,
+    forbiddenPhrases: 0,
     topicModeling: 0,
     speakerDiarization: 0
   });
@@ -53,14 +56,18 @@ export default function Dashboard() {
       setProcessingProgress(prev => {
         const updated = { ...prev };
         
+        // Update progress for all 7 analysis steps in sequence
         if (updated.transcription < 100) updated.transcription += 10;
         else if (updated.sentimentAnalysis < 100) updated.sentimentAnalysis += 15;
+        else if (updated.languageDetection < 100) updated.languageDetection += 20;
+        else if (updated.summarization < 100) updated.summarization += 15;
+        else if (updated.forbiddenPhrases < 100) updated.forbiddenPhrases += 12;
         else if (updated.topicModeling < 100) updated.topicModeling += 8;
         else if (updated.speakerDiarization < 100) updated.speakerDiarization += 12;
         
         return updated;
       });
-    }, 500);
+    }, 400);
 
     try {
       await apiRequest('POST', '/api/files/process', { files: selectedFiles });
