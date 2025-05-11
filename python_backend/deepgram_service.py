@@ -44,9 +44,21 @@ class DeepgramService:
     async def transcribe_audio(self, audio_file_path):
         """Transcribe audio using Deepgram API"""
         try:
+            # Validate file exists
+            if not os.path.exists(audio_file_path):
+                self.logger.error(f"File does not exist: {audio_file_path}")
+                return {"result": None, "error": {"name": "FileNotFoundError", "message": f"File does not exist: {audio_file_path}", "status": 404}}
+                
+            # Get file size for logging
+            file_size = os.path.getsize(audio_file_path)
+            self.logger.info(f"Audio file size: {file_size} bytes")
+            
             # Determine file type from extension
             file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
-            file_type = file_extension if file_extension in ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a'] else 'mp3'
+            supported_types = ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a']
+            file_type = file_extension if file_extension in supported_types else 'wav'
+            
+            self.logger.info(f"File extension: {file_extension}, using mimetype: audio/{file_type}")
             
             # Set up the API URL with query parameters
             params = {
@@ -64,31 +76,47 @@ class DeepgramService:
                 "Content-Type": f"audio/{file_type}"
             }
             
-            self.logger.info(f"Sending audio file {audio_file_path} to Deepgram for transcription...")
+            self.logger.info(f"Sending audio file {audio_file_path} with mimetype audio/{file_type} to Deepgram for transcription...")
             
-            # Read the audio file
+            # Read the audio file and verify it contains data
             with open(audio_file_path, 'rb') as audio_file:
                 audio_data = audio_file.read()
                 
-                # Make async request
-                loop = asyncio.get_event_loop()
-                response = await loop.run_in_executor(
-                    None,
-                    lambda: requests.post(self.api_url, params=params, headers=headers, data=audio_data)
-                )
+                if len(audio_data) == 0:
+                    self.logger.error(f"Audio file is empty: {audio_file_path}")
+                    return {"result": None, "error": {"name": "EmptyFileError", "message": f"Audio file is empty: {audio_file_path}", "status": 400}}
                 
-                # Check if the request was successful
-                if response.status_code != 200:
-                    self.logger.error(f"Deepgram API error: {response.status_code}, {response.text}")
-                    raise Exception(f"Deepgram API error: {response.status_code}, {response.text}")
+                # Log the first few bytes for diagnostics (hex format)
+                self.logger.info(f"First 20 bytes of audio file: {audio_data[:20].hex()}")
                 
-                # Parse JSON response
-                response_json = response.json()
-                
-                # Log the full response structure
-                self.logger.info(f"Deepgram response structure: {json.dumps(response_json, indent=2)}")
-                
-                return response_json
+                # Make async request with error handling
+                try:
+                    loop = asyncio.get_event_loop()
+                    response = await loop.run_in_executor(
+                        None,
+                        lambda: requests.post(self.api_url, params=params, headers=headers, data=audio_data)
+                    )
+                    
+                    # Check if the request was successful
+                    if response.status_code != 200:
+                        error_message = f"Deepgram API error: {response.status_code}, {response.text}"
+                        self.logger.error(error_message)
+                        return {"result": None, "error": {"name": "DeepgramApiError", "message": response.text, "status": response.status_code}}
+                    
+                    # Parse JSON response
+                    response_json = response.json()
+                    
+                    # Log the full response
+                    self.logger.info(f"DEEPGRAM RAW RESPONSE: {json.dumps(response_json)}")
+                    
+                    # Return a properly structured response
+                    return {"result": response_json, "error": None}
+                    
+                except Exception as e:
+                    error_message = f"Error making request to Deepgram API: {str(e)}"
+                    self.logger.error(error_message)
+                    traceback.print_exc()
+                    return {"result": None, "error": {"name": "RequestError", "message": error_message, "status": 500}}
         except Exception as e:
             self.logger.error(f"Error during transcription: {str(e)}")
             traceback.print_exc()
