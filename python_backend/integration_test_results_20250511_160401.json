@@ -1,0 +1,18 @@
+{
+  "test_id": "cb07d5c6-280f-429f-844b-e0d696c8ad92",
+  "timestamp": "2025-05-11 16:04:00",
+  "steps": [
+    {
+      "step": "connect_storage",
+      "status": "success"
+    },
+    {
+      "step": "select_blob",
+      "status": "success",
+      "blob_name": "agricultural_finance_(murabaha)_angry.mp3"
+    }
+  ],
+  "overall_status": "error",
+  "error": "AzureStorageService.generate_sas_url() got an unexpected keyword argument 'hours'",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/python_backend/full_integration_test.py\", line 71, in run_full_integration_test\n    sas_url = storage_service.generate_sas_url(\"shahulin\", blob_name, hours=240)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: AzureStorageService.generate_sas_url() got an unexpected keyword argument 'hours'\n"
+}
