@@ -238,6 +238,44 @@ def setup_stored_procedures():
         logger.error(f"Error creating stored procedures: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/config/transcription-method', methods=['GET', 'POST'])
+def configure_transcription_method():
+    """Get or set the transcription method (SDK or REST API)"""
+    try:
+        # Check current setting
+        current_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+        
+        # Handle POST request to update the method
+        if request.method == 'POST':
+            data = request.json
+            new_method = data.get('method', '').lower()
+            
+            # Validate the method
+            if new_method not in ['sdk', 'rest_api']:
+                return jsonify({"error": "Invalid transcription method. Use 'sdk' or 'rest_api'"}), 400
+            
+            # Update the environment variable
+            os.environ["DEEPGRAM_TRANSCRIPTION_METHOD"] = new_method
+            logger.info(f"Transcription method changed from '{current_method}' to '{new_method}'")
+            
+            return jsonify({
+                "status": "success", 
+                "message": f"Transcription method set to {new_method}",
+                "previous_method": current_method,
+                "current_method": new_method
+            })
+        
+        # Handle GET request to get current method
+        else:
+            return jsonify({
+                "current_method": current_method,
+                "available_methods": ["sdk", "rest_api"]
+            })
+            
+    except Exception as e:
+        logger.error(f"Error configuring transcription method: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port)
