@@ -23,6 +23,7 @@ interface TestResult {
   timestamp: string;
   execution_time_seconds: number;
   result: any;
+  formatted_transcript?: string;
 }
 
 export function DirectTestResults() {
@@ -35,6 +36,8 @@ export function DirectTestResults() {
   const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
   const [currentTab, setCurrentTab] = useState("run");
   const [formattedTranscript, setFormattedTranscript] = useState("");
+  const [fileSource, setFileSource] = useState<'azure' | 'local'>('azure');
+  const [localFile, setLocalFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   // Load test result files and get current transcription method on component mount
@@ -121,10 +124,21 @@ export function DirectTestResults() {
   };
 
   const runTest = async () => {
-    if (!testFileName.trim()) {
+    // For Azure Storage, validate filename
+    if (fileSource === 'azure' && !testFileName.trim()) {
       toast({
         title: 'Error',
         description: 'Please enter a file name',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // For local file upload, validate file
+    if (fileSource === 'local' && !localFile) {
+      toast({
+        title: 'Error',
+        description: 'Please select a file to upload',
         variant: 'destructive',
       });
       return;
@@ -137,15 +151,32 @@ export function DirectTestResults() {
 
     setRunning(true);
     try {
-      const response = await fetch(
-        `/debug/direct-transcription?test_file=${encodeURIComponent(testFileName)}`
-      );
-      const data = await response.json();
+      let response;
+      let data;
+      
+      if (fileSource === 'azure') {
+        // For Azure storage, use the existing API endpoint
+        response = await fetch(
+          `/debug/direct-transcription?test_file=${encodeURIComponent(testFileName)}`
+        );
+        data = await response.json();
+      } else {
+        // For local file upload, use FormData to send the file
+        const formData = new FormData();
+        formData.append('file', localFile as File);
+        
+        response = await fetch('/debug/direct-transcription-upload', {
+          method: 'POST',
+          body: formData,
+        });
+        data = await response.json();
+      }
       
       if (data.status === 'success') {
+        const fileName = fileSource === 'azure' ? testFileName : (localFile as File).name;
         toast({
           title: 'Success',
-          description: `Test completed for ${testFileName} using ${transcriptionMethod} method`,
+          description: `Test completed for ${fileName} using ${transcriptionMethod} method`,
         });
         
         // Set the formatted transcript if available
@@ -248,20 +279,55 @@ export function DirectTestResults() {
             <CardHeader>
               <CardTitle>Run Direct Transcription Test</CardTitle>
               <CardDescription>
-                Test the direct transcription function with a file from Azure Blob Storage
+                Test the direct transcription function with a file from Azure Blob Storage or upload a local file
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="filename">Blob File Name</Label>
-                  <Input
-                    id="filename"
-                    placeholder="Enter blob file name (e.g., audio_sample.mp3)"
-                    value={testFileName}
-                    onChange={(e) => setTestFileName(e.target.value)}
-                  />
+                  <Label>File Source</Label>
+                  <RadioGroup 
+                    value={fileSource}
+                    onValueChange={(value) => setFileSource(value as 'azure' | 'local')}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="azure" id="azure" />
+                      <Label htmlFor="azure" className="font-normal">Azure Storage (shahulin)</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="local" id="local" />
+                      <Label htmlFor="local" className="font-normal">Local File Upload</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
+                
+                {fileSource === 'azure' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="filename">Blob File Name</Label>
+                    <Input
+                      id="filename"
+                      placeholder="Enter blob file name (e.g., audio_sample.mp3)"
+                      value={testFileName}
+                      onChange={(e) => setTestFileName(e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="fileUpload">Upload Audio File</Label>
+                    <Input
+                      id="fileUpload"
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => setLocalFile(e.target.files ? e.target.files[0] : null)}
+                    />
+                    {localFile && (
+                      <div className="text-sm text-muted-foreground">
+                        Selected file: {localFile.name} ({(localFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <Label>Transcription Method</Label>
