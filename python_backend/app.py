@@ -17,6 +17,14 @@ from deepgram_service import DeepgramService
 from azure_storage_service import AzureStorageService
 from azure_sql_service import AzureSQLService
 
+# Import the DirectTranscribe classes
+try:
+    from direct_transcribe import DirectTranscribe
+    from direct_transcribe_db import DirectTranscribeDB
+    logger.info("DirectTranscribe classes imported successfully")
+except ImportError:
+    logger.warning("DirectTranscribe classes not found, direct transcription will not be available")
+
 app = Flask(__name__)
 CORS(app)
 
