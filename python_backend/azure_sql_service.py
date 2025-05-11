@@ -128,20 +128,26 @@ class AzureSQLService:
                     "categoriesDetected": forbidden_phrases["categories_detected"]
                 }
             
-            # Get forbidden phrase details
-            cursor.execute("""
-                SELECT * FROM rdt_forbidden_phrase_details WHERE fileid = %s
-            """, (fileid,))
-            forbidden_phrase_details = cursor.fetchall()
-            for detail in forbidden_phrase_details:
-                results["forbiddenPhraseDetails"].append({
-                    "category": detail["category"],
-                    "phrase": detail["phrase"],
-                    "confidence": detail["confidence"],
-                    "startTime": detail["start_time"],
-                    "endTime": detail["end_time"],
-                    "snippet": detail["snippet"]
-                })
+            # Get forbidden phrase details - need to join with rdt_forbidden_phrases
+            try:
+                cursor.execute("""
+                    SELECT d.* FROM rdt_forbidden_phrase_details d
+                    JOIN rdt_forbidden_phrases p ON d.forbidden_phrase_id = p.id
+                    WHERE p.fileid = %s
+                """, (fileid,))
+                forbidden_phrase_details = cursor.fetchall()
+                for detail in forbidden_phrase_details:
+                    results["forbiddenPhraseDetails"].append({
+                        "category": detail["category"],
+                        "phrase": detail["phrase"],
+                        "confidence": detail["confidence"],
+                        "startTime": detail["start_time"],
+                        "endTime": detail["end_time"],
+                        "snippet": detail["snippet"]
+                    })
+            except Exception as e:
+                self.logger.error(f"Error getting forbidden phrase details: {str(e)}")
+                # Continue without the details
             
             # Get topic modeling
             cursor.execute("""
