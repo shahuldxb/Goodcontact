@@ -250,7 +250,77 @@ class AzureStorageService:
         except Exception as e:
             logger.error(f"Error generating blob URL for {container_name}/{blob_name}: {str(e)}")
             return None
+            
+    def get_sas_url(self, blob_name, container_name=None, expiry_hours=1):
+        """
+        Generate a SAS URL for a blob in the source container.
+        This is a convenience wrapper around generate_sas_url that defaults to the source container.
+        
+        Args:
+            blob_name (str): The blob name.
+            container_name (str, optional): The container name. If None, the source container is used.
+            expiry_hours (int): Number of hours until the SAS URL expires. Default is 1 hour.
+            
+        Returns:
+            str: The SAS URL for the blob.
+        """
+        if container_name is None:
+            container_name = self.source_container
+            
+        return self.generate_sas_url(container_name, blob_name, expiry_hours)
 
+
+    def copy_blob_to_destination(self, source_blob_name, destination_blob_name=None):
+        """
+        Move a blob from the source container to the destination container.
+        
+        Args:
+            source_blob_name (str): The source blob name.
+            destination_blob_name (str, optional): The destination blob name. If None, source_blob_name is used.
+            
+        Returns:
+            str: The URL of the blob in the destination container if successful, None otherwise.
+        """
+        try:
+            # Use source_blob_name as destination_blob_name if not provided
+            if destination_blob_name is None:
+                destination_blob_name = source_blob_name
+                
+            # Copy the blob
+            success = self.move_blob(
+                self.source_container, 
+                source_blob_name, 
+                self.destination_container, 
+                destination_blob_name
+            )
+            
+            # Return the URL of the destination blob if successful
+            if success:
+                return self.get_blob_url(self.destination_container, destination_blob_name)
+                
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error copying blob to destination: {str(e)}")
+            return None
+
+    def list_source_blobs(self):
+        """
+        List all blobs in the source container.
+        
+        Returns:
+            list: A list of dictionaries containing blob information.
+        """
+        return self.list_blobs(self.source_container)
+        
+    def list_destination_blobs(self):
+        """
+        List all blobs in the destination container.
+        
+        Returns:
+            list: A list of dictionaries containing blob information.
+        """
+        return self.list_blobs(self.destination_container)
 
 # Simple test function
 def main():
@@ -261,14 +331,14 @@ def main():
     
     # List blobs in source container
     print("Listing blobs in source container:")
-    blobs = service.list_blobs("shahulin")
+    blobs = service.list_source_blobs()
     for blob in blobs[:5]:  # Show first 5 blobs
         print(f"  - {blob['name']} ({blob['size']} bytes)")
     
     # Generate SAS URL for a blob
     if blobs:
         sample_blob = blobs[0]['name']
-        sas_url = service.generate_sas_url("shahulin", sample_blob, expiry_hours=2)
+        sas_url = service.get_sas_url(sample_blob)
         print(f"\nSAS URL for {sample_blob}:")
         print(f"  {sas_url}")
 
