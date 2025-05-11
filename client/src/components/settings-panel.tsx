@@ -117,7 +117,7 @@ export function SettingsPanel() {
               <SelectContent>
                 {data?.available_methods.map((method) => (
                   <SelectItem key={method} value={method}>
-                    {method === 'sdk' ? 'Deepgram SDK' : 'REST API'} 
+                    {method === 'sdk' ? 'Deepgram SDK' : method === 'rest_api' ? 'REST API' : 'Direct REST API'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -126,9 +126,13 @@ export function SettingsPanel() {
               <p className="text-xs text-muted-foreground mt-2">
                 Uses the official Deepgram SDK for transcription with better error handling and direct authentication.
               </p>
-            ) : (
+            ) : selectedMethod === 'rest_api' ? (
               <p className="text-xs text-muted-foreground mt-2">
                 Uses direct REST API calls to Deepgram (original implementation).
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-2">
+                Uses the optimized REST API implementation with proven reliability for Azure blob transcription.
               </p>
             )}
           </div>
