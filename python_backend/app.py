@@ -178,10 +178,50 @@ def process_file():
                     logger.warning(f"Proceeding with potentially invalid file format for {filename}")
             
             # Choose processing method based on configuration
-            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
+            current_method = getattr(app, 'transcription_method', 'shortcut')
+            logger.info(f"Selected transcription method: {current_method}")
             
-            if transcription_method == "enhanced":
-                # Use enhanced transcription with database storage
+            # SHORTCUT METHOD: Use our new DirectTranscribe class with SAS URLs - this should work reliably
+            if current_method == "shortcut" and direct_transcribe and direct_transcribe_db:
+                try:
+                    logger.info(f"Using SHORTCUT method with DirectTranscribe for {filename}")
+                    
+                    # Step 1: Start timing
+                    start_time = time.time()
+                    
+                    # Step 2: Process the file with DirectTranscribe - no need to download locally
+                    processing_result = direct_transcribe.process_file(filename)
+                    
+                    # Step 3: Store the result in the database with transaction
+                    db_result = direct_transcribe_db.store_transcription_result(processing_result)
+                    
+                    # Step 4: Calculate total processing time
+                    total_time = time.time() - start_time
+                    
+                    # Create result object in expected format
+                    result = {
+                        "fileid": fileid,
+                        "status": "success" if db_result["status"] == "success" else "error",
+                        "method_used": "shortcut",
+                        "processing_time": total_time,
+                        "transcription": processing_result["transcription"],
+                        "file_movement": processing_result["file_movement"]
+                    }
+                    
+                    logger.info(f"SHORTCUT processing complete for {filename} in {total_time:.2f} seconds")
+                    
+                except Exception as e:
+                    logger.error(f"Error using SHORTCUT method: {str(e)}")
+                    logger.error(f"Detailed error: {traceback.format_exc()}")
+                    # Fall back to regular implementation
+                    logger.info(f"Falling back to standard implementation")
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            
+            # ENHANCED METHOD: Use enhanced transcription with database storage
+            elif current_method == "enhanced":
                 try:
                     from transcription_with_storage import transcribe_and_store
                     logger.info(f"Using enhanced transcription with database storage for {filename}")
@@ -207,8 +247,9 @@ def process_file():
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
-            elif transcription_method == "direct":
-                # Use the direct REST API implementation
+            
+            # DIRECT METHOD: Use the direct REST API implementation
+            elif current_method == "direct":
                 try:
                     from azure_deepgram_transcribe import process_audio_file as direct_process_audio
                     logger.info(f"Using direct Deepgram REST API implementation for {filename}")
@@ -235,9 +276,10 @@ def process_file():
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            
+            # STANDARD METHOD: Use the standard implementation (SDK or REST API)
             else:
-                # Use the standard implementation (SDK or REST API)
-                logger.info(f"Using standard implementation ({transcription_method}) for {filename}")
+                logger.info(f"Using standard implementation ({current_method}) for {filename}")
                 import asyncio
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
