@@ -284,90 +284,150 @@ export function DirectTestResults() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>File Source</Label>
-                  <RadioGroup 
-                    value={fileSource}
-                    onValueChange={(value) => setFileSource(value as 'azure' | 'local')}
-                    className="flex space-x-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="azure" id="azure" />
-                      <Label htmlFor="azure" className="font-normal">Azure Storage (shahulin)</Label>
+                <div className="space-y-4 mb-4">
+                  <div className="bg-secondary/20 p-4 rounded-lg border">
+                    <h3 className="text-lg font-semibold mb-2">File Source</h3>
+                    <RadioGroup 
+                      value={fileSource}
+                      onValueChange={(value) => {
+                        setFileSource(value as 'azure' | 'local');
+                        // Clear selected file when switching modes
+                        if (value === 'azure') {
+                          setLocalFile(null);
+                        }
+                      }}
+                      className="flex space-x-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="azure" id="azure" />
+                        <Label htmlFor="azure" className="font-normal">Azure Storage (shahulin container)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="local" id="local" />
+                        <Label htmlFor="local" className="font-normal">Local File Upload</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  {fileSource === 'azure' ? (
+                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                      <h3 className="font-medium mb-2">Azure Blob File</h3>
+                      <div className="space-y-2">
+                        <Label htmlFor="filename">Blob File Name</Label>
+                        <Input
+                          id="filename"
+                          placeholder="Enter blob file name (e.g., audio_sample.mp3)"
+                          value={testFileName}
+                          onChange={(e) => setTestFileName(e.target.value)}
+                          className="bg-white"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Enter the name of an audio file from the Azure Storage 'shahulin' container.
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="local" id="local" />
-                      <Label htmlFor="local" className="font-normal">Local File Upload</Label>
+                  ) : (
+                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                      <h3 className="font-medium mb-2">Local Audio File</h3>
+                      <div className="space-y-2">
+                        <Label htmlFor="fileUpload">Select Audio File</Label>
+                        <Input
+                          id="fileUpload"
+                          type="file"
+                          accept="audio/*"
+                          onChange={(e) => setLocalFile(e.target.files ? e.target.files[0] : null)}
+                          className="bg-white"
+                        />
+                        {localFile && (
+                          <div className="text-sm p-2 bg-secondary/30 rounded mt-2">
+                            <div className="font-medium">Selected file:</div>
+                            <div>{localFile.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Size: {(localFile.size / 1024 / 1024).toFixed(2)} MB • 
+                              Type: {localFile.type || 'Unknown'}
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Upload an audio file from your computer for transcription testing.
+                        </p>
+                      </div>
                     </div>
-                  </RadioGroup>
+                  )}
                 </div>
                 
-                {fileSource === 'azure' ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="filename">Blob File Name</Label>
-                    <Input
-                      id="filename"
-                      placeholder="Enter blob file name (e.g., audio_sample.mp3)"
-                      value={testFileName}
-                      onChange={(e) => setTestFileName(e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="fileUpload">Upload Audio File</Label>
-                    <Input
-                      id="fileUpload"
-                      type="file"
-                      accept="audio/*"
-                      onChange={(e) => setLocalFile(e.target.files ? e.target.files[0] : null)}
-                    />
-                    {localFile && (
-                      <div className="text-sm text-muted-foreground">
-                        Selected file: {localFile.name} ({(localFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label>Transcription Method</Label>
+                <div className="bg-secondary/20 p-4 rounded-lg border">
+                  <h3 className="text-lg font-semibold mb-2">Transcription Method</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Select which Deepgram API implementation to use for the transcription.
+                  </p>
                   <RadioGroup 
                     value={transcriptionMethod}
                     onValueChange={setTranscriptionMethod}
-                    className="flex flex-col space-y-1"
+                    className="flex flex-col space-y-2"
                   >
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-2 rounded hover:bg-secondary/30">
                       <RadioGroupItem value="shortcut" id="shortcut" />
-                      <Label htmlFor="shortcut" className="font-normal">Shortcut (Fastest)</Label>
+                      <div>
+                        <Label htmlFor="shortcut" className="font-medium">Shortcut</Label>
+                        <p className="text-xs text-muted-foreground">Fastest method, uses direct implementation for Azure blobs.</p>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-2 rounded hover:bg-secondary/30">
                       <RadioGroupItem value="direct" id="direct" />
-                      <Label htmlFor="direct" className="font-normal">Direct REST API</Label>
+                      <div>
+                        <Label htmlFor="direct" className="font-medium">Direct REST API</Label>
+                        <p className="text-xs text-muted-foreground">Uses raw HTTP requests to Deepgram's API endpoints.</p>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-2 rounded hover:bg-secondary/30">
                       <RadioGroupItem value="rest_api" id="rest_api" />
-                      <Label htmlFor="rest_api" className="font-normal">REST API Client</Label>
+                      <div>
+                        <Label htmlFor="rest_api" className="font-medium">REST API Client</Label>
+                        <p className="text-xs text-muted-foreground">Uses Python requests with the Deepgram REST API.</p>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-2 rounded hover:bg-secondary/30">
                       <RadioGroupItem value="sdk" id="sdk" />
-                      <Label htmlFor="sdk" className="font-normal">SDK</Label>
+                      <div>
+                        <Label htmlFor="sdk" className="font-medium">Deepgram SDK</Label>
+                        <p className="text-xs text-muted-foreground">Uses the official Deepgram Python SDK.</p>
+                      </div>
                     </div>
                   </RadioGroup>
+                  
+                  {currentMethod && (
+                    <div className="mt-3 p-2 bg-muted rounded border border-muted-foreground/20">
+                      <div className="text-sm font-medium">Current System Setting:</div>
+                      <div className="text-sm">{currentMethod}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        This will be updated when you run a test with a different method.
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {currentMethod && (
-                  <Alert className="bg-muted">
-                    <AlertTitle>Current Setting</AlertTitle>
-                    <AlertDescription>
-                      The current transcription method is set to: <span className="font-semibold">{currentMethod}</span>
-                    </AlertDescription>
-                  </Alert>
-                )}
               </div>
             </CardContent>
-            <CardFooter>
-              <Button onClick={runTest} disabled={running}>
-                {running ? 'Running Test...' : 'Run Test'}
+            <CardFooter className="flex justify-between items-center border-t pt-6">
+              <div className="text-sm text-muted-foreground">
+                {fileSource === 'azure' ? 
+                  `Selected file: ${testFileName}` : 
+                  (localFile ? `Selected file: ${localFile.name}` : 'No file selected')}
+              </div>
+              <Button 
+                onClick={runTest} 
+                disabled={running} 
+                size="lg"
+                className="bg-primary hover:bg-primary/90"
+              >
+                {running ? (
+                  <>
+                    <span className="animate-pulse mr-2">Processing</span>
+                    <span className="inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                  </>
+                ) : (
+                  'Run Transcription Test'
+                )}
               </Button>
             </CardFooter>
           </Card>
