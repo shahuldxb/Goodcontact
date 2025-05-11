@@ -62,8 +62,8 @@ class AzureSQLService:
                 },
                 "transcription": "Transcription not available",
                 "language": {
-                    "language": "en",
-                    "confidence": 0.9
+                    "language": "unknown",
+                    "confidence": 0.0
                 },
                 "sentiment": {
                     "overallSentiment": "neutral",
