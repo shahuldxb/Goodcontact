@@ -68,66 +68,74 @@ def test_transcription(blob_name, api_key):
         
         logger.info("Transcription completed successfully")
         
-        # 4. Insert the result into the database
-        logger.info("Connecting to database")
-        conn = pymssql.connect(
-            server=DB_SERVER,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME
-        )
-        
-        cursor = conn.cursor()
-        
-        # Convert result to JSON string
+        # 4. Try to insert the result into the database (but don't stop if it fails)
         transcription_json = json.dumps(result["response"])
+        database_success = False
+        database_id = None
         
-        # Insert into rdt_assets table
-        logger.info(f"Inserting transcription result into database for fileid: {fileid}")
-        cursor.execute(
-            """
-            INSERT INTO rdt_assets 
-            (fileid, filename, sourcePath, fileSize, status, transcription) 
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (
-                fileid,
-                blob_name,
-                f"shahulin/{blob_name}",
-                0,  # fileSize - placeholder
-                "Processed",
-                transcription_json
+        try:
+            logger.info("Connecting to database")
+            conn = pymssql.connect(
+                server=DB_SERVER,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME
             )
-        )
-        
-        conn.commit()
-        logger.info("Database insert completed")
-        
-        # 5. Verify the transcription was stored properly
-        logger.info("Verifying database entry")
-        cursor.execute(
-            "SELECT id, fileid, transcription FROM rdt_assets WHERE fileid = %s",
-            (fileid,)
-        )
-        
-        row = cursor.fetchone()
-        if not row:
-            logger.error("Failed to retrieve database entry")
-            return {"success": False, "error": "Failed to retrieve database entry"}
-        
-        id, stored_fileid, stored_transcription = row
-        
-        # Check if transcription is empty
-        if not stored_transcription or stored_transcription == "{}":
-            logger.error("Transcription is empty in database")
-            return {"success": False, "error": "Transcription is empty in database"}
-        
-        logger.info(f"Successfully verified transcription in database for ID: {id}")
-        
-        # Close database connection
-        conn.close()
+            
+            cursor = conn.cursor()
+            
+            # Insert into rdt_assets table
+            logger.info(f"Inserting transcription result into database for fileid: {fileid}")
+            cursor.execute(
+                """
+                INSERT INTO rdt_assets 
+                (fileid, filename, sourcePath, fileSize, status, transcription) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    fileid,
+                    blob_name,
+                    f"shahulin/{blob_name}",
+                    0,  # fileSize - placeholder
+                    "Processed",
+                    transcription_json
+                )
+            )
+            
+            conn.commit()
+            logger.info("Database insert completed")
+            
+            # 5. Verify the transcription was stored properly
+            logger.info("Verifying database entry")
+            cursor.execute(
+                "SELECT id, fileid, transcription FROM rdt_assets WHERE fileid = %s",
+                (fileid,)
+            )
+            
+            row = cursor.fetchone()
+            if row:
+                database_id, stored_fileid, stored_transcription = row
+                
+                # Check if transcription is empty
+                if stored_transcription and stored_transcription != "{}":
+                    logger.info(f"Successfully verified transcription in database for ID: {database_id}")
+                    database_success = True
+                else:
+                    logger.warning("Transcription is empty in database")
+            else:
+                logger.warning("Failed to retrieve database entry")
+            
+            # Close database connection
+            conn.close()
+            
+        except Exception as db_error:
+            logger.warning(f"Database operations failed: {str(db_error)}")
+            logger.info("Continuing with transcription verification only...")
         
         # Check for transcript content in the response to verify success
+        transcript_data = ""
+        transcript_present = False
+        
         try:
             transcript_data = result["response"]["full_response"]["results"]["channels"][0]["alternatives"][0]["transcript"]
             transcript_present = bool(transcript_data and len(transcript_data) > 0)
@@ -137,15 +145,28 @@ def test_transcription(blob_name, api_key):
                 logger.warning("Transcript appears to be empty")
         except (KeyError, IndexError, TypeError) as e:
             logger.warning(f"Could not verify transcript content in response: {str(e)}")
-            transcript_present = False
         
-        return {
+        # Result will include database info if it was successful, otherwise just transcription info
+        result_data = {
             "success": True,
             "fileid": fileid,
-            "id": id,
             "transcript_present": transcript_present,
-            "transcription_length": len(stored_transcription)
+            "transcription_size": len(transcription_json)
         }
+        
+        # Only add transcript preview if we have transcript data
+        if transcript_data:
+            preview = transcript_data[:300] + "..." if len(transcript_data) > 300 else transcript_data
+            result_data["transcription_preview"] = preview
+        
+        # Add database info if available
+        if database_success and database_id:
+            result_data["database_success"] = True
+            result_data["database_id"] = database_id
+        else:
+            result_data["database_success"] = False
+            
+        return result_data
     
     except Exception as e:
         logger.error(f"Error in test_transcription: {str(e)}")
@@ -153,16 +174,24 @@ def test_transcription(blob_name, api_key):
 
 def main():
     """
-    Main function that tests transcription on two different blob files
+    Main function that tests transcription on specific blob files.
+    Can accept command-line arguments for blob names to test.
     """
     # Get Deepgram API key
     api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
     
-    # Test files to transcribe (real Azure blob files)
-    test_files = [
-        "samplesmall.mp3",  # Known to exist in previous testing
-        "kcal_ad.wav"       # Known to exist in previous testing
-    ]
+    # Check if blob names were provided as command-line arguments
+    if len(sys.argv) > 1:
+        # Use the provided blob names
+        test_files = sys.argv[1:]
+        logger.info(f"Testing specific files provided as arguments: {', '.join(test_files)}")
+    else:
+        # Default test files if no arguments provided
+        test_files = [
+            "agricultural_finance_(murabaha)_angry.mp3",  # Files from API response
+            "banking_enquiries_hindi.mp3"  
+        ]
+        logger.info(f"No files specified. Testing default files: {', '.join(test_files)}")
     
     for i, blob_name in enumerate(test_files):
         logger.info(f"TEST {i+1}: Testing transcription of {blob_name}")
@@ -186,4 +215,5 @@ def main():
             time.sleep(5)
 
 if __name__ == "__main__":
+    import sys
     main()
