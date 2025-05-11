@@ -128,17 +128,72 @@ class DirectTranscribeDB:
             processing_times = processing_result.get('processing_times', {})
             total_processing_time = processing_times.get('total_processing_time', 0)
             
-            # Check if we have valid transcription data to proceed
-            if not transcription_result and transcription_error:
-                logger.error(f"Cannot store transcription result - transcription failed with error: {transcription_error}")
+            # Generate a file ID if not present
+            fileid = processing_result.get('process_id') or processing_result.get('fileid') or f"{int(time.time())}_{blob_name}"
+            
+            # CRITICAL DATA INTEGRITY CHECK: Do not insert records with failed or empty transcriptions
+            # Properly evaluate if transcription was successful by checking both error state and content
+            transcription_is_valid = False
+            
+            # If there's an error, we definitely don't have a valid transcription
+            if transcription_error:
+                error_message = transcription_error.get('message') if isinstance(transcription_error, dict) else str(transcription_error)
+                logger.error(f"Cannot store transcription result - transcription failed with error: {error_message}")
                 return {
                     "status": "error",
-                    "message": f"Transcription failed: {transcription_error.get('message') if isinstance(transcription_error, dict) else str(transcription_error)}",
-                    "db_operations_performed": 0
+                    "message": f"Transcription failed: {error_message}",
+                    "db_operations_performed": 0,
+                    "fileid": fileid
                 }
+                
+            # Even if no error, verify transcription has actual content
+            if not transcription_result:
+                logger.error(f"Cannot store transcription result - transcription result is empty or null")
+                return {
+                    "status": "error", 
+                    "message": "Transcription failed: Empty or null result without explicit error",
+                    "db_operations_performed": 0,
+                    "fileid": fileid
+                }
+                
+            # Verify transcription has actual content (not just an empty structure)
+            if isinstance(transcription_result, dict):
+                # Check for transcript content in common Deepgram response patterns
+                transcript_text = ""
+                
+                # Check standard results path for transcript content
+                if "results" in transcription_result:
+                    results = transcription_result["results"]
+                    
+                    # Check channels path
+                    if "channels" in results and results["channels"]:
+                        channels = results["channels"]
+                        for channel in channels:
+                            if "alternatives" in channel and channel["alternatives"]:
+                                for alt in channel["alternatives"]:
+                                    if "transcript" in alt and alt["transcript"]:
+                                        transcript_text += alt["transcript"] + " "
+                
+                # Check direct transcript field as fallback
+                if not transcript_text and "transcript" in transcription_result:
+                    transcript_text = transcription_result["transcript"]
+                
+                # If we still have no transcript text, reject the record
+                if not transcript_text.strip():
+                    logger.error(f"Cannot store transcription result - no transcript text found in result structure")
+                    return {
+                        "status": "error", 
+                        "message": "Transcription failed: No transcript text found in result structure",
+                        "db_operations_performed": 0,
+                        "fileid": fileid
+                    }
+                    
+                # We have verified there is actual transcript content
+                transcription_is_valid = True
+                logger.info(f"Verified transcription has content: {len(transcript_text)} characters")
             
-            # Generate a file ID if not present
-            fileid = processing_result.get('process_id') or f"{int(time.time())}_{blob_name}"
+            # This line is no longer needed because we generate the fileid earlier
+            # fileid = processing_result.get('process_id') or f"{int(time.time())}_{blob_name}"
             
             # Get database connection
             conn = self._get_connection()
