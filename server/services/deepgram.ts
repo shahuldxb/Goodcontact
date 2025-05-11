@@ -531,7 +531,32 @@ export class DeepgramService {
         };
         
         console.log(`Sending audio file ${audio_file_path} with mimetype ${mimetype} to Deepgram for transcription...`);
+        
         const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+        
+        // Add detailed logging of the full response
+        console.log(`DEEPGRAM RAW RESPONSE: ${JSON.stringify(response)}`);
+        
+        // Check if we have the expected structure for the transcription
+        if (!response || typeof response !== 'object') {
+          console.error('Deepgram response is null, undefined or not an object');
+        } else {
+          console.log(`Response keys: ${Object.keys(response).join(', ')}`);
+          
+          if (response.result) {
+            console.log(`Result keys: ${Object.keys(response.result).join(', ')}`);
+            
+            if (response.result.channels && response.result.channels.length > 0) {
+              console.log(`First channel keys: ${Object.keys(response.result.channels[0]).join(', ')}`);
+              
+              if (response.result.channels[0].alternatives && response.result.channels[0].alternatives.length > 0) {
+                console.log(`First alternative keys: ${Object.keys(response.result.channels[0].alternatives[0]).join(', ')}`);
+                console.log(`Transcript preview: ${response.result.channels[0].alternatives[0].transcript?.substring(0, 100)}`);
+              }
+            }
+          }
+        }
+        
         return response;
       }
       

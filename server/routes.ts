@@ -130,7 +130,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const processingStartTime = Date.now();
           
           // Process the file with Deepgram
+          console.log(`Sending file ${filename} with ID ${fileid} to Deepgram for processing...`);
           const result = await deepgramService.processAudioFile(filename, fileid);
+          console.log(`RESULT FROM DEEPGRAM PROCESSING: ${JSON.stringify(result, null, 2)}`);
+          
+          // Debug output for transcription
+          if (result && result.transcription) {
+            console.log(`Transcription data type: ${typeof result.transcription}`);
+            if (typeof result.transcription === 'object') {
+              console.log(`Transcription object keys: ${Object.keys(result.transcription).join(', ')}`);
+            } else {
+              console.log(`Transcription value: ${result.transcription}`);
+            }
+          } else {
+            console.log(`No transcription data available in result: ${JSON.stringify(result)}`);
+          }
           
           // Calculate processing duration
           const processingDuration = Date.now() - processingStartTime;
