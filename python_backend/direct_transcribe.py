@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
 Direct transcription module using DgClassCriticalTranscribeRest
+
+This module provides a minimal implementation for transcribing audio files 
+using Deepgram's API directly from a SAS URL.
+
+Usage:
+    python direct_transcribe.py <deepgram_api_key> <blob_sas_url>
 """
 
 import os
+import sys
 import logging
 from dg_class_critical_transcribe_rest import DgClassCriticalTranscribeRest
 
@@ -11,15 +18,13 @@ from dg_class_critical_transcribe_rest import DgClassCriticalTranscribeRest
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Get API key from environment variables
-DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
-
-def transcribe_url(audio_url, model="nova-3", diarize=True):
+def transcribe_url(api_key, audio_url, model="nova-3", diarize=True):
     """
     Transcribe an audio file from a URL using Deepgram's API via DgClassCriticalTranscribeRest
 
     Args:
-        audio_url (str): URL to the audio file
+        api_key (str): Deepgram API key
+        audio_url (str): SAS URL to the audio file
         model (str): Model to use for transcription
         diarize (bool): Whether to enable speaker diarization
 
@@ -27,8 +32,8 @@ def transcribe_url(audio_url, model="nova-3", diarize=True):
         dict: The transcription response
     """
     try:
-        logger.info(f"Initializing DgClassCriticalTranscribeRest with API key")
-        transcriber = DgClassCriticalTranscribeRest(DEEPGRAM_API_KEY)
+        logger.info(f"Initializing DgClassCriticalTranscribeRest with provided API key")
+        transcriber = DgClassCriticalTranscribeRest(api_key)
 
         logger.info(f"Transcribing audio from URL with model {model}")
         result = transcriber.transcribe_with_url(
@@ -58,30 +63,26 @@ def transcribe_url(audio_url, model="nova-3", diarize=True):
         }
 
 if __name__ == "__main__":
-    # Get URL from command line argument or environment
-    import sys
-    from azure_storage_service import AzureStorageService
-    
-    if len(sys.argv) > 1:
-        # If blob name is provided as argument
-        blob_name = sys.argv[1]
-        print(f"Using blob name from command line: {blob_name}")
-        
-        # Generate SAS URL
-        storage_service = AzureStorageService()
-        test_url = storage_service.generate_sas_url("shahulin", blob_name, expiry_hours=24)
-        
-        if not test_url:
-            print(f"Error: Could not generate SAS URL for blob {blob_name}")
-            sys.exit(1)
-    else:
-        print("Error: Please provide a blob name as command line argument")
-        print("Usage: python direct_transcribe.py <blob_name>")
-        print("Example: python direct_transcribe.py agricultural_finance_(murabaha)_angry.mp3")
+    # Get API key and SAS URL from command line arguments
+    if len(sys.argv) < 3:
+        print("Error: Missing required parameters")
+        print("Usage: python direct_transcribe.py <deepgram_api_key> <blob_sas_url>")
+        print("Example: python direct_transcribe.py ba94baf7840441c378c58ccd1d5202c38ddc42d8 https://infolder.blob.core.windows.net/shahulin/example.mp3?sv=...")
         sys.exit(1)
     
-    print(f"Transcribing audio from SAS URL (length: {len(test_url)})")
-    result = transcribe_url(test_url)
+    # Get parameters from command line
+    api_key = sys.argv[1]
+    sas_url = sys.argv[2]
+    
+    # Optional model parameter
+    model = sys.argv[3] if len(sys.argv) > 3 else "nova-3"
+    
+    print(f"API Key: {api_key[:5]}...{api_key[-5:]}")
+    print(f"SAS URL length: {len(sas_url)} characters")
+    print(f"Using model: {model}")
+    
+    # Call the transcription function
+    result = transcribe_url(api_key, sas_url, model=model)
     
     if result["success"]:
         print("Transcription successful!")
