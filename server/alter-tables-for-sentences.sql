@@ -79,10 +79,10 @@ BEGIN
 END
 
 -- Create stored procedure for inserting audio metadata
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'DG_InsertAudioMetadata')
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'RDS_InsertAudioMetadata')
 BEGIN
     EXEC('
-    CREATE PROCEDURE DG_InsertAudioMetadata
+    CREATE PROCEDURE RDS_InsertAudioMetadata
         @fileid NVARCHAR(255),
         @request_id NVARCHAR(255),
         @sha256 NVARCHAR(255),
@@ -131,16 +131,16 @@ BEGIN
         END
     END
     ');
-    PRINT 'Created stored procedure: DG_InsertAudioMetadata';
+    PRINT 'Created stored procedure: RDS_InsertAudioMetadata';
 END
 ELSE
-    PRINT 'Stored procedure DG_InsertAudioMetadata already exists';
+    PRINT 'Stored procedure RDS_InsertAudioMetadata already exists';
 
 -- Create stored procedure for inserting paragraphs
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'DG_InsertParagraph')
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'RDS_InsertParagraph')
 BEGIN
     EXEC('
-    CREATE PROCEDURE DG_InsertParagraph
+    CREATE PROCEDURE RDS_InsertParagraph
         @fileid NVARCHAR(255),
         @paragraph_idx INT,
         @text NVARCHAR(MAX),
@@ -185,10 +185,10 @@ BEGIN
         SET @paragraph_id = SCOPE_IDENTITY();
     END
     ');
-    PRINT 'Created stored procedure: DG_InsertParagraph';
+    PRINT 'Created stored procedure: RDS_InsertParagraph';
 END
 ELSE
-    PRINT 'Stored procedure DG_InsertParagraph already exists';
+    PRINT 'Stored procedure RDS_InsertParagraph already exists';
 
 -- Create stored procedure for inserting sentences
 IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'DG_InsertSentence')

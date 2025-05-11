@@ -67,7 +67,7 @@ def store_transcription_details(fileid, transcription_response):
         
         # Execute the stored procedure
         cursor.execute(
-            "EXEC DG_InsertAudioMetadata @fileid=%s, @request_id=%s, @sha256=%s, @created_timestamp=%s, @audio_duration=%s, @confidence=%s",
+            "EXEC RDS_InsertAudioMetadata @fileid=%s, @request_id=%s, @sha256=%s, @created_timestamp=%s, @audio_duration=%s, @confidence=%s",
             (fileid, request_id, sha256, created, duration, confidence)
         )
         
@@ -83,7 +83,7 @@ def store_transcription_details(fileid, transcription_response):
                 
                 # Execute the stored procedure and get the new paragraph ID
                 cursor.execute(
-                    "DECLARE @new_para_id INT; EXEC DG_InsertParagraph @fileid=%s, @paragraph_idx=%s, @text=%s, @start_time=%s, @end_time=%s, @speaker=%s, @num_words=%s, @paragraph_id=@new_para_id OUTPUT; SELECT @new_para_id;",
+                    "DECLARE @new_para_id INT; EXEC RDS_InsertParagraph @fileid=%s, @paragraph_idx=%s, @text=%s, @start_time=%s, @end_time=%s, @speaker=%s, @num_words=%s, @paragraph_id=@new_para_id OUTPUT; SELECT @new_para_id;",
                     (fileid, para_idx, para_text, para_start, para_end, para_speaker, para_num_words)
                 )
                 
@@ -105,7 +105,7 @@ def store_transcription_details(fileid, transcription_response):
                         
                         # Execute the stored procedure
                         cursor.execute(
-                            "EXEC DG_InsertSentence @fileid=%s, @paragraph_id=%s, @sentence_idx=%s, @text=%s, @start_time=%s, @end_time=%s",
+                            "EXEC RDS_InsertSentence @fileid=%s, @paragraph_id=%s, @sentence_idx=%s, @text=%s, @start_time=%s, @end_time=%s",
                             (fileid, paragraph_id, sent_idx, sent_text, sent_start, sent_end)
                         )
         
