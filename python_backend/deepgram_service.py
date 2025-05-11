@@ -234,7 +234,33 @@ class DeepgramService:
         # Defaults to 'rest_api' if not specified
         transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api").lower()
         
-        if transcription_method == "sdk":
+        # Add shortcut method as a fourth option
+        if transcription_method == "shortcut":
+            self.logger.info("Using SHORTCUT method for transcription")
+            try:
+                # Import the shortcut function
+                from transcription_methods import transcribe_audio_shortcut
+                
+                # Use the shortcut method directly
+                result = transcribe_audio_shortcut(audio_file_path)
+                
+                # If it returns a standard result with 'error' key, handle accordingly
+                if isinstance(result, dict) and 'error' in result and result['error']:
+                    self.logger.warning(f"SHORTCUT method failed: {result['error']}, falling back to SDK")
+                    return await self.transcribe_audio_sdk(audio_file_path)
+                
+                # Wrap the result in our standard format if needed
+                if isinstance(result, dict) and 'error' not in result:
+                    return {"result": result, "error": None}
+                
+                return result
+                
+            except Exception as e:
+                self.logger.error(f"Exception in SHORTCUT method: {str(e)}")
+                self.logger.warning("SHORTCUT method failed with exception, falling back to SDK")
+                return await self.transcribe_audio_sdk(audio_file_path)
+                
+        elif transcription_method == "sdk":
             self.logger.info("Using SDK method for transcription")
             result = await self.transcribe_audio_sdk(audio_file_path)
             
@@ -243,7 +269,36 @@ class DeepgramService:
                 self.logger.warning("SDK method failed, falling back to REST API")
                 return await self.transcribe_audio_rest_api(audio_file_path)
             return result
+        elif transcription_method == "direct":
+            self.logger.info("Using DIRECT method for transcription")
+            # For direct method, use the shortcut as a fallback
+            try:
+                # Import direct method
+                from azure_deepgram_transcribe import transcribe_azure_audio
+                import os
+                
+                # Extract the blob name from the file path
+                blob_name = os.path.basename(audio_file_path)
+                
+                # Call direct transcription
+                result = transcribe_azure_audio(blob_name=blob_name)
+                
+                # Handle errors
+                if isinstance(result, dict) and ('error' in result or result is None):
+                    self.logger.warning("DIRECT method failed, trying SHORTCUT")
+                    # Try shortcut as fallback
+                    from transcription_methods import transcribe_audio_shortcut
+                    result = transcribe_audio_shortcut(audio_file_path)
+                
+                # Wrap the result
+                return {"result": result, "error": None}
+                
+            except Exception as e:
+                self.logger.error(f"Exception in DIRECT method: {str(e)}")
+                self.logger.warning("Falling back to REST API after DIRECT and SHORTCUT failures")
+                return await self.transcribe_audio_rest_api(audio_file_path)
         else:
+            # Default to REST API method
             self.logger.info("Using REST API method for transcription")
             result = await self.transcribe_audio_rest_api(audio_file_path)
             

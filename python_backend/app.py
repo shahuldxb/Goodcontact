@@ -283,8 +283,8 @@ def configure_transcription_method():
             new_method = data.get('method', '').lower()
             
             # Validate the method
-            if new_method not in ['sdk', 'rest_api', 'direct']:
-                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', or 'direct'"}), 400
+            if new_method not in ['sdk', 'rest_api', 'direct', 'shortcut']:
+                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', 'direct', or 'shortcut'"}), 400
             
             # Update the environment variable
             os.environ["DEEPGRAM_TRANSCRIPTION_METHOD"] = new_method
@@ -301,7 +301,7 @@ def configure_transcription_method():
         else:
             return jsonify({
                 "current_method": current_method,
-                "available_methods": ["sdk", "rest_api", "direct"]
+                "available_methods": ["sdk", "rest_api", "direct", "shortcut"]
             })
             
     except Exception as e:
