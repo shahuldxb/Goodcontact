@@ -506,9 +506,10 @@ export class DeepgramService {
       // Save transcription to asset if asset ID provided
       if (assetFileid) {
         await storage.updateAsset(assetFileid, {
-          transcription: transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript || '',
-          transcriptionJson: transcriptionResponse,
-          languageDetected: transcriptionResponse?.result?.channels?.[0]?.detected_language || 'English'
+          transcription: transcriptionResponse?.result?.utterances?.[0]?.transcript || 
+                         transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript || '',
+          transcriptionJson: JSON.parse(JSON.stringify(transcriptionResponse || {})),
+          languageDetected: transcriptionResponse?.result?.metadata?.detected_language || 'English'
         });
       }
       
@@ -524,7 +525,7 @@ export class DeepgramService {
       // 2. Save language detection
       const languageResult = {
         fileid,
-        language: transcriptionResponse?.result?.channels?.[0]?.detected_language || 'English',
+        language: transcriptionResponse?.result?.metadata?.detected_language || 'English',
         confidence: 95
       };
       await storage.saveLanguageDetection(languageResult);
@@ -532,7 +533,8 @@ export class DeepgramService {
       // 3. Save call summarization
       const summaryResult = {
         fileid,
-        summary: "This is an automatically generated summary of the audio call.",
+        summary: transcriptionResponse?.result?.summary?.short || 
+                 "This is an automatically generated summary of the audio call.",
         summaryType: "short"
       };
       await storage.saveSummarization(summaryResult);

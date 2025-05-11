@@ -125,8 +125,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             status: 'processing'
           });
 
+          // Record start time
+          const processingStartTime = Date.now();
+          
           // Process the file with Deepgram
           const result = await deepgramService.processAudioFile(filename, fileid);
+          
+          // Calculate processing duration
+          const processingDuration = Date.now() - processingStartTime;
           
           // Move the file from source to processed container
           await moveFileToProcessed(filename);
@@ -134,7 +140,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Update the asset record
           await storage.updateAsset(fileid, {
             status: 'completed',
-            processedDate: new Date()
+            processedDate: new Date(),
+            processingDuration: Math.round(processingDuration / 1000), // Convert to seconds
+            // Extract the transcript from the correct structure
+            transcription: result.transcription?.result?.utterances?.[0]?.transcript 
+              || result.transcription?.result?.channels?.[0]?.alternatives?.[0]?.transcript 
+              || '',
+            // Save the entire JSON response (stringify + parse to ensure proper serialization)
+            transcriptionJson: JSON.parse(JSON.stringify(result.transcription || {})),
+            languageDetected: result.transcription?.result?.metadata?.detected_language || 'English'
           });
           
           results.push({ fileid, filename, status: 'success' });
