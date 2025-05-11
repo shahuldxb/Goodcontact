@@ -146,7 +146,7 @@ export function DirectTestResults() {
   const fetchResultFiles = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/debug/direct-test-results');
+      const response = await fetch('/api/debug/direct-test-results');
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -203,7 +203,7 @@ export function DirectTestResults() {
       if (fileSource === 'azure') {
         // For Azure storage, use the existing API endpoint
         response = await fetch(
-          `/debug/direct-transcription?test_file=${encodeURIComponent(testFileName)}`
+          `/api/debug/direct-transcription?test_file=${encodeURIComponent(testFileName)}`
         );
         data = await response.json();
       } else {
@@ -211,7 +211,7 @@ export function DirectTestResults() {
         const formData = new FormData();
         formData.append('file', localFile as File);
         
-        response = await fetch('/debug/direct-transcription-upload', {
+        response = await fetch('/api/debug/direct-transcription-upload', {
           method: 'POST',
           body: formData,
         });
@@ -254,7 +254,7 @@ export function DirectTestResults() {
   const viewResult = async (filename: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`/debug/direct-test-result?filename=${encodeURIComponent(filename)}`);
+      const response = await fetch(`/api/debug/direct-test-result?filename=${encodeURIComponent(filename)}`);
       const data = await response.json();
       
       if (data.status === 'success') {
