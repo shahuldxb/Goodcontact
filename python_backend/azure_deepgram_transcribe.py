@@ -149,10 +149,32 @@ def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True
                 # Read the entire file content
                 file_content = file.read()
                 
-                # Log first few bytes to help with debugging
-                if len(file_content) > 24:
+                # Validate file length
+                file_size = len(file_content)
+                if file_size == 0:
+                    logger.error(f"File {blob_name} is empty (0 bytes)")
+                    return {"error": {"message": "Audio file is empty"}}
+                
+                # Log file info and first few bytes to help with debugging
+                logger.info(f"File size: {file_size} bytes, MIME type: {mime_type}")
+                
+                # Log file header for debugging
+                if file_size > 24:
                     header_hex = file_content[:24].hex()
                     logger.info(f"File header (hex): {header_hex}")
+                    
+                    # Basic validation for common audio formats based on file headers
+                    if file_extension == '.mp3' and not (header_hex.startswith('494433') or  # ID3 tag
+                                                        header_hex.startswith('fffb') or    # MPEG frame sync
+                                                        header_hex.startswith('fff3')):
+                        logger.warning(f"File header doesn't match expected MP3 format: {header_hex}")
+                    elif file_extension == '.wav' and not header_hex.startswith('52494646'):  # "RIFF"
+                        logger.warning(f"File header doesn't match expected WAV format: {header_hex}")
+                        
+                # Log entire file content hash for debugging
+                import hashlib
+                file_hash = hashlib.md5(file_content).hexdigest()
+                logger.info(f"File MD5 hash: {file_hash}")
                 
                 # Make the API request
                 response = requests.post(
