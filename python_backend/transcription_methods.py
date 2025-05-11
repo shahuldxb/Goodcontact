@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 This module provides methods for transcribing audio using Deepgram:
-1. Using the official Deepgram SDK
+1. Using the official Deepgram SDK (old method)
 2. Using direct REST API calls with requests library
 3. Using a shortcut method that calls the test_direct_transcription script
+4. Using the modern Deepgram listen.rest API (recommended method)
 """
 import os
 import json
@@ -13,6 +14,14 @@ import asyncio
 import time
 from datetime import datetime
 from deepgram import Deepgram
+
+# Import modern Deepgram SDK for listen.rest method
+from deepgram import (
+    DeepgramClient,
+    PrerecordedOptions,
+    DeepgramClientOptions
+)
+
 from test_direct_transcription import test_direct_transcription
 
 # Configure logging
@@ -20,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 # Get API key from environment or use a default for testing (replace in production)
-DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY", "")
+DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
 
 
 async def transcribe_with_sdk(audio_file_path):
@@ -198,9 +207,58 @@ def transcribe_with_rest_api(audio_file_path):
         raise
 
 
+def transcribe_with_listen_rest(audio_url):
+    """
+    Transcribe audio using Deepgram's listen.rest API with a Blob SAS URL.
+    This is the modern, recommended approach for using Deepgram.
+    
+    Args:
+        audio_url: The SAS URL to the audio file in Azure Blob Storage
+        
+    Returns:
+        dict: The complete Deepgram response
+    """
+    try:
+        logger.info(f"Transcribing using listen.rest API: {audio_url[:60]}...")
+        
+        # Initialize the Deepgram client with our API key
+        client_options = DeepgramClientOptions(
+            verbose=True  # Enable verbose logging for debugging
+        )
+        deepgram = DeepgramClient(DEEPGRAM_API_KEY, options=client_options)
+        
+        # Set up transcription options
+        transcription_options = PrerecordedOptions(
+            model="nova-3",  # Using the latest model
+            smart_format=True,
+            diarize=True,
+            detect_language=True,
+            punctuate=True,
+            utterances=True,
+            summarize=True
+        )
+        
+        # Prepare the URL in the format expected by the API
+        url_data = {
+            "url": audio_url
+        }
+        
+        # Make the transcription request
+        logger.info("Sending request to Deepgram listen.rest API...")
+        response = deepgram.listen.rest.v("1").transcribe_url(url_data, transcription_options)
+        
+        logger.info("Transcription completed successfully")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error in listen.rest transcription: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
+
 async def main():
     """
-    Example of how to use both transcription methods.
+    Example of how to use all transcription methods.
     """
     # Path to audio file for testing
     test_file = "test_speech_fr.wav"
@@ -224,6 +282,16 @@ async def main():
         logger.info("REST API transcription completed successfully")
     except Exception as rest_err:
         logger.error(f"REST API transcription failed: {str(rest_err)}")
+    
+    # Method 4: Using the Listen REST API (would need a URL)
+    # Example SAS URL (replace with a real one for testing)
+    example_url = "https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(murabaha)_angry.mp3?sp=r&st=2025-05-11T14:30:26Z&se=2025-11-12T22:30:26Z&spr=https&sv=2024-11-04&sr=b&sig=q2gumh51pXiVFgidPda5JQJXvGWwF4z%2BhE2tI9Ahkm0%3D"
+    try:
+        logger.info("=== Transcribing with Listen REST API ===")
+        listen_rest_result = transcribe_with_listen_rest(example_url)
+        logger.info("Listen REST API transcription completed successfully")
+    except Exception as listen_err:
+        logger.error(f"Listen REST API transcription failed: {str(listen_err)}")
 
 
 # Memory store for test_direct_transcription results
