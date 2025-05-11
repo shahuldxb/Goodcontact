@@ -110,7 +110,7 @@ async def real_azure_file_test():
         
         # Generate SAS URL for the blob
         print("Generating SAS URL...")
-        sas_url = storage_service.generate_blob_sas_url(container_name, blob_name, hours=240)
+        sas_url = storage_service.generate_sas_url(container_name, blob_name, expiry_hours=240)
         
         # STEP 1: INSERT with NULL transcription
         print("\n===== STEP 1: INITIAL INSERT WITH NULL TRANSCRIPTION =====")
