@@ -114,8 +114,6 @@ def run_full_integration_test(blob_name=None):
         try:
             logger.info("Updating rdt_assets table...")
             sql_service = AzureSQLService()
-            conn = sql_service._get_connection()
-            cursor = conn.cursor()
             
             # Extract essential info from transcription
             full_response = transcription_result['full_response']
@@ -123,66 +121,68 @@ def run_full_integration_test(blob_name=None):
             detected_language = full_response.get('language', 'en')
             transcription_json_str = json.dumps(full_response)
             
-            # Check if record already exists
-            cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
-            existing_asset = cursor.fetchone()
+            # Using a more robust approach with one connection context
+            with sql_service._get_connection() as conn:
+                with conn.cursor() as cursor:
+                    # Check if record already exists
+                    cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
+                    existing_asset = cursor.fetchone()
+                    
+                    if existing_asset:
+                        # Update existing asset
+                        logger.info(f"Updating existing record in rdt_assets for fileid {fileid}")
+                        cursor.execute("""
+                            UPDATE rdt_assets 
+                            SET transcription = %s, 
+                                transcription_json = %s, 
+                                language_detected = %s,
+                                status = 'completed',
+                                processed_date = %s,
+                                processing_duration = %s
+                            WHERE fileid = %s
+                        """, (
+                            transcript_text,
+                            transcription_json_str,
+                            detected_language,
+                            datetime.now(),
+                            transcription_result.get('duration', 0),
+                            fileid
+                        ))
+                    else:
+                        # Create new asset record
+                        logger.info(f"Inserting new record into rdt_assets for fileid {fileid}")
+                        blob_name = blob_name or "unknown_blob"
+                        source_path = f"shahulin/{blob_name}"
+                        file_size = 0  # We don't have the file size readily available
+                        
+                        cursor.execute("""
+                            INSERT INTO rdt_assets 
+                            (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status,
+                             created_dt, processed_date, processing_duration) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (
+                            fileid,
+                            blob_name,
+                            source_path,
+                            file_size,
+                            transcript_text,
+                            transcription_json_str,
+                            detected_language,
+                            'completed',
+                            datetime.now(),
+                            datetime.now(),
+                            transcription_result.get('duration', 0)
+                        ))
+                    
+                    # Commit the transaction
+                    conn.commit()
             
-            if existing_asset:
-                # Update existing asset
-                logger.info(f"Updating existing record in rdt_assets for fileid {fileid}")
-                cursor.execute("""
-                    UPDATE rdt_assets 
-                    SET transcription = %s, 
-                        transcription_json = %s, 
-                        language_detected = %s,
-                        status = 'completed',
-                        processed_date = %s,
-                        processing_duration = %s
-                    WHERE fileid = %s
-                """, (
-                    transcript_text,
-                    transcription_json_str,
-                    detected_language,
-                    datetime.now(),
-                    transcription_result.get('duration', 0),
-                    fileid
-                ))
-            else:
-                # Create new asset record
-                logger.info(f"Inserting new record into rdt_assets for fileid {fileid}")
-                blob_name = blob_name or "unknown_blob"
-                source_path = f"shahulin/{blob_name}"
-                file_size = 0  # We don't have the file size readily available
-                
-                cursor.execute("""
-                    INSERT INTO rdt_assets 
-                    (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status,
-                     created_dt, processed_date, processing_duration) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    fileid,
-                    blob_name,
-                    source_path,
-                    file_size,
-                    transcript_text,
-                    transcription_json_str,
-                    detected_language,
-                    'completed',
-                    datetime.now(),
-                    datetime.now(),
-                    transcription_result.get('duration', 0)
-                ))
-            
-            conn.commit()
             logger.info("Successfully updated rdt_assets table")
             assets_updated = True
         except Exception as e:
             logger.error(f"Error updating rdt_assets table: {str(e)}")
             logger.error(traceback.format_exc())
             assets_updated = False
-        finally:
-            cursor.close()
-            conn.close()
         
         # Now store detailed paragraph and sentence data using the utility function
         logger.info("Storing detailed paragraph and sentence data...")
