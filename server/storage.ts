@@ -144,14 +144,33 @@ export class MemStorage implements IStorage {
 
   async getAnalysisResults(fileid: string): Promise<any> {
     // This would fetch all analysis results for a given file
+    const asset = this.assets.get(fileid);
+    if (!asset) return { error: "Asset not found" };
+    
+    // Get speaker segments if available
+    let speakerSegments = [];
+    const diarization = this.speakerDiarization.get(fileid);
+    if (diarization) {
+      speakerSegments = this.speakerSegments.get(diarization.id) || [];
+    }
+    
+    // Get forbidden phrase details if available
+    let forbiddenPhraseDetails = [];
+    const forbiddenPhrases = this.forbiddenPhrases.get(fileid);
+    if (forbiddenPhrases) {
+      forbiddenPhraseDetails = this.forbiddenPhrasesDetails.get(forbiddenPhrases.id) || [];
+    }
+    
     return {
-      asset: this.assets.get(fileid),
+      asset,
       sentiment: this.sentiment.get(fileid),
       language: this.language.get(fileid),
       summarization: this.summarization.get(fileid),
-      forbiddenPhrases: this.forbiddenPhrases.get(fileid),
+      forbiddenPhrases,
+      forbiddenPhraseDetails,
       topicModeling: this.topicModeling.get(fileid),
-      speakerDiarization: this.speakerDiarization.get(fileid)
+      speakerDiarization: diarization,
+      speakerSegments
     };
   }
 
