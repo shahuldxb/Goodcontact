@@ -264,6 +264,17 @@ class DgClassCallSummarization:
 
     async def main(self, audio_source_info_str, fileid):
         print(f"Starting Call Summarization for FileID: {fileid}")
+        
+        # Parse JSON string into dictionary if needed
+        if audio_source_info_str and isinstance(audio_source_info_str, str):
+            try:
+                audio_source_info = json.loads(audio_source_info_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse audio_source_info_str as JSON: {str(e)}")
+                return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
+        else:
+            audio_source_info = audio_source_info_str
+            
         dg_response_json_str = await self._transcribe_audio_with_summarization(audio_source_info)
 
         # Initialize for error logging context
@@ -348,15 +359,7 @@ class DgClassCallSummarization:
             "full_transcript_snippet": full_transcript[:200] + "..."
         }
 
-# Parse JSON string into dictionary if needed
-if audio_source_info_str and isinstance(audio_source_info_str, str):
-    try:
-        audio_source_info = json.loads(audio_source_info_str)
-    except json.JSONDecodeError as e:
-        print(f"Failed to parse audio_source_info_str as JSON: {str(e)}")
-        return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
-else:
-    audio_source_info = audio_source_info_str
+
 
 # Example Usage (Conceptual)
 async def example_run():
