@@ -23,8 +23,8 @@ class DeepgramService:
         """Initialize the Deepgram Service with all analysis classes"""
         self.logger = logging.getLogger(__name__)
         
-        # Deepgram API key
-        self.deepgram_api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
+        # Deepgram API key - using the known working key directly for consistency
+        self.deepgram_api_key = "ba94baf7840441c378c58ccd1d5202c38ddc42d8"
         
         # Initialize API access
         try:

@@ -211,7 +211,8 @@ async def real_azure_file_test():
             
             # Perform transcription
             print("Starting transcription...")
-            api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
+            # Using the known working key directly for consistency
+            api_key = "ba94baf7840441c378c58ccd1d5202c38ddc42d8"
             transcription_result = direct_transcribe.transcribe_audio(blob_sas_url=sas_url, api_key=api_key)
             
             # Extract transcript text 
