@@ -586,6 +586,10 @@ export class DeepgramService {
       
       // Perform transcription
       const transcriptionResponse = await this.transcribeAudio(localFilePath);
+      
+      // Add extremely detailed debug logging of the full response structure
+      console.log(`FULL DEEPGRAM RESPONSE: ${JSON.stringify(transcriptionResponse)}`);
+      
       const transcriptionJsonStr = JSON.stringify(transcriptionResponse);
       
       // Generate unique file ID
@@ -607,33 +611,86 @@ export class DeepgramService {
             hasTranscript: !!transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript
           }));
           
-        // Extract transcript using a more robust approach
+        // Extract transcript using a comprehensive approach with enhanced debugging
         let transcript = '';
+        let extractionPath = 'none';
         
-        // Try to get transcript from channels first (most common structure)
+        // Step 1: Try the official Deepgram structure format
         if (transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript) {
           transcript = transcriptionResponse.result.channels[0].alternatives[0].transcript;
+          extractionPath = 'result.channels[0].alternatives[0].transcript';
+          console.log('Extracted transcript from: result.channels[0].alternatives[0].transcript');
         } 
-        // Fallback to utterances if available
+        // Step 2: Try fallback to utterances
         else if (transcriptionResponse?.result?.utterances?.[0]?.transcript) {
-          transcript = transcriptionResponse.result.utterances[0].transcript;
+          transcript = transcriptionResponse.result.utterances.map(u => u.transcript).join(' ');
+          extractionPath = 'result.utterances[].transcript (joined)';
+          console.log('Extracted transcript from: result.utterances[].transcript');
         }
-        // Fallback to paragraphs if available
+        // Step 3: Try fallback to paragraphs
         else if (transcriptionResponse?.result?.paragraphs?.paragraphs?.[0]?.text) {
           transcript = transcriptionResponse.result.paragraphs.paragraphs.map(p => p.text).join(' ');
+          extractionPath = 'result.paragraphs.paragraphs[].text (joined)';
+          console.log('Extracted transcript from: result.paragraphs.paragraphs[].text');
         }
-        // Last resort - try to extract from alternatives directly
+        // Step 4: Try alternatives directly on result
         else if (transcriptionResponse?.result?.alternatives?.[0]?.transcript) {
           transcript = transcriptionResponse.result.alternatives[0].transcript;
+          extractionPath = 'result.alternatives[0].transcript';
+          console.log('Extracted transcript from: result.alternatives[0].transcript');
+        }
+        // Step 5: Try a different response structure (SDK differences)
+        else if (transcriptionResponse?.channels?.[0]?.alternatives?.[0]?.transcript) {
+          transcript = transcriptionResponse.channels[0].alternatives[0].transcript;
+          extractionPath = 'channels[0].alternatives[0].transcript';
+          console.log('Extracted transcript from: channels[0].alternatives[0].transcript');
+        }
+        // Step 6: Try yet another structure sometimes seen
+        else if (transcriptionResponse?.alternatives?.[0]?.transcript) {
+          transcript = transcriptionResponse.alternatives[0].transcript;
+          extractionPath = 'alternatives[0].transcript';
+          console.log('Extracted transcript from: alternatives[0].transcript');
+        }
+        // Step 7: Look for a summary property that might contain text
+        else if (transcriptionResponse?.result?.summary?.long) {
+          transcript = transcriptionResponse.result.summary.long;
+          extractionPath = 'result.summary.long';
+          console.log('Extracted transcript from: result.summary.long');
         }
         
-        console.log(`Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 50)}...`);
+        console.log(`Extraction path: ${extractionPath}`);
+        console.log(`Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 100)}...`);
         
-        await storage.updateAsset(assetFileid, {
-          transcription: transcript,
-          transcriptionJson: JSON.parse(JSON.stringify(transcriptionResponse || {})),
-          language: transcriptionResponse?.result?.metadata?.detected_language || 'English'
-        });
+        // Ensure we have at least an empty string if everything fails
+        if (!transcript) {
+          transcript = '';
+          console.error('FAILED TO EXTRACT ANY TRANSCRIPT');
+        }
+        
+        try {
+          // Serialize JSON with error handling
+          let jsonString = '{}';
+          try {
+            // First strip circular references by JSON serializing/deserializing
+            // But within a try-catch to handle any issues
+            jsonString = JSON.stringify(transcriptionResponse || {});
+          } catch (jsonError) {
+            console.error(`Error serializing transcription response: ${jsonError}`);
+            // Provide a minimal valid JSON object if serialization fails
+            jsonString = '{"error": "Serialization error"}'; 
+          }
+          
+          // Now update the asset with proper values
+          await storage.updateAsset(assetFileid, {
+            transcription: transcript, 
+            transcriptionJson: JSON.parse(jsonString),
+            language: detectedLanguage // Use our already extracted language
+          });
+          
+          console.log(`Successfully updated asset with transcription (${transcript.length} chars) and language (${detectedLanguage})`);
+        } catch (updateError) {
+          console.error(`Error updating asset: ${updateError}`);
+        }
       }
       
       // 1. Save sentiment analysis
@@ -645,10 +702,36 @@ export class DeepgramService {
       };
       await storage.saveSentimentAnalysis(sentimentResult);
       
-      // 2. Save language detection
+      // 2. Save language detection with enhanced path resolution
+      let detectedLanguage = 'English'; // Default fallback
+      let extractionPath = 'default';
+      
+      // Try multiple paths where language might be found
+      if (transcriptionResponse?.result?.metadata?.detected_language) {
+        detectedLanguage = transcriptionResponse.result.metadata.detected_language;
+        extractionPath = 'result.metadata.detected_language';
+      } else if (transcriptionResponse?.metadata?.detected_language) {
+        detectedLanguage = transcriptionResponse.metadata.detected_language;
+        extractionPath = 'metadata.detected_language';
+      } else if (transcriptionResponse?.result?.language) {
+        detectedLanguage = transcriptionResponse.result.language;
+        extractionPath = 'result.language';
+      } else if (transcriptionResponse?.language) {
+        detectedLanguage = transcriptionResponse.language;
+        extractionPath = 'language';
+      } else if (transcriptionResponse?.deepgram_language?.name) {
+        detectedLanguage = transcriptionResponse.deepgram_language.name;
+        extractionPath = 'deepgram_language.name';
+      } else if (transcriptionResponse?.deepgram_language?.code) {
+        detectedLanguage = transcriptionResponse.deepgram_language.code;
+        extractionPath = 'deepgram_language.code';
+      }
+      
+      console.log(`Extracted language: ${detectedLanguage} via path: ${extractionPath}`);
+      
       const languageResult = {
         fileid,
-        language: transcriptionResponse?.result?.metadata?.detected_language || 'English',
+        language: detectedLanguage,
         confidence: 95
       };
       await storage.saveLanguageDetection(languageResult);
