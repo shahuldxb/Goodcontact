@@ -505,9 +505,41 @@ export class DeepgramService {
       
       // Save transcription to asset if asset ID provided
       if (assetFileid) {
+        // Log the response structure for debugging
+        console.log("Deepgram transcription response structure:", 
+          JSON.stringify({
+            hasResult: !!transcriptionResponse?.result,
+            hasChannels: !!transcriptionResponse?.result?.channels,
+            channelsLength: transcriptionResponse?.result?.channels?.length,
+            hasAlternatives: !!transcriptionResponse?.result?.channels?.[0]?.alternatives,
+            alternativesLength: transcriptionResponse?.result?.channels?.[0]?.alternatives?.length,
+            hasTranscript: !!transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript
+          }));
+          
+        // Extract transcript using a more robust approach
+        let transcript = '';
+        
+        // Try to get transcript from channels first (most common structure)
+        if (transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript) {
+          transcript = transcriptionResponse.result.channels[0].alternatives[0].transcript;
+        } 
+        // Fallback to utterances if available
+        else if (transcriptionResponse?.result?.utterances?.[0]?.transcript) {
+          transcript = transcriptionResponse.result.utterances[0].transcript;
+        }
+        // Fallback to paragraphs if available
+        else if (transcriptionResponse?.result?.paragraphs?.paragraphs?.[0]?.text) {
+          transcript = transcriptionResponse.result.paragraphs.paragraphs.map(p => p.text).join(' ');
+        }
+        // Last resort - try to extract from alternatives directly
+        else if (transcriptionResponse?.result?.alternatives?.[0]?.transcript) {
+          transcript = transcriptionResponse.result.alternatives[0].transcript;
+        }
+        
+        console.log(`Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 50)}...`);
+        
         await storage.updateAsset(assetFileid, {
-          transcription: transcriptionResponse?.result?.utterances?.[0]?.transcript || 
-                         transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript || '',
+          transcription: transcript,
           transcriptionJson: JSON.parse(JSON.stringify(transcriptionResponse || {})),
           language: transcriptionResponse?.result?.metadata?.detected_language || 'English'
         });
