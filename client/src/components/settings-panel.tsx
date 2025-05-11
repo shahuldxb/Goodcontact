@@ -32,11 +32,20 @@ export function SettingsPanel() {
 
   // Mutation to update transcription method
   const mutation = useMutation({
-    mutationFn: (method: string) => {
-      return apiRequest('/api/config/transcription-method', {
+    mutationFn: async (method: string) => {
+      const response = await fetch('/api/config/transcription-method', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ method }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update transcription method');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/config/transcription-method'] });

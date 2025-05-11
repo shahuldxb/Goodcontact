@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { pythonProxy } from "./services/python-proxy";
+import { createPythonProxyMiddleware } from "./services/python-proxy";
 import { deepgramService } from "./services/deepgram";
 import { 
   getSourceFiles, 
@@ -274,6 +275,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch topic distribution" });
     }
   });
+
+  // Get transcription method configuration
+  app.get("/api/config/transcription-method", createPythonProxyMiddleware('/config/transcription-method'));
+  
+  // Update transcription method configuration
+  app.post("/api/config/transcription-method", createPythonProxyMiddleware('/config/transcription-method', 'POST'));
 
   const httpServer = createServer(app);
   return httpServer;

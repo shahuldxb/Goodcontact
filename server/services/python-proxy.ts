@@ -195,6 +195,42 @@ export async function getTopicStats() {
 }
 
 // Export a singleton instance
+// Create a proxy middleware function for Express
+export function createPythonProxyMiddleware(pythonEndpoint: string, method: 'GET' | 'POST' = 'GET') {
+  return async (req: any, res: any) => {
+    try {
+      const url = `${PYTHON_SERVER_URL}${pythonEndpoint}`;
+      
+      const options: any = {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      // Add body for POST requests
+      if (method === 'POST') {
+        options.body = JSON.stringify(req.body);
+      }
+      
+      const response = await fetch(url, options);
+      
+      if (!response.ok) {
+        throw new Error(`Python server responded with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(`Error in Python proxy (${pythonEndpoint}):`, error);
+      res.status(500).json({ 
+        error: `Failed to ${method === 'GET' ? 'fetch' : 'update'} data from Python backend`,
+        details: error.message
+      });
+    }
+  };
+}
+
 export const pythonProxy = {
   startPythonBackend,
   stopPythonBackend,
@@ -204,5 +240,6 @@ export const pythonProxy = {
   getAnalysisResults,
   getStats,
   getSentimentStats,
-  getTopicStats
+  getTopicStats,
+  createPythonProxyMiddleware
 };
