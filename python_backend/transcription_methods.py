@@ -9,7 +9,7 @@ import json
 import logging
 import requests
 import asyncio
-from deepgram import DeepgramClient, PrerecordedOptions
+from deepgram import Deepgram
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -35,7 +35,7 @@ async def transcribe_with_sdk(audio_file_path):
             raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
             
         # Initialize Deepgram client
-        deepgram = DeepgramClient(DEEPGRAM_API_KEY)
+        deepgram = Deepgram(DEEPGRAM_API_KEY)
         
         # Determine mime type based on file extension
         file_extension = os.path.splitext(audio_file_path)[1].lower()
@@ -53,43 +53,38 @@ async def transcribe_with_sdk(audio_file_path):
         logger.info(f"File size: {file_size} bytes")
         
         # Configure transcription options
-        options = PrerecordedOptions(
-            smart_format=True,
-            model="nova",
-            language="en",  # Can be auto-detected if not specified
-            detect_language=True,
-            punctuate=True,
-            diarize=True,
-            utterances=True,
-            summarize=True
-        )
+        options = {
+            "smart_format": True,
+            "model": "nova",
+            "diarize": True,
+            "punctuate": True,
+            "utterances": True,
+            "detect_language": True
+        }
         
         # Open audio file and send to Deepgram
         with open(audio_file_path, "rb") as audio:
-            payload = {
-                "buffer": audio.read()
-            }
-            
-            response = await deepgram.listen.prerecorded.v("1").transcribe_file(payload, options)
+            source = {'buffer': audio, 'mimetype': mimetype}
+            response = await deepgram.transcription.prerecorded(source, options)
             
             # Extract relevant information for debugging
-            if response and hasattr(response, "results"):
+            if response and 'results' in response:
                 try:
                     detected_language = "unknown"
-                    if (hasattr(response.results, "channels") and 
-                        len(response.results.channels) > 0 and 
-                        hasattr(response.results.channels[0], "detected_language")):
-                        detected_language = response.results.channels[0].detected_language
+                    if ('channels' in response['results'] and 
+                        len(response['results']['channels']) > 0 and 
+                        'detected_language' in response['results']['channels'][0]):
+                        detected_language = response['results']['channels'][0]['detected_language']
                         
                     logger.info(f"Detected language: {detected_language}")
                     
                     transcript = ""
-                    if (hasattr(response.results, "channels") and 
-                        len(response.results.channels) > 0 and 
-                        hasattr(response.results.channels[0], "alternatives") and
-                        len(response.results.channels[0].alternatives) > 0 and
-                        hasattr(response.results.channels[0].alternatives[0], "transcript")):
-                        transcript = response.results.channels[0].alternatives[0].transcript
+                    if ('channels' in response['results'] and 
+                        len(response['results']['channels']) > 0 and 
+                        'alternatives' in response['results']['channels'][0] and
+                        len(response['results']['channels'][0]['alternatives']) > 0 and
+                        'transcript' in response['results']['channels'][0]['alternatives'][0]):
+                        transcript = response['results']['channels'][0]['alternatives'][0]['transcript']
                         
                     logger.info(f"Transcript (first 100 chars): {transcript[:100]}...")
                 except Exception as extract_err:
