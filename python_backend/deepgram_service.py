@@ -6,6 +6,7 @@ import asyncio
 import time
 from datetime import datetime
 import traceback
+from deepgram import Deepgram
 
 # Import the Deepgram classes from the attached assets
 from dg_class_sentiment_analysis import DgClassSentimentAnalysis
@@ -41,8 +42,16 @@ class DeepgramService:
             traceback.print_exc()
             raise
     
-    async def transcribe_audio(self, audio_file_path):
-        """Transcribe audio using Deepgram API"""
+    async def transcribe_audio_rest_api(self, audio_file_path):
+        """
+        Transcribe audio using Deepgram REST API (original implementation).
+        
+        Args:
+            audio_file_path (str): Path to the local audio file to transcribe.
+            
+        Returns:
+            dict: A result object with the structure {"result": response_json, "error": error_message}
+        """
         try:
             # Validate file exists
             if not os.path.exists(audio_file_path):
@@ -84,7 +93,7 @@ class DeepgramService:
                 "Content-Type": content_type
             }
             
-            self.logger.info(f"Sending audio file {audio_file_path} with mimetype {content_type} to Deepgram for transcription...")
+            self.logger.info(f"Sending audio file {audio_file_path} with mimetype {content_type} to Deepgram for transcription (REST API)...")
             
             # Read the audio file and verify it contains data
             with open(audio_file_path, 'rb') as audio_file:
@@ -126,9 +135,123 @@ class DeepgramService:
                     traceback.print_exc()
                     return {"result": None, "error": {"name": "RequestError", "message": error_message, "status": 500}}
         except Exception as e:
-            self.logger.error(f"Error during transcription: {str(e)}")
+            self.logger.error(f"Error during REST API transcription: {str(e)}")
             traceback.print_exc()
             raise
+            
+    async def transcribe_audio_sdk(self, audio_file_path):
+        """
+        Transcribe audio using the official Deepgram SDK.
+        
+        Args:
+            audio_file_path (str): Path to the local audio file to transcribe.
+            
+        Returns:
+            dict: A result object with the structure {"result": response_json, "error": error_message}
+        """
+        try:
+            # Validate file exists
+            if not os.path.exists(audio_file_path):
+                self.logger.error(f"File does not exist: {audio_file_path}")
+                return {"result": None, "error": {"name": "FileNotFoundError", "message": f"File does not exist: {audio_file_path}", "status": 404}}
+                
+            # Initialize Deepgram client
+            deepgram = Deepgram(self.deepgram_api_key)
+            
+            # Get file size for logging
+            file_size = os.path.getsize(audio_file_path)
+            self.logger.info(f"Audio file size: {file_size} bytes")
+            
+            # Determine file type from extension
+            file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
+            supported_types = ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a']
+            file_type = file_extension if file_extension in supported_types else 'wav'
+            
+            # Set up content type
+            content_type = f"audio/{file_type}"
+            
+            # Special case for mp3 files
+            if file_type == "mp3":
+                content_type = "audio/mpeg"
+                
+            self.logger.info(f"File extension: {file_extension}, using mimetype: {content_type}")
+            
+            # Configure transcription options - using same options as REST API method
+            options = {
+                "model": "nova-2",
+                "smart_format": True,
+                "diarize": True,
+                "punctuate": True,
+                "detect_language": True,
+                "summarize": True
+            }
+            
+            self.logger.info(f"Sending audio file {audio_file_path} with mimetype {content_type} to Deepgram for transcription (SDK)...")
+            
+            # Read the audio file and verify it contains data
+            with open(audio_file_path, 'rb') as audio_file:
+                # For debugging, get the first few bytes
+                audio_file.seek(0)
+                first_bytes = audio_file.read(20).hex()
+                self.logger.info(f"First 20 bytes of audio file: {first_bytes}")
+                
+                # Reset file pointer to beginning
+                audio_file.seek(0)
+                
+                try:
+                    # Send to Deepgram using SDK
+                    source = {'buffer': audio_file, 'mimetype': content_type}
+                    response = await deepgram.transcription.prerecorded(source, options)
+                    
+                    # Log the full response
+                    self.logger.info(f"DEEPGRAM SDK RESPONSE: {json.dumps(response)}")
+                    
+                    # Return a properly structured response
+                    return {"result": response, "error": None}
+                    
+                except Exception as e:
+                    error_message = f"Error in SDK transcription: {str(e)}"
+                    self.logger.error(error_message)
+                    traceback.print_exc()
+                    return {"result": None, "error": {"name": "SDKError", "message": error_message, "status": 500}}
+        except Exception as e:
+            self.logger.error(f"Error during SDK transcription: {str(e)}")
+            traceback.print_exc()
+            raise
+
+    async def transcribe_audio(self, audio_file_path):
+        """
+        Main transcription method that can use either SDK or REST API approach.
+        Currently defaults to REST API as the primary method, with fallback to SDK.
+        
+        Args:
+            audio_file_path (str): Path to the local audio file to transcribe.
+            
+        Returns:
+            dict: A result object with the structure {"result": response_json, "error": error_message}
+        """
+        # Get environment variable that determines which method to use
+        # Defaults to 'rest_api' if not specified
+        transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api").lower()
+        
+        if transcription_method == "sdk":
+            self.logger.info("Using SDK method for transcription")
+            result = await self.transcribe_audio_sdk(audio_file_path)
+            
+            # If SDK method fails, fall back to REST API
+            if result["error"] is not None:
+                self.logger.warning("SDK method failed, falling back to REST API")
+                return await self.transcribe_audio_rest_api(audio_file_path)
+            return result
+        else:
+            self.logger.info("Using REST API method for transcription")
+            result = await self.transcribe_audio_rest_api(audio_file_path)
+            
+            # If REST API method fails, fall back to SDK
+            if result["error"] is not None:
+                self.logger.warning("REST API method failed, falling back to SDK")
+                return await self.transcribe_audio_sdk(audio_file_path)
+            return result
     
     async def process_audio_file(self, audio_file_path, fileid=None):
         """Process an audio file with all analysis types"""
