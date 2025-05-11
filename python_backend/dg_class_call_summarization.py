@@ -13,7 +13,7 @@ import asyncio
 import re
 import nltk
 from textblob import TextBlob
-from deepgram import DeepgramClient, PrerecordedOptions
+from deepgram import Deepgram
 
 # Attempt to import sumy and gensim, provide guidance if missing
 try:

@@ -9,7 +9,7 @@ import json
 import asyncio
 import nltk
 import pandas as pd
-from deepgram import DeepgramClient, PrerecordedOptions, FileSource # Corrected import for Deepgram v3+
+from deepgram import Deepgram # Using Deepgram V2 SDK
 import datetime # Ensure datetime is imported
 
 # Import sentiment analysis tools

@@ -11,7 +11,7 @@ import os
 import json
 import asyncio
 import re
-from deepgram import DeepgramClient, PrerecordedOptions
+from deepgram import Deepgram
 
 # Attempt to import NLTK, langdetect, googletrans, iso639
 try:
