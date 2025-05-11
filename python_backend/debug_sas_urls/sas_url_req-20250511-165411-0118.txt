@@ -1,0 +1,5 @@
+SAS URL for blob agricultural_finance_(murabaha)_2.mp3:
+
+https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(murabaha)_2.mp3
+
+You can paste this URL in a browser to verify access to the asset.

@@ -1,0 +1,48 @@
+{
+  "overall_status": "Failed",
+  "timestamp": "2025-05-11T16:52:20.267574",
+  "environment": {
+    "DB_SERVER": "callcenter1.database.windows.net",
+    "DB_NAME": "callcenter",
+    "DB_USER": "shahul",
+    "SOURCE_CONTAINER": "shahulin",
+    "DESTINATION_CONTAINER": "shahulout"
+  },
+  "services": {
+    "azure_storage": {
+      "service": "Azure Storage",
+      "status": "Failed",
+      "connection": true,
+      "source_container": false,
+      "destination_container": false,
+      "blob_count": {
+        "source": 0,
+        "destination": 0
+      },
+      "timestamp": "2025-05-11T16:52:20.267588",
+      "errors": [
+        "Storage connection error: Session.request() got an unexpected keyword argument 'num_results'"
+      ],
+      "account_info": {
+        "sku_name": "Standard_RAGRS",
+        "account_kind": "StorageV2"
+      }
+    },
+    "azure_sql": {
+      "service": "Azure SQL Database",
+      "status": "Failed",
+      "connection": false,
+      "tables": [],
+      "row_counts": {},
+      "timestamp": "2025-05-11T16:52:20.583660",
+      "errors": [
+        "SQL connection error: (18456, b\"Login failed for user 'shahul'.DB-Lib error message 20018, severity 14:\\nGeneral SQL Server error: Check messages from the SQL Server\\nDB-Lib error message 20002, severity 9:\\nAdaptive Server connection failed (callcenter1.database.windows.net)\\nDB-Lib error message 20002, severity 9:\\nAdaptive Server connection failed (callcenter1.database.windows.net)\\n\")",
+        "SQL Error 18456: Login failed for user. This typically means either:",
+        "1. The username or password is incorrect",
+        "2. The user doesn't have permission to access this database",
+        "3. The user account is disabled or locked",
+        "4. The database server may be rejecting connections from this IP address"
+      ]
+    }
+  }
+}
