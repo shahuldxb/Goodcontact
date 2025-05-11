@@ -191,14 +191,14 @@ class AzureStorageService:
             logger.error(f"Error moving blob from {source_container}/{source_blob_name} to {destination_container}/{destination_blob_name}: {str(e)}")
             return False
 
-    def generate_sas_url(self, container_name, blob_name, expiry_hours=1):
+    def generate_sas_url(self, container_name, blob_name, expiry_hours=240):
         """
         Generate a SAS URL for a blob that expires after the specified time.
         
         Args:
             container_name (str): The container name.
             blob_name (str): The blob name.
-            expiry_hours (int): Number of hours until the SAS URL expires. Default is 1 hour.
+            expiry_hours (int): Number of hours until the SAS URL expires. Default is 240 hours (10 days).
             
         Returns:
             str: The SAS URL for the blob.
@@ -251,7 +251,7 @@ class AzureStorageService:
             logger.error(f"Error generating blob URL for {container_name}/{blob_name}: {str(e)}")
             return None
             
-    def get_sas_url(self, blob_name, container_name=None, expiry_hours=1):
+    def get_sas_url(self, blob_name, container_name=None, expiry_hours=240):
         """
         Generate a SAS URL for a blob in the source container.
         This is a convenience wrapper around generate_sas_url that defaults to the source container.
@@ -259,7 +259,7 @@ class AzureStorageService:
         Args:
             blob_name (str): The blob name.
             container_name (str, optional): The container name. If None, the source container is used.
-            expiry_hours (int): Number of hours until the SAS URL expires. Default is 1 hour.
+            expiry_hours (int): Number of hours until the SAS URL expires. Default is 240 hours (10 days).
             
         Returns:
             str: The SAS URL for the blob.
