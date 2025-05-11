@@ -1,109 +1,148 @@
 #!/usr/bin/env python3
 """
-Direct transcription module for Deepgram API
+Direct SAS URL Transcription Class
 
-This module provides a class for transcribing audio files directly from a SAS URL
-using Deepgram's API.
+This class directly transcribes audio files from Azure Blob Storage using SAS URLs
+without downloading them first, as per user requirements.
 """
 
-import os
-import sys
 import json
-import asyncio
 import logging
-from dg_class_critical_transcribe_rest import DgClassCriticalTranscribeRest
+import requests
+from datetime import datetime, timedelta
+from azure.storage.blob import BlobSasPermissions, generate_blob_sas
+from azure.storage.blob import BlobServiceClient
+import os
 
-# Configure logging
+# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class DirectTranscriber:
-    """Class for direct transcription using Deepgram API"""
+class DirectTranscribe:
+    def __init__(self):
+        """Initialize the DirectTranscribe class"""
+        self.logger = logging.getLogger(__name__)
     
-    def __init__(self, api_key):
+    def generate_blob_sas_url(self, connection_string, container_name, blob_name, expiry_hours=240):
         """
-        Initialize the DirectTranscriber with a Deepgram API key
+        Generate a SAS URL for a blob with specified expiry time
         
         Args:
-            api_key (str): Deepgram API key
-        """
-        self.api_key = api_key
-        self.transcriber = DgClassCriticalTranscribeRest(api_key)
-    
-    def transcribe_url(self, audio_url, model="nova-3", diarize=True):
-        """
-        Transcribe an audio file from a URL using Deepgram's API
-        
-        Args:
-            audio_url (str): SAS URL to the audio file
-            model (str): Model to use for transcription (default: nova-3)
-            diarize (bool): Whether to enable speaker diarization (default: True)
+            connection_string: Azure Storage connection string
+            container_name: Container name
+            blob_name: Blob name
+            expiry_hours: Expiry time in hours (default: 240 hours = 10 days)
             
         Returns:
-            dict: The transcription response
+            str: SAS URL for the blob
         """
         try:
-            logger.info(f"Transcribing audio from URL with model {model}")
+            # Create a BlobServiceClient
+            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
             
-            # Using synchronous call from DgClassCriticalTranscribeRest
-            result = self.transcriber.transcribe_with_url(
-                audio_url=audio_url,
-                model=model,
-                diarize=diarize,
-                debug_mode=True
+            # Get account information from the connection string
+            account_name = blob_service_client.account_name
+            account_key = None
+            
+            # Extract account key from connection string
+            parts = connection_string.split(';')
+            for part in parts:
+                if part.startswith('AccountKey='):
+                    account_key = part.split('=', 1)[1]
+                    break
+            
+            if not account_key:
+                raise ValueError("Account key not found in connection string")
+            
+            # Generate SAS token
+            sas_token = generate_blob_sas(
+                account_name=account_name,
+                container_name=container_name,
+                blob_name=blob_name,
+                account_key=account_key,
+                permission=BlobSasPermissions(read=True),
+                expiry=datetime.utcnow() + timedelta(hours=expiry_hours)
             )
+            
+            # Construct the full SAS URL
+            sas_url = f"https://{account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+            
+            return sas_url
+        except Exception as e:
+            self.logger.error(f"Error generating blob SAS URL: {str(e)}")
+            raise
+    
+    def transcribe_audio(self, blob_sas_url, api_key, model="nova-2"):
+        """
+        Transcribe audio directly from Azure Blob Storage SAS URL without downloading
+        
+        Args:
+            blob_sas_url: SAS URL for the blob
+            api_key: Deepgram API key
+            model: Deepgram model to use (default: nova-2)
+            
+        Returns:
+            dict: Raw Deepgram response
+        """
+        try:
+            self.logger.info(f"Transcribing audio from SAS URL (URL not logged for security)")
+            
+            # Construct the request URL
+            url = "https://api.deepgram.com/v1/listen"
+            
+            # Prepare parameters
+            params = {
+                "model": model,
+                "diarize": "true",
+                "punctuate": "true",
+                "utterances": "true",
+                "paragraphs": "true",
+                "filler_words": "true",
+                "detect_language": "true",
+                "smart_format": "true"
+            }
+            
+            # Prepare headers
+            headers = {
+                "Authorization": f"Token {api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Prepare the JSON payload with the SAS URL
+            payload = {
+                "url": blob_sas_url
+            }
+            
+            # Send the request with the SAS URL
+            response = requests.post(url, params=params, headers=headers, json=payload)
+            
+            # Check if the request was successful
+            response.raise_for_status()
+            
+            # Parse the response
+            result = response.json()
             
             return result
             
         except Exception as e:
-            logger.error(f"Error in transcription: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            self.logger.error(f"Error transcribing audio from SAS URL: {str(e)}")
+            raise
 
-# Main function for demonstration and testing
-def main(api_key, audio_url, model="nova-3"):
-    """
-    Main function to demonstrate the usage of the DirectTranscriber class
-    
-    Args:
-        api_key (str): Deepgram API key
-        audio_url (str): SAS URL to the audio file
-        model (str): Model to use for transcription (default: nova-3)
-        
-    Returns:
-        dict: The transcription response
-    """
-    transcriber = DirectTranscriber(api_key)
-    result = transcriber.transcribe_url(audio_url, model=model)
-    return result
-
+# Simple test if run directly
 if __name__ == "__main__":
-    # Execute only when run directly
-    # Get API key and SAS URL from command line arguments
-    if len(sys.argv) < 3:
-        print("Error: Missing required parameters")
-        print("Usage: python direct_transcribe.py <deepgram_api_key> <blob_sas_url>")
-        print("Example: python direct_transcribe.py YOUR_API_KEY https://infolder.blob.core.windows.net/shahulin/example.mp3?sv=...")
+    # Test the class with sample data
+    import sys
+    
+    if len(sys.argv) < 2:
+        print("Usage: python direct_transcribe.py <blob_sas_url> [api_key]")
         sys.exit(1)
     
-    # Get parameters from command line
-    api_key = sys.argv[1]
-    sas_url = sys.argv[2]
+    blob_sas_url = sys.argv[1]
+    api_key = sys.argv[2] if len(sys.argv) > 2 else os.environ.get('DEEPGRAM_API_KEY', 'your_default_api_key')
     
-    # Optional model parameter
-    model = sys.argv[3] if len(sys.argv) > 3 else "nova-3"
-    
-    print(f"API Key: {api_key[:5]}...{api_key[-5:]}")
-    print(f"SAS URL length: {len(sas_url)} characters")
-    print(f"Using model: {model}")
-    
-    # Call the main function directly (synchronous)
-    result = main(api_key, sas_url, model)
-    
-    if result["success"]:
-        print("Transcription successful!")
-        print(f"Results preview: {str(result['response'])[:500]}...")
-    else:
-        print(f"Transcription failed: {result['error']}")
+    transcriber = DirectTranscribe()
+    try:
+        result = transcriber.transcribe_audio(blob_sas_url, api_key)
+        print(json.dumps(result, indent=2))
+    except Exception as e:
+        print(f"Error: {str(e)}")

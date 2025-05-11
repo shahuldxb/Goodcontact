@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Complete Integration Test for Deepgram-Azure integration
-- Downloads audio file from Azure Blob Storage using SAS URL
-- Transcribes it using Deepgram API 
+- Gets audio file from Azure Blob Storage using SAS URL
+- Transcribes it directly using Deepgram API (without downloading)
 - Stores results in SQL database correctly following the database constraints
 """
 
@@ -16,6 +16,9 @@ import tempfile
 from datetime import datetime, timedelta
 from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
 import pymssql
+
+# Import our DirectTranscribe class
+from direct_transcribe import DirectTranscribe
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
