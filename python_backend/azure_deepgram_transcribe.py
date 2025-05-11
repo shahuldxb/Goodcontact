@@ -270,18 +270,16 @@ def process_audio_file(blob_name, fileid=None, output_container="shahulout"):
         # Get the source blob client
         source_blob_client = blob_service_client.get_blob_client(container="shahulin", blob=blob_name)
         
-            # Get the destination blob client
-            dest_blob_client = blob_service_client.get_blob_client(container=output_container, blob=blob_name)
-            
-            # Start copy operation
-            dest_blob_client.start_copy_from_url(source_blob_client.url)
-            
-            # Add destination URL to the result
-            result["destination_url"] = dest_blob_client.url
-            
-            logger.info(f"Moved {blob_name} to {output_container} container")
-        else:
-            logger.warning("Could not move file: Azure Storage connection string not set")
+        # Get the destination blob client
+        dest_blob_client = blob_service_client.get_blob_client(container=output_container, blob=blob_name)
+        
+        # Start copy operation
+        dest_blob_client.start_copy_from_url(source_blob_client.url)
+        
+        # Add destination URL to the result
+        result["destination_url"] = dest_blob_client.url
+        
+        logger.info(f"Moved {blob_name} to {output_container} container")
     except Exception as e:
         logger.error(f"Error moving file to output container: {str(e)}")
         result["move_error"] = str(e)
