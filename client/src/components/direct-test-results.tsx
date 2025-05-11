@@ -387,10 +387,15 @@ export function DirectTestResults() {
                                 {sourceFiles.map((file, index) => (
                                   <button
                                     key={index}
-                                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${testFileName === file ? 'bg-primary text-white' : 'hover:bg-secondary'}`}
-                                    onClick={() => setTestFileName(file)}
+                                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${testFileName === file.name ? 'bg-primary text-white' : 'hover:bg-secondary'}`}
+                                    onClick={() => setTestFileName(file.name)}
                                   >
-                                    {file}
+                                    <div className="flex justify-between items-center">
+                                      <span className="truncate mr-2">{file.name}</span>
+                                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                                      </span>
+                                    </div>
                                   </button>
                                 ))}
                               </div>
