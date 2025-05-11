@@ -141,14 +141,35 @@ export default function SourceFilesGrid({ onSelectFiles, selectedFiles, onProces
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-2">
-                        <Button variant="ghost" size="icon" className="text-primary h-8 w-8 p-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-primary h-8 w-8 p-1"
+                          onClick={() => window.open(file.url, '_blank')}
+                          title="View original blob"
+                        >
                           <PlayCircle className="h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-gray-600 h-8 w-8 p-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-gray-600 h-8 w-8 p-1"
+                          onClick={() => handleDownloadWithSas(file.name)}
+                          title="Download with SAS token"
+                        >
                           <Download className="h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-gray-600 h-8 w-8 p-1">
-                          <MoreVertical className="h-5 w-5" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-blue-600 h-8 w-8 p-1"
+                          onClick={() => handleGetSasUrl(file.name)}
+                          title="Get SAS URL"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                          </svg>
                         </Button>
                       </div>
                     </td>

@@ -1,30 +1,83 @@
 import { BlobServiceClient, StorageSharedKeyCredential, ContainerClient, BlobSASPermissions, generateBlobSASQueryParameters } from "@azure/storage-blob";
 import { azureConfig } from "@shared/schema";
 
-// Azure Storage Account credentials
-const storageAccountUrl = process.env.AZURE_STORAGE_ACCOUNT_URL || azureConfig.storageAccountUrl;
-const storageAccountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY || azureConfig.storageAccountKey;
-const sourceContainerName = process.env.AZURE_SOURCE_CONTAINER_NAME || azureConfig.sourceContainerName;
-const destinationContainerName = process.env.AZURE_DESTINATION_CONTAINER_NAME || azureConfig.destinationContainerName;
+/**
+ * Azure Storage Service - NestJS-inspired service class for Azure Blob Storage operations
+ */
+class AzureStorageService {
+  private storageAccountUrl: string;
+  private storageAccountKey: string;
+  private accountName: string;
+  private sharedKeyCredential: StorageSharedKeyCredential;
+  private blobServiceClient: BlobServiceClient;
+  private sourceContainerName: string;
+  private destinationContainerName: string;
+  private sourceContainerClient: ContainerClient;
+  private destinationContainerClient: ContainerClient;
 
-// Extract account name from URL
-const accountName = storageAccountUrl.split('.')[0].replace('https://', '');
+  constructor() {
+    // Initialize credentials from environment or config
+    this.storageAccountUrl = process.env.AZURE_STORAGE_ACCOUNT_URL || azureConfig.storageAccountUrl;
+    this.storageAccountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY || azureConfig.storageAccountKey;
+    this.sourceContainerName = process.env.AZURE_SOURCE_CONTAINER_NAME || azureConfig.sourceContainerName;
+    this.destinationContainerName = process.env.AZURE_DESTINATION_CONTAINER_NAME || azureConfig.destinationContainerName;
+    
+    // Extract account name from URL
+    this.accountName = this.storageAccountUrl.split('.')[0].replace('https://', '');
+    
+    // Initialize shared key credential
+    this.sharedKeyCredential = new StorageSharedKeyCredential(
+      this.accountName,
+      this.storageAccountKey
+    );
+    
+    // Initialize blob service client
+    this.blobServiceClient = new BlobServiceClient(
+      this.storageAccountUrl,
+      this.sharedKeyCredential
+    );
+    
+    // Get container clients
+    this.sourceContainerClient = this.blobServiceClient.getContainerClient(this.sourceContainerName);
+    this.destinationContainerClient = this.blobServiceClient.getContainerClient(this.destinationContainerName);
+  }
 
-// Create the BlobServiceClient object
-const sharedKeyCredential = new StorageSharedKeyCredential(
-  accountName,
-  storageAccountKey
-);
+  /**
+   * Get the blob service client
+   * @returns The BlobServiceClient instance
+   */
+  getBlobServiceClient(): BlobServiceClient {
+    return this.blobServiceClient;
+  }
+  
+  /**
+   * Get the source container client
+   * @returns The source ContainerClient instance
+   */
+  getSourceContainerClient(): ContainerClient {
+    return this.sourceContainerClient;
+  }
+  
+  /**
+   * Get the destination container client
+   * @returns The destination ContainerClient instance
+   */
+  getDestinationContainerClient(): ContainerClient {
+    return this.destinationContainerClient;
+  }
+}
 
-const blobServiceClient = new BlobServiceClient(
-  storageAccountUrl,
-  sharedKeyCredential
-);
+// Initialize the service as a singleton
+const azureStorageService = new AzureStorageService();
 
-// Get container clients
-const sourceContainerClient = blobServiceClient.getContainerClient(sourceContainerName);
-const destinationContainerClient = blobServiceClient.getContainerClient(destinationContainerName);
+// Export container clients for backward compatibility
+const sourceContainerClient = azureStorageService.getSourceContainerClient();
+const destinationContainerClient = azureStorageService.getDestinationContainerClient();
 
+/**
+ * Get files from the source container
+ * @returns Array of blob details
+ */
 export async function getSourceFiles() {
   try {
     const files = [];
@@ -50,6 +103,10 @@ export async function getSourceFiles() {
   }
 }
 
+/**
+ * Get files from the processed/destination container
+ * @returns Array of processed blob details
+ */
 export async function getProcessedFiles() {
   try {
     const files = [];
@@ -142,7 +199,7 @@ async function streamToBuffer(readableStream: NodeJS.ReadableStream | undefined)
  * @param expiryHours - Hours until expiration (default: 1 hour)
  * @returns SAS URL for the blob
  */
-export function generateSasUrl(
+AzureStorageService.prototype.generateSasUrl = function(
   containerName: string,
   blobName: string,
   permissions: BlobSASPermissions = BlobSASPermissions.parse("r"),
@@ -150,7 +207,7 @@ export function generateSasUrl(
 ): string {
   try {
     // Get container client
-    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(containerName);
     const blobClient = containerClient.getBlobClient(blobName);
     
     // Set start time 5 minutes before current time to avoid clock skew issues
@@ -168,7 +225,7 @@ export function generateSasUrl(
       permissions,
       startsOn: startDate,
       expiresOn: expiryDate,
-    }, sharedKeyCredential).toString();
+    }, this.sharedKeyCredential).toString();
     
     // Return the full URL with SAS token
     return `${blobClient.url}?${sasToken}`;
@@ -176,6 +233,24 @@ export function generateSasUrl(
     console.error(`Error generating SAS URL for ${containerName}/${blobName}:`, error);
     throw error;
   }
+};
+
+/**
+ * Generate a SAS URL for a blob with specified permissions
+ * 
+ * @param containerName - The container name
+ * @param blobName - The blob name
+ * @param permissions - The permissions to grant (default: read)
+ * @param expiryHours - Hours until expiration (default: 1 hour)
+ * @returns SAS URL for the blob
+ */
+export function generateSasUrl(
+  containerName: string,
+  blobName: string,
+  permissions: BlobSASPermissions = BlobSASPermissions.parse("r"),
+  expiryHours: number = 1
+): string {
+  return azureStorageService.generateSasUrl(containerName, blobName, permissions, expiryHours);
 }
 
 /**
@@ -186,7 +261,7 @@ export function generateSasUrl(
  * @returns SAS URL for the blob
  */
 export function generateSourceBlobSasUrl(blobName: string, expiryHours: number = 1): string {
-  return generateSasUrl(sourceContainerName, blobName, BlobSASPermissions.parse("r"), expiryHours);
+  return generateSasUrl(azureStorageService.sourceContainerName, blobName, BlobSASPermissions.parse("r"), expiryHours);
 }
 
 /**
@@ -197,7 +272,7 @@ export function generateSourceBlobSasUrl(blobName: string, expiryHours: number =
  * @returns SAS URL for the blob
  */
 export function generateDestinationBlobSasUrl(blobName: string, expiryHours: number = 1): string {
-  return generateSasUrl(destinationContainerName, blobName, BlobSASPermissions.parse("r"), expiryHours);
+  return generateSasUrl(azureStorageService.destinationContainerName, blobName, BlobSASPermissions.parse("r"), expiryHours);
 }
 
 /**
