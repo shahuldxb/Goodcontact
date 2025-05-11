@@ -204,20 +204,18 @@ class AzureStorageService:
             str: The SAS URL for the blob.
         """
         try:
-            # Calculate expiry time
-            expiry = datetime.utcnow() + timedelta(hours=expiry_hours)
+            # Get account information
+            account_name = self.blob_service_client.account_name
+            account_key = self.blob_service_client.credential.account_key
             
-            # Create BlobSasPermissions instance
-            sas_permissions = BlobSasPermissions(read=True)
-            
-            # Generate SAS token
+            # Generate SAS token using the exact same syntax
             sas_token = generate_blob_sas(
-                account_name=self.blob_service_client.account_name,
+                account_name=account_name,
                 container_name=container_name,
                 blob_name=blob_name,
-                account_key=self.blob_service_client.credential.account_key,
-                permission=sas_permissions,
-                expiry=expiry
+                account_key=account_key,
+                permission=BlobSasPermissions(read=True),  # Allow read access
+                expiry=datetime.utcnow() + timedelta(hours=expiry_hours),  # Set expiration
             )
             
             # Construct the full SAS URL
