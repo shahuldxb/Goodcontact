@@ -88,7 +88,12 @@ def store_transcription_details(fileid, transcription_response):
                 )
                 
                 # Get the paragraph ID
-                paragraph_id = cursor.fetchone()['']
+                result = cursor.fetchone()
+                paragraph_id = result[0] if result else None
+                
+                if not paragraph_id:
+                    logger.warning(f"Failed to get paragraph ID for paragraph {para_idx} in file {fileid}")
+                    continue
                 
                 # Insert sentences for this paragraph
                 if 'sentences' in paragraph and paragraph['sentences']:
