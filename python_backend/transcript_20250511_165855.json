@@ -1,0 +1,2069 @@
+{
+  "metadata": {
+    "transaction_key": "deprecated",
+    "request_id": "2b68a48a-8651-444b-b3ef-e41bf0abbdf0",
+    "sha256": "ce347cf0648ce4cd652fc214769f49c6ff07c86071416ce2c5e8da61a00a2406",
+    "created": "2025-05-11T16:58:55.416Z",
+    "duration": 94.212,
+    "channels": 1,
+    "models": [
+      "3b3aabe4-608a-46ac-9585-7960a25daf1a"
+    ],
+    "model_info": {
+      "3b3aabe4-608a-46ac-9585-7960a25daf1a": {
+        "name": "general-nova-3",
+        "version": "2024-12-20.0",
+        "arch": "nova-3"
+      }
+    }
+  },
+  "results": {
+    "channels": [
+      {
+        "alternatives": [
+          {
+            "transcript": "Welcome to Islamic Bank. How may I assist you today? I wanted to learn more about your agricultural finance product based on Morabah. Can you explain how it works? Of course, Mustafa. Our agricultural finance through Morabah is designed to support farmers and agricultural businesses. The bank purchases agricultural equipment, seeds, fertilizers, or other necessary items on behalf of the customer and then sells them to the customer at a pre agreed profit margin in a Shariah compliant manner, avoiding interest REBA. So it's not a loan in the conventional sense? Correct, Mustafa. It's not a loan, and it's certainly not conventional. Islamic finance strictly avoids loans with interest. This is a cost plus profit sale contract. The bank lays everything out, the cost of the items, and the profit margin. So nothing is hidden. You repay in installments over a set period. It's straightforward. I see. Could you elaborate on the types of agricultural needs this financing can cover? Certainly. It can cover almost everything. Purchasing agricultural machinery like tractors, irrigation systems, seeds, fertilizers, pesticides, livestock, and raw materials for farming. It's designed to meet farmers' needs. What are some of the benefits of this Morabahah based financing compared to conventional loans? Mary.",
+            "confidence": 0.998771,
+            "words": [
+              {
+                "word": "welcome",
+                "start": 3.28,
+                "end": 4.16,
+                "confidence": 0.46013474,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "Welcome"
+              },
+              {
+                "word": "to",
+                "start": 4.7999997,
+                "end": 5.04,
+                "confidence": 0.99899775,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "islamic",
+                "start": 5.04,
+                "end": 5.6,
+                "confidence": 0.9985447,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "Islamic"
+              },
+              {
+                "word": "bank",
+                "start": 5.6,
+                "end": 6.2400002,
+                "confidence": 0.9834502,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "Bank."
+              },
+              {
+                "word": "how",
+                "start": 6.3999996,
+                "end": 6.64,
+                "confidence": 0.9994456,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "How"
+              },
+              {
+                "word": "may",
+                "start": 6.64,
+                "end": 6.7999997,
+                "confidence": 0.99910516,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "may"
+              },
+              {
+                "word": "i",
+                "start": 6.7999997,
+                "end": 6.96,
+                "confidence": 0.99673516,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "I"
+              },
+              {
+                "word": "assist",
+                "start": 6.96,
+                "end": 7.2,
+                "confidence": 0.9998642,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "assist"
+              },
+              {
+                "word": "you",
+                "start": 7.2,
+                "end": 7.3599997,
+                "confidence": 0.99915767,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "you"
+              },
+              {
+                "word": "today",
+                "start": 7.3599997,
+                "end": 7.68,
+                "confidence": 0.9987745,
+                "speaker": 0,
+                "speaker_confidence": 0.7862338,
+                "punctuated_word": "today?"
+              },
+              {
+                "word": "i",
+                "start": 12.095,
+                "end": 12.415,
+                "confidence": 0.7602047,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "I"
+              },
+              {
+                "word": "wanted",
+                "start": 12.415,
+                "end": 12.575001,
+                "confidence": 0.9879602,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "wanted"
+              },
+              {
+                "word": "to",
+                "start": 12.575001,
+                "end": 12.735001,
+                "confidence": 0.9993388,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "learn",
+                "start": 12.735001,
+                "end": 12.975,
+                "confidence": 0.9992654,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "learn"
+              },
+              {
+                "word": "more",
+                "start": 12.975,
+                "end": 13.135,
+                "confidence": 0.9986166,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "more"
+              },
+              {
+                "word": "about",
+                "start": 13.135,
+                "end": 13.375,
+                "confidence": 0.99963176,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "about"
+              },
+              {
+                "word": "your",
+                "start": 13.375,
+                "end": 13.615,
+                "confidence": 0.99897146,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "your"
+              },
+              {
+                "word": "agricultural",
+                "start": 13.615,
+                "end": 14.255,
+                "confidence": 0.9869897,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "finance",
+                "start": 14.255,
+                "end": 14.735001,
+                "confidence": 0.998771,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "finance"
+              },
+              {
+                "word": "product",
+                "start": 14.735001,
+                "end": 15.055,
+                "confidence": 0.99908507,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "product"
+              },
+              {
+                "word": "based",
+                "start": 15.055,
+                "end": 15.535,
+                "confidence": 0.99588424,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "based"
+              },
+              {
+                "word": "on",
+                "start": 15.535,
+                "end": 15.615,
+                "confidence": 0.99972516,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "on"
+              },
+              {
+                "word": "morabah",
+                "start": 15.615,
+                "end": 16.575,
+                "confidence": 0.95321906,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "Morabah."
+              },
+              {
+                "word": "can",
+                "start": 16.575,
+                "end": 16.895,
+                "confidence": 0.99983597,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "Can"
+              },
+              {
+                "word": "you",
+                "start": 16.895,
+                "end": 17.055,
+                "confidence": 0.99979097,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "you"
+              },
+              {
+                "word": "explain",
+                "start": 17.055,
+                "end": 17.375,
+                "confidence": 0.99978286,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "explain"
+              },
+              {
+                "word": "how",
+                "start": 17.375,
+                "end": 17.535,
+                "confidence": 0.99985313,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "how"
+              },
+              {
+                "word": "it",
+                "start": 17.535,
+                "end": 17.695,
+                "confidence": 0.99970657,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "it"
+              },
+              {
+                "word": "works",
+                "start": 17.695,
+                "end": 18.175,
+                "confidence": 0.9997274,
+                "speaker": 1,
+                "speaker_confidence": 0.80983734,
+                "punctuated_word": "works?"
+              },
+              {
+                "word": "of",
+                "start": 18.495,
+                "end": 18.815,
+                "confidence": 0.9996419,
+                "speaker": 0,
+                "speaker_confidence": 0.6721758,
+                "punctuated_word": "Of"
+              },
+              {
+                "word": "course",
+                "start": 18.815,
+                "end": 19.135,
+                "confidence": 0.9914019,
+                "speaker": 0,
+                "speaker_confidence": 0.6721758,
+                "punctuated_word": "course,"
+              },
+              {
+                "word": "mustafa",
+                "start": 19.135,
+                "end": 20.175,
+                "confidence": 0.9655763,
+                "speaker": 0,
+                "speaker_confidence": 0.6721758,
+                "punctuated_word": "Mustafa."
+              },
+              {
+                "word": "our",
+                "start": 20.255001,
+                "end": 20.575,
+                "confidence": 0.99955636,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Our"
+              },
+              {
+                "word": "agricultural",
+                "start": 20.575,
+                "end": 21.295,
+                "confidence": 0.98896796,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "finance",
+                "start": 21.295,
+                "end": 21.695,
+                "confidence": 0.9841053,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "finance"
+              },
+              {
+                "word": "through",
+                "start": 21.695,
+                "end": 21.935001,
+                "confidence": 0.9927254,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "through"
+              },
+              {
+                "word": "morabah",
+                "start": 21.935001,
+                "end": 22.494999,
+                "confidence": 0.9813438,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Morabah"
+              },
+              {
+                "word": "is",
+                "start": 22.494999,
+                "end": 22.974998,
+                "confidence": 0.7942555,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "is"
+              },
+              {
+                "word": "designed",
+                "start": 23.135,
+                "end": 23.615,
+                "confidence": 0.9998709,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "designed"
+              },
+              {
+                "word": "to",
+                "start": 23.615,
+                "end": 23.775,
+                "confidence": 0.9998672,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "support",
+                "start": 23.775,
+                "end": 24.175,
+                "confidence": 0.9999329,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "support"
+              },
+              {
+                "word": "farmers",
+                "start": 24.175,
+                "end": 24.654999,
+                "confidence": 0.9995078,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "farmers"
+              },
+              {
+                "word": "and",
+                "start": 24.654999,
+                "end": 24.895,
+                "confidence": 0.99826705,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "and"
+              },
+              {
+                "word": "agricultural",
+                "start": 24.895,
+                "end": 25.615,
+                "confidence": 0.9906736,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "businesses",
+                "start": 25.615,
+                "end": 26.015,
+                "confidence": 0.9995172,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "businesses."
+              },
+              {
+                "word": "the",
+                "start": 26.6,
+                "end": 26.92,
+                "confidence": 0.9997396,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "The"
+              },
+              {
+                "word": "bank",
+                "start": 26.92,
+                "end": 27.16,
+                "confidence": 0.99737996,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "bank"
+              },
+              {
+                "word": "purchases",
+                "start": 27.16,
+                "end": 27.640001,
+                "confidence": 0.99860746,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "purchases"
+              },
+              {
+                "word": "agricultural",
+                "start": 27.640001,
+                "end": 28.36,
+                "confidence": 0.9939903,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "equipment",
+                "start": 28.36,
+                "end": 29.24,
+                "confidence": 0.9968252,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "equipment,"
+              },
+              {
+                "word": "seeds",
+                "start": 29.32,
+                "end": 30.12,
+                "confidence": 0.99078894,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "seeds,"
+              },
+              {
+                "word": "fertilizers",
+                "start": 30.12,
+                "end": 31.24,
+                "confidence": 0.9737188,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "fertilizers,"
+              },
+              {
+                "word": "or",
+                "start": 31.24,
+                "end": 31.400002,
+                "confidence": 0.9998029,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "or"
+              },
+              {
+                "word": "other",
+                "start": 31.400002,
+                "end": 31.720001,
+                "confidence": 0.9996216,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "other"
+              },
+              {
+                "word": "necessary",
+                "start": 31.720001,
+                "end": 32.28,
+                "confidence": 0.99933344,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "necessary"
+              },
+              {
+                "word": "items",
+                "start": 32.28,
+                "end": 32.6,
+                "confidence": 0.99991643,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "items"
+              },
+              {
+                "word": "on",
+                "start": 32.6,
+                "end": 32.84,
+                "confidence": 0.99848783,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "on"
+              },
+              {
+                "word": "behalf",
+                "start": 32.84,
+                "end": 33.08,
+                "confidence": 0.9994306,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "behalf"
+              },
+              {
+                "word": "of",
+                "start": 33.08,
+                "end": 33.24,
+                "confidence": 0.9990343,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "of"
+              },
+              {
+                "word": "the",
+                "start": 33.24,
+                "end": 33.4,
+                "confidence": 0.9973896,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "customer",
+                "start": 33.4,
+                "end": 33.72,
+                "confidence": 0.9995547,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "customer"
+              },
+              {
+                "word": "and",
+                "start": 33.72,
+                "end": 33.96,
+                "confidence": 0.55097663,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "and"
+              },
+              {
+                "word": "then",
+                "start": 33.96,
+                "end": 34.2,
+                "confidence": 0.9997495,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "then"
+              },
+              {
+                "word": "sells",
+                "start": 34.2,
+                "end": 34.44,
+                "confidence": 0.99472815,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "sells"
+              },
+              {
+                "word": "them",
+                "start": 34.44,
+                "end": 34.68,
+                "confidence": 0.9993967,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "them"
+              },
+              {
+                "word": "to",
+                "start": 34.68,
+                "end": 34.84,
+                "confidence": 0.999426,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "the",
+                "start": 34.84,
+                "end": 34.92,
+                "confidence": 0.99662244,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "customer",
+                "start": 34.92,
+                "end": 35.32,
+                "confidence": 0.9995802,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "customer"
+              },
+              {
+                "word": "at",
+                "start": 35.32,
+                "end": 35.56,
+                "confidence": 0.9990871,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "at"
+              },
+              {
+                "word": "a",
+                "start": 35.56,
+                "end": 35.64,
+                "confidence": 0.9979578,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "pre",
+                "start": 35.64,
+                "end": 35.88,
+                "confidence": 0.9985189,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "pre"
+              },
+              {
+                "word": "agreed",
+                "start": 35.88,
+                "end": 36.12,
+                "confidence": 0.96845824,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "agreed"
+              },
+              {
+                "word": "profit",
+                "start": 36.12,
+                "end": 36.6,
+                "confidence": 0.9998079,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "profit"
+              },
+              {
+                "word": "margin",
+                "start": 36.6,
+                "end": 37.239998,
+                "confidence": 0.9997739,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "margin"
+              },
+              {
+                "word": "in",
+                "start": 37.48,
+                "end": 37.72,
+                "confidence": 0.88220096,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "in"
+              },
+              {
+                "word": "a",
+                "start": 37.72,
+                "end": 37.8,
+                "confidence": 0.9938877,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "shariah",
+                "start": 37.8,
+                "end": 38.28,
+                "confidence": 0.8844544,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "Shariah"
+              },
+              {
+                "word": "compliant",
+                "start": 38.28,
+                "end": 38.68,
+                "confidence": 0.9920781,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "compliant"
+              },
+              {
+                "word": "manner",
+                "start": 38.68,
+                "end": 39.32,
+                "confidence": 0.8754731,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "manner,"
+              },
+              {
+                "word": "avoiding",
+                "start": 39.32,
+                "end": 39.64,
+                "confidence": 0.9992623,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "avoiding"
+              },
+              {
+                "word": "interest",
+                "start": 39.64,
+                "end": 40.12,
+                "confidence": 0.99743783,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "interest"
+              },
+              {
+                "word": "reba",
+                "start": 40.12,
+                "end": 40.68,
+                "confidence": 0.8704836,
+                "speaker": 0,
+                "speaker_confidence": 0.9318625,
+                "punctuated_word": "REBA."
+              },
+              {
+                "word": "so",
+                "start": 41.475002,
+                "end": 41.795002,
+                "confidence": 0.99972636,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "So"
+              },
+              {
+                "word": "it's",
+                "start": 41.795002,
+                "end": 42.115,
+                "confidence": 0.95854366,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "it's"
+              },
+              {
+                "word": "not",
+                "start": 42.115,
+                "end": 42.275,
+                "confidence": 0.9986926,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "not"
+              },
+              {
+                "word": "a",
+                "start": 42.275,
+                "end": 42.355,
+                "confidence": 0.8372566,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "loan",
+                "start": 42.355,
+                "end": 42.515,
+                "confidence": 0.9991128,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "loan"
+              },
+              {
+                "word": "in",
+                "start": 42.515,
+                "end": 42.755,
+                "confidence": 0.99904805,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "in"
+              },
+              {
+                "word": "the",
+                "start": 42.755,
+                "end": 42.835,
+                "confidence": 0.9835777,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "conventional",
+                "start": 42.835,
+                "end": 43.155,
+                "confidence": 0.9997209,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "conventional"
+              },
+              {
+                "word": "sense",
+                "start": 43.155,
+                "end": 43.875,
+                "confidence": 0.95276093,
+                "speaker": 1,
+                "speaker_confidence": 0.715827,
+                "punctuated_word": "sense?"
+              },
+              {
+                "word": "correct",
+                "start": 44.035,
+                "end": 44.755,
+                "confidence": 0.9308305,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Correct,"
+              },
+              {
+                "word": "mustafa",
+                "start": 44.755,
+                "end": 45.715,
+                "confidence": 0.94622064,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Mustafa."
+              },
+              {
+                "word": "it's",
+                "start": 45.875,
+                "end": 46.195,
+                "confidence": 0.9990852,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "It's"
+              },
+              {
+                "word": "not",
+                "start": 46.195,
+                "end": 46.355,
+                "confidence": 0.9997038,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "not"
+              },
+              {
+                "word": "a",
+                "start": 46.355,
+                "end": 46.515,
+                "confidence": 0.9837556,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "loan",
+                "start": 46.515,
+                "end": 47.075,
+                "confidence": 0.7632859,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "loan,"
+              },
+              {
+                "word": "and",
+                "start": 47.155,
+                "end": 47.235,
+                "confidence": 0.99990225,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "and"
+              },
+              {
+                "word": "it's",
+                "start": 47.235,
+                "end": 47.555,
+                "confidence": 0.9966544,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "it's"
+              },
+              {
+                "word": "certainly",
+                "start": 47.555,
+                "end": 47.875,
+                "confidence": 0.9988256,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "certainly"
+              },
+              {
+                "word": "not",
+                "start": 47.875,
+                "end": 48.195,
+                "confidence": 0.9996866,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "not"
+              },
+              {
+                "word": "conventional",
+                "start": 48.195,
+                "end": 48.995,
+                "confidence": 0.99950004,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "conventional."
+              },
+              {
+                "word": "islamic",
+                "start": 49.315002,
+                "end": 49.955,
+                "confidence": 0.99975073,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Islamic"
+              },
+              {
+                "word": "finance",
+                "start": 49.955,
+                "end": 50.355,
+                "confidence": 0.76619357,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "finance"
+              },
+              {
+                "word": "strictly",
+                "start": 50.355,
+                "end": 50.755,
+                "confidence": 0.9986362,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "strictly"
+              },
+              {
+                "word": "avoids",
+                "start": 50.755,
+                "end": 51.155,
+                "confidence": 0.9993963,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "avoids"
+              },
+              {
+                "word": "loans",
+                "start": 51.155,
+                "end": 51.555,
+                "confidence": 0.99953234,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "loans"
+              },
+              {
+                "word": "with",
+                "start": 51.555,
+                "end": 51.875,
+                "confidence": 0.9999175,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "with"
+              },
+              {
+                "word": "interest",
+                "start": 51.875,
+                "end": 52.515,
+                "confidence": 0.99748874,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "interest."
+              },
+              {
+                "word": "this",
+                "start": 52.755,
+                "end": 52.995,
+                "confidence": 0.99992085,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "This"
+              },
+              {
+                "word": "is",
+                "start": 52.995,
+                "end": 53.155,
+                "confidence": 0.9992995,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "is"
+              },
+              {
+                "word": "a",
+                "start": 53.155,
+                "end": 53.315002,
+                "confidence": 0.9981085,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "cost",
+                "start": 53.315002,
+                "end": 53.555,
+                "confidence": 0.999042,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "cost"
+              },
+              {
+                "word": "plus",
+                "start": 53.555,
+                "end": 53.875,
+                "confidence": 0.99429107,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "plus"
+              },
+              {
+                "word": "profit",
+                "start": 53.875,
+                "end": 54.195,
+                "confidence": 0.9959616,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "profit"
+              },
+              {
+                "word": "sale",
+                "start": 54.195,
+                "end": 54.515,
+                "confidence": 0.9945827,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "sale"
+              },
+              {
+                "word": "contract",
+                "start": 54.515,
+                "end": 54.915,
+                "confidence": 0.9983921,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "contract."
+              },
+              {
+                "word": "the",
+                "start": 55.4,
+                "end": 55.72,
+                "confidence": 0.99984837,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "The"
+              },
+              {
+                "word": "bank",
+                "start": 55.72,
+                "end": 55.96,
+                "confidence": 0.99862933,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "bank"
+              },
+              {
+                "word": "lays",
+                "start": 55.96,
+                "end": 56.28,
+                "confidence": 0.997718,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "lays"
+              },
+              {
+                "word": "everything",
+                "start": 56.28,
+                "end": 56.76,
+                "confidence": 0.9997712,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "everything"
+              },
+              {
+                "word": "out",
+                "start": 56.76,
+                "end": 57.239998,
+                "confidence": 0.9407499,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "out,"
+              },
+              {
+                "word": "the",
+                "start": 57.239998,
+                "end": 57.4,
+                "confidence": 0.99975985,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "cost",
+                "start": 57.4,
+                "end": 57.72,
+                "confidence": 0.99734867,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "cost"
+              },
+              {
+                "word": "of",
+                "start": 57.72,
+                "end": 57.88,
+                "confidence": 0.99969304,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "of"
+              },
+              {
+                "word": "the",
+                "start": 57.88,
+                "end": 58.04,
+                "confidence": 0.9986211,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "items",
+                "start": 58.04,
+                "end": 58.6,
+                "confidence": 0.805254,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "items,"
+              },
+              {
+                "word": "and",
+                "start": 58.6,
+                "end": 58.68,
+                "confidence": 0.9998505,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "and"
+              },
+              {
+                "word": "the",
+                "start": 58.68,
+                "end": 58.84,
+                "confidence": 0.99833953,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "profit",
+                "start": 58.84,
+                "end": 59.16,
+                "confidence": 0.99990773,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "profit"
+              },
+              {
+                "word": "margin",
+                "start": 59.16,
+                "end": 59.8,
+                "confidence": 0.735522,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "margin."
+              },
+              {
+                "word": "so",
+                "start": 60.12,
+                "end": 60.36,
+                "confidence": 0.99920315,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "So"
+              },
+              {
+                "word": "nothing",
+                "start": 60.36,
+                "end": 60.68,
+                "confidence": 0.98959816,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "nothing"
+              },
+              {
+                "word": "is",
+                "start": 60.68,
+                "end": 60.92,
+                "confidence": 0.9993888,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "is"
+              },
+              {
+                "word": "hidden",
+                "start": 60.92,
+                "end": 61.559998,
+                "confidence": 0.997203,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "hidden."
+              },
+              {
+                "word": "you",
+                "start": 61.72,
+                "end": 61.96,
+                "confidence": 0.9997291,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "You"
+              },
+              {
+                "word": "repay",
+                "start": 61.96,
+                "end": 62.36,
+                "confidence": 0.9943369,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "repay"
+              },
+              {
+                "word": "in",
+                "start": 62.36,
+                "end": 62.6,
+                "confidence": 0.7950144,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "in"
+              },
+              {
+                "word": "installments",
+                "start": 62.6,
+                "end": 63.0,
+                "confidence": 0.989684,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "installments"
+              },
+              {
+                "word": "over",
+                "start": 63.0,
+                "end": 63.4,
+                "confidence": 0.99972373,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "over"
+              },
+              {
+                "word": "a",
+                "start": 63.4,
+                "end": 63.559998,
+                "confidence": 0.998461,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "a"
+              },
+              {
+                "word": "set",
+                "start": 63.559998,
+                "end": 63.8,
+                "confidence": 0.9952068,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "set"
+              },
+              {
+                "word": "period",
+                "start": 63.8,
+                "end": 64.44,
+                "confidence": 0.99633896,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "period."
+              },
+              {
+                "word": "it's",
+                "start": 64.68,
+                "end": 65.0,
+                "confidence": 0.9954604,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "It's"
+              },
+              {
+                "word": "straightforward",
+                "start": 65.0,
+                "end": 65.799995,
+                "confidence": 0.98838484,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "straightforward."
+              },
+              {
+                "word": "i",
+                "start": 66.2,
+                "end": 66.52,
+                "confidence": 0.99942446,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "I"
+              },
+              {
+                "word": "see",
+                "start": 66.52,
+                "end": 67.08,
+                "confidence": 0.99832785,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "see."
+              },
+              {
+                "word": "could",
+                "start": 67.16,
+                "end": 67.4,
+                "confidence": 0.999474,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "Could"
+              },
+              {
+                "word": "you",
+                "start": 67.4,
+                "end": 67.56,
+                "confidence": 0.99947983,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "you"
+              },
+              {
+                "word": "elaborate",
+                "start": 67.56,
+                "end": 68.119995,
+                "confidence": 0.9999405,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "elaborate"
+              },
+              {
+                "word": "on",
+                "start": 68.119995,
+                "end": 68.28,
+                "confidence": 0.9996904,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "on"
+              },
+              {
+                "word": "the",
+                "start": 68.28,
+                "end": 68.36,
+                "confidence": 0.9984524,
+                "speaker": 1,
+                "speaker_confidence": 0.6446071,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "types",
+                "start": 68.36,
+                "end": 68.6,
+                "confidence": 0.99883324,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "types"
+              },
+              {
+                "word": "of",
+                "start": 68.6,
+                "end": 68.76,
+                "confidence": 0.9989957,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "of"
+              },
+              {
+                "word": "agricultural",
+                "start": 68.76,
+                "end": 69.32,
+                "confidence": 0.9979366,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "needs",
+                "start": 69.32,
+                "end": 69.72,
+                "confidence": 0.99885714,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "needs"
+              },
+              {
+                "word": "this",
+                "start": 69.72,
+                "end": 69.96,
+                "confidence": 0.9981852,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "this"
+              },
+              {
+                "word": "financing",
+                "start": 69.96,
+                "end": 70.44,
+                "confidence": 0.99939525,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "financing"
+              },
+              {
+                "word": "can",
+                "start": 70.44,
+                "end": 70.68,
+                "confidence": 0.9978993,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "can"
+              },
+              {
+                "word": "cover",
+                "start": 70.68,
+                "end": 70.92,
+                "confidence": 0.99832433,
+                "speaker": 1,
+                "speaker_confidence": 0.73593396,
+                "punctuated_word": "cover?"
+              },
+              {
+                "word": "certainly",
+                "start": 71.315,
+                "end": 72.195,
+                "confidence": 0.96514267,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Certainly."
+              },
+              {
+                "word": "it",
+                "start": 72.355,
+                "end": 72.595,
+                "confidence": 0.99877447,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "It"
+              },
+              {
+                "word": "can",
+                "start": 72.595,
+                "end": 72.755,
+                "confidence": 0.9998097,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "can"
+              },
+              {
+                "word": "cover",
+                "start": 72.755,
+                "end": 72.995,
+                "confidence": 0.9997918,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "cover"
+              },
+              {
+                "word": "almost",
+                "start": 72.995,
+                "end": 73.395004,
+                "confidence": 0.9997762,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "almost"
+              },
+              {
+                "word": "everything",
+                "start": 73.395004,
+                "end": 74.195,
+                "confidence": 0.9354718,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "everything."
+              },
+              {
+                "word": "purchasing",
+                "start": 74.595,
+                "end": 75.075,
+                "confidence": 0.9996216,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "Purchasing"
+              },
+              {
+                "word": "agricultural",
+                "start": 75.075,
+                "end": 75.715004,
+                "confidence": 0.9917354,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "agricultural"
+              },
+              {
+                "word": "machinery",
+                "start": 75.715004,
+                "end": 76.195,
+                "confidence": 0.9999114,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "machinery"
+              },
+              {
+                "word": "like",
+                "start": 76.195,
+                "end": 76.515,
+                "confidence": 0.8298633,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "like"
+              },
+              {
+                "word": "tractors",
+                "start": 76.515,
+                "end": 77.315,
+                "confidence": 0.99649847,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "tractors,"
+              },
+              {
+                "word": "irrigation",
+                "start": 77.395004,
+                "end": 78.035,
+                "confidence": 0.99983966,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "irrigation"
+              },
+              {
+                "word": "systems",
+                "start": 78.035,
+                "end": 78.755,
+                "confidence": 0.9991185,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "systems,"
+              },
+              {
+                "word": "seeds",
+                "start": 78.835,
+                "end": 79.635,
+                "confidence": 0.9967917,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "seeds,"
+              },
+              {
+                "word": "fertilizers",
+                "start": 79.875,
+                "end": 80.915,
+                "confidence": 0.9993572,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "fertilizers,"
+              },
+              {
+                "word": "pesticides",
+                "start": 81.155,
+                "end": 82.195,
+                "confidence": 0.9996317,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "pesticides,"
+              },
+              {
+                "word": "livestock",
+                "start": 82.275,
+                "end": 83.235,
+                "confidence": 0.9752445,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "livestock,"
+              },
+              {
+                "word": "and",
+                "start": 83.235,
+                "end": 83.395004,
+                "confidence": 0.999926,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "and"
+              },
+              {
+                "word": "raw",
+                "start": 83.395004,
+                "end": 83.635,
+                "confidence": 0.99979025,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "raw"
+              },
+              {
+                "word": "materials",
+                "start": 83.635,
+                "end": 84.115,
+                "confidence": 0.99964476,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "materials"
+              },
+              {
+                "word": "for",
+                "start": 84.115,
+                "end": 84.355,
+                "confidence": 0.99974865,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "for"
+              },
+              {
+                "word": "farming",
+                "start": 84.355,
+                "end": 84.675,
+                "confidence": 0.9512224,
+                "speaker": 0,
+                "speaker_confidence": 1.0,
+                "punctuated_word": "farming."
+              },
+              {
+                "word": "it's",
+                "start": 85.12694,
+                "end": 85.52694,
+                "confidence": 0.9985074,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "It's"
+              },
+              {
+                "word": "designed",
+                "start": 85.52694,
+                "end": 85.84694,
+                "confidence": 0.9995504,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "designed"
+              },
+              {
+                "word": "to",
+                "start": 85.84694,
+                "end": 86.006935,
+                "confidence": 0.99987555,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "meet",
+                "start": 86.006935,
+                "end": 86.24693,
+                "confidence": 0.99950004,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "meet"
+              },
+              {
+                "word": "farmers'",
+                "start": 86.24693,
+                "end": 86.80694,
+                "confidence": 0.8860663,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "farmers'"
+              },
+              {
+                "word": "needs",
+                "start": 86.80694,
+                "end": 87.366936,
+                "confidence": 0.99876785,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "needs."
+              },
+              {
+                "word": "what",
+                "start": 87.60693,
+                "end": 87.92693,
+                "confidence": 0.9985832,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "What"
+              },
+              {
+                "word": "are",
+                "start": 87.92693,
+                "end": 88.006935,
+                "confidence": 0.9993129,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "are"
+              },
+              {
+                "word": "some",
+                "start": 88.006935,
+                "end": 88.16694,
+                "confidence": 0.999463,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "some"
+              },
+              {
+                "word": "of",
+                "start": 88.16694,
+                "end": 88.326935,
+                "confidence": 0.9982938,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "of"
+              },
+              {
+                "word": "the",
+                "start": 88.326935,
+                "end": 88.40694,
+                "confidence": 0.99852705,
+                "speaker": 0,
+                "speaker_confidence": 0.7474547,
+                "punctuated_word": "the"
+              },
+              {
+                "word": "benefits",
+                "start": 88.40694,
+                "end": 88.72694,
+                "confidence": 0.9998447,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "benefits"
+              },
+              {
+                "word": "of",
+                "start": 88.72694,
+                "end": 88.966934,
+                "confidence": 0.99934417,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "of"
+              },
+              {
+                "word": "this",
+                "start": 88.966934,
+                "end": 89.12694,
+                "confidence": 0.99349254,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "this"
+              },
+              {
+                "word": "morabahah",
+                "start": 89.12694,
+                "end": 89.84694,
+                "confidence": 0.68110925,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "Morabahah"
+              },
+              {
+                "word": "based",
+                "start": 89.84694,
+                "end": 90.16694,
+                "confidence": 0.94032055,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "based"
+              },
+              {
+                "word": "financing",
+                "start": 90.16694,
+                "end": 91.12694,
+                "confidence": 0.9996859,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "financing"
+              },
+              {
+                "word": "compared",
+                "start": 91.12694,
+                "end": 91.686935,
+                "confidence": 0.97482294,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "compared"
+              },
+              {
+                "word": "to",
+                "start": 91.686935,
+                "end": 91.92693,
+                "confidence": 0.9993364,
+                "speaker": 0,
+                "speaker_confidence": 0.9767604,
+                "punctuated_word": "to"
+              },
+              {
+                "word": "conventional",
+                "start": 91.92693,
+                "end": 92.48694,
+                "confidence": 0.99956876,
+                "speaker": 0,
+                "speaker_confidence": 0.6345403,
+                "punctuated_word": "conventional"
+              },
+              {
+                "word": "loans",
+                "start": 92.48694,
+                "end": 93.20693,
+                "confidence": 0.99819046,
+                "speaker": 0,
+                "speaker_confidence": 0.6345403,
+                "punctuated_word": "loans?"
+              },
+              {
+                "word": "mary",
+                "start": 93.44694,
+                "end": 93.92693,
+                "confidence": 0.7587403,
+                "speaker": 1,
+                "speaker_confidence": 0.528811,
+                "punctuated_word": "Mary."
+              }
+            ],
+            "paragraphs": {
+              "transcript": "\nSpeaker 0: Welcome to Islamic Bank. How may I assist you today?\n\nSpeaker 1: I wanted to learn more about your agricultural finance product based on Morabah. Can you explain how it works?\n\nSpeaker 0: Of course, Mustafa. Our agricultural finance through Morabah is designed to support farmers and agricultural businesses. The bank purchases agricultural equipment, seeds, fertilizers, or other necessary items on behalf of the customer and then sells them to the customer at a pre agreed profit margin in a Shariah compliant manner, avoiding interest REBA.\n\nSpeaker 1: So it's not a loan in the conventional sense?\n\nSpeaker 0: Correct, Mustafa. It's not a loan, and it's certainly not conventional. Islamic finance strictly avoids loans with interest. This is a cost plus profit sale contract. The bank lays everything out, the cost of the items, and the profit margin.\n\nSo nothing is hidden. You repay in installments over a set period. It's straightforward.\n\nSpeaker 1: I see. Could you elaborate on the types of agricultural needs this financing can cover?\n\nSpeaker 0: Certainly. It can cover almost everything. Purchasing agricultural machinery like tractors, irrigation systems, seeds, fertilizers, pesticides, livestock, and raw materials for farming. It's designed to meet farmers' needs. What are some of the benefits of this Morabahah based financing compared to conventional loans?\n\nSpeaker 1: Mary.",
+              "paragraphs": [
+                {
+                  "sentences": [
+                    {
+                      "text": "Welcome to Islamic Bank.",
+                      "start": 3.28,
+                      "end": 6.2400002
+                    },
+                    {
+                      "text": "How may I assist you today?",
+                      "start": 6.3999996,
+                      "end": 7.68
+                    }
+                  ],
+                  "speaker": 0,
+                  "num_words": 10,
+                  "start": 3.28,
+                  "end": 7.68
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "I wanted to learn more about your agricultural finance product based on Morabah.",
+                      "start": 12.095,
+                      "end": 16.575
+                    },
+                    {
+                      "text": "Can you explain how it works?",
+                      "start": 16.575,
+                      "end": 18.175
+                    }
+                  ],
+                  "speaker": 1,
+                  "num_words": 19,
+                  "start": 12.095,
+                  "end": 18.175
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "Of course, Mustafa.",
+                      "start": 18.495,
+                      "end": 20.175
+                    },
+                    {
+                      "text": "Our agricultural finance through Morabah is designed to support farmers and agricultural businesses.",
+                      "start": 20.255001,
+                      "end": 26.015
+                    },
+                    {
+                      "text": "The bank purchases agricultural equipment, seeds, fertilizers, or other necessary items on behalf of the customer and then sells them to the customer at a pre agreed profit margin in a Shariah compliant manner, avoiding interest REBA.",
+                      "start": 26.6,
+                      "end": 40.68
+                    }
+                  ],
+                  "speaker": 0,
+                  "num_words": 53,
+                  "start": 18.495,
+                  "end": 40.68
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "So it's not a loan in the conventional sense?",
+                      "start": 41.475002,
+                      "end": 43.875
+                    }
+                  ],
+                  "speaker": 1,
+                  "num_words": 9,
+                  "start": 41.475002,
+                  "end": 43.875
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "Correct, Mustafa.",
+                      "start": 44.035,
+                      "end": 45.715
+                    },
+                    {
+                      "text": "It's not a loan, and it's certainly not conventional.",
+                      "start": 45.875,
+                      "end": 48.995
+                    },
+                    {
+                      "text": "Islamic finance strictly avoids loans with interest.",
+                      "start": 49.315002,
+                      "end": 52.515
+                    },
+                    {
+                      "text": "This is a cost plus profit sale contract.",
+                      "start": 52.755,
+                      "end": 54.915
+                    },
+                    {
+                      "text": "The bank lays everything out, the cost of the items, and the profit margin.",
+                      "start": 55.4,
+                      "end": 59.8
+                    }
+                  ],
+                  "speaker": 0,
+                  "num_words": 40,
+                  "start": 44.035,
+                  "end": 59.8
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "So nothing is hidden.",
+                      "start": 60.12,
+                      "end": 61.559998
+                    },
+                    {
+                      "text": "You repay in installments over a set period.",
+                      "start": 61.72,
+                      "end": 64.44
+                    },
+                    {
+                      "text": "It's straightforward.",
+                      "start": 64.68,
+                      "end": 65.799995
+                    }
+                  ],
+                  "speaker": 0,
+                  "num_words": 14,
+                  "start": 60.12,
+                  "end": 65.799995
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "I see.",
+                      "start": 66.2,
+                      "end": 67.08
+                    },
+                    {
+                      "text": "Could you elaborate on the types of agricultural needs this financing can cover?",
+                      "start": 67.16,
+                      "end": 70.92
+                    }
+                  ],
+                  "speaker": 1,
+                  "num_words": 15,
+                  "start": 66.2,
+                  "end": 70.92
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "Certainly.",
+                      "start": 71.315,
+                      "end": 72.195
+                    },
+                    {
+                      "text": "It can cover almost everything.",
+                      "start": 72.355,
+                      "end": 74.195
+                    },
+                    {
+                      "text": "Purchasing agricultural machinery like tractors, irrigation systems, seeds, fertilizers, pesticides, livestock, and raw materials for farming.",
+                      "start": 74.595,
+                      "end": 84.675
+                    },
+                    {
+                      "text": "It's designed to meet farmers' needs.",
+                      "start": 85.12694,
+                      "end": 87.366936
+                    },
+                    {
+                      "text": "What are some of the benefits of this Morabahah based financing compared to conventional loans?",
+                      "start": 87.60693,
+                      "end": 93.20693
+                    }
+                  ],
+                  "speaker": 0,
+                  "num_words": 43,
+                  "start": 71.315,
+                  "end": 93.20693
+                },
+                {
+                  "sentences": [
+                    {
+                      "text": "Mary.",
+                      "start": 93.44694,
+                      "end": 93.92693
+                    }
+                  ],
+                  "speaker": 1,
+                  "num_words": 1,
+                  "start": 93.44694,
+                  "end": 93.92693
+                }
+              ]
+            }
+          }
+        ],
+        "detected_language": "en",
+        "language_confidence": 0.9357863
+      }
+    ]
+  }
+}
