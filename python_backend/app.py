@@ -17,14 +17,6 @@ from deepgram_service import DeepgramService
 from azure_storage_service import AzureStorageService
 from azure_sql_service import AzureSQLService
 
-# Import the DirectTranscribe classes
-try:
-    from direct_transcribe import DirectTranscribe
-    from direct_transcribe_db import DirectTranscribeDB
-    logger.info("DirectTranscribe classes imported successfully")
-except ImportError:
-    logger.warning("DirectTranscribe classes not found, direct transcription will not be available")
-
 app = Flask(__name__)
 CORS(app)
 
@@ -38,11 +30,32 @@ logger = logging.getLogger(__name__)
 # Global variable to store direct transcription results
 direct_transcription_results = {}
 
+# Import the DirectTranscribe classes after logger is defined
+try:
+    from direct_transcribe import DirectTranscribe
+    from direct_transcribe_db import DirectTranscribeDB
+    logger.info("DirectTranscribe classes imported successfully")
+except ImportError as e:
+    logger.warning(f"DirectTranscribe classes not found, direct transcription will not be available: {str(e)}")
+
 # Initialize services
 try:
     deepgram_service = DeepgramService()
     azure_storage_service = AzureStorageService()
     azure_sql_service = AzureSQLService()
+    
+    # Initialize DirectTranscribe if available
+    direct_transcribe = None
+    direct_transcribe_db = None
+    try:
+        direct_transcribe = DirectTranscribe()
+        direct_transcribe_db = DirectTranscribeDB()
+        logger.info("DirectTranscribe services initialized successfully")
+    except Exception as e:
+        logger.warning(f"DirectTranscribe services could not be initialized: {str(e)}")
+        direct_transcribe = None
+        direct_transcribe_db = None
+    
     logger.info("All services initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing services: {str(e)}")
@@ -52,6 +65,56 @@ except Exception as e:
 def health():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+
+@app.route('/process-direct', methods=['POST'])
+def process_file_direct():
+    """Process a file from Azure Blob Storage using Deepgram with SAS URL direct approach"""
+    try:
+        data = request.json
+        filename = data.get('filename')
+        fileid = data.get('fileid')
+        
+        if not filename:
+            return jsonify({"error": "No filename provided"}), 400
+        
+        # Check if DirectTranscribe is available
+        if not direct_transcribe or not direct_transcribe_db:
+            return jsonify({"error": "DirectTranscribe service not available"}), 500
+            
+        logger.info(f"Processing file directly: {filename} with ID: {fileid}")
+        
+        # Step 1: Start timing
+        start_time = time.time()
+        
+        # Step 2: Process the file with DirectTranscribe
+        processing_result = direct_transcribe.process_file(filename)
+        
+        # Step 3: Store the result in the database
+        db_result = direct_transcribe_db.store_transcription_result(processing_result)
+        
+        # Step 4: Calculate total processing time
+        total_time = time.time() - start_time
+        
+        # Create a simplified result for the response
+        result = {
+            "status": "success" if db_result["status"] == "success" else "error",
+            "fileid": db_result.get("fileid", fileid),
+            "blob_name": filename,
+            "processing_time": total_time,
+            "transcription_success": processing_result["transcription"]["error"] is None,
+            "file_movement_success": processing_result["file_movement"]["status"] == "success",
+            "database_success": db_result["status"] == "success",
+            "paragraphs_processed": db_result.get("paragraphs_processed", 0)
+        }
+        
+        logger.info(f"Direct processing complete for {filename} in {total_time:.2f} seconds")
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error in direct processing: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/process', methods=['POST'])
 def process_file():
@@ -339,36 +402,53 @@ def store_transcription_details():
 
 @app.route('/config/transcription-method', methods=['GET', 'POST'])
 def configure_transcription_method():
-    """Get or set the transcription method (SDK, REST API or direct)"""
+    """Get or set the transcription method (SDK, REST API, direct, or shortcut)"""
     try:
-        # Check current setting
-        current_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
+        # Initialize if not already defined
+        if not hasattr(app, 'transcription_method'):
+            app.transcription_method = "shortcut" if direct_transcribe else "sdk"
+            logger.info(f"Initialized transcription method to: {app.transcription_method}")
         
-        # Handle POST request to update the method
+        if request.method == 'GET':
+            return jsonify({
+                "status": "success",
+                "method": app.transcription_method,
+                "available_methods": [
+                    {"id": "sdk", "name": "Deepgram SDK", "description": "Uses the Deepgram Python SDK"},
+                    {"id": "rest", "name": "REST API", "description": "Uses direct REST API calls to Deepgram"},
+                    {"id": "direct", "name": "Direct SAS URL", "description": "Uses the DirectTranscribe class with SAS URLs"},
+                    {"id": "shortcut", "name": "Shortcut", "description": "Uses the DirectTranscribe class with the newest direct method"}
+                ],
+                "recommended": "shortcut",
+                "direct_available": direct_transcribe is not None
+            })
+        
         if request.method == 'POST':
             data = request.json
-            new_method = data.get('method', '').lower()
+            new_method = data.get('method')
             
-            # Validate the method
-            if new_method not in ['sdk', 'rest_api', 'direct', 'shortcut', 'enhanced']:
-                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', 'direct', 'shortcut', or 'enhanced'"}), 400
+            if not new_method:
+                return jsonify({"error": "No method provided"}), 400
+                
+            if new_method not in ['sdk', 'rest', 'direct', 'shortcut']:
+                return jsonify({"error": f"Invalid transcription method: {new_method}"}), 400
+                
+            # Check if direct method is available when selected
+            if new_method in ['direct', 'shortcut'] and not direct_transcribe:
+                return jsonify({"error": "Direct transcription method is not available"}), 400
             
-            # Update the environment variable
-            os.environ["DEEPGRAM_TRANSCRIPTION_METHOD"] = new_method
-            logger.info(f"Transcription method changed from '{current_method}' to '{new_method}'")
+            # Save previous method for response
+            previous_method = app.transcription_method
+            
+            # Update the application's transcription method
+            app.transcription_method = new_method
+            logger.info(f"Transcription method changed from '{previous_method}' to '{new_method}'")
             
             return jsonify({
                 "status": "success", 
                 "message": f"Transcription method set to {new_method}",
-                "previous_method": current_method,
+                "previous_method": previous_method,
                 "current_method": new_method
-            })
-        
-        # Handle GET request to get current method
-        else:
-            return jsonify({
-                "current_method": current_method,
-                "available_methods": ["sdk", "rest_api", "direct", "shortcut", "enhanced"]
             })
             
     except Exception as e:
