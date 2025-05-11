@@ -129,11 +129,11 @@ class DgClassSentimentAnalysis:
                 })
         return sentence_sentiments
 
-    async def main(self, deepgram_response_json, fileid):
+    async def main(self, deepgram_response_json_str, fileid):
         """
         Main function to process pre-transcribed Deepgram JSON for sentiment analysis.
         Args:
-            deepgram_response_json (dict): The pre-fetched Deepgram API JSON response.
+            deepgram_response_json_str (str): The pre-fetched Deepgram API JSON response as a string.
             fileid (str): The file ID (e.g., from deepgram_assets table, or a unique identifier like blob name).
         Returns:
             dict: A dictionary containing the sentiment analysis results.
@@ -144,7 +144,7 @@ class DgClassSentimentAnalysis:
         
         detected_language = "Unknown" # Default
 
-        if not deepgram_response_json:
+        if not deepgram_response_json_str:
             print(f"[{self.class_name}] No Deepgram response provided for fileid: {fileid}. Cannot proceed.")
             if self.sql_helper:
                 # SP: @FileID, @DetectedLanguage, @OverallSentimentLabel, @OverallNltkCompoundScore, @SentenceSentimentsJson, @Status
@@ -156,6 +156,21 @@ class DgClassSentimentAnalysis:
             if self.sql_helper:
                 self.sql_helper.execute_sp("DG_LogTimeElapsed", (self.class_name, func_name, str(fileid), start_time, end_time, (end_time - start_time).total_seconds()))
             return {"error": "No Deepgram response provided", "fileid": fileid, "status": "Error"}
+
+        # Parse JSON string into dictionary
+        try:
+            deepgram_response_json = json.loads(deepgram_response_json_str)
+        except json.JSONDecodeError as e:
+            print(f"[{self.class_name}] Failed to parse Deepgram JSON: {str(e)}")
+            if self.sql_helper:
+                self.sql_helper.execute_sp(
+                    sp_name="DG_LogSentimentAnalysis", 
+                    params=(fileid, detected_language, f"Error: Invalid JSON: {str(e)}", None, None, "Error")
+                )
+            end_time = datetime.datetime.now(datetime.timezone.utc)
+            if self.sql_helper:
+                self.sql_helper.execute_sp("DG_LogTimeElapsed", (self.class_name, func_name, str(fileid), start_time, end_time, (end_time - start_time).total_seconds()))
+            return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
 
         # Step 1: Extract transcript from the provided JSON response
         formatted_transcript, raw_transcript, detected_language = self.dg_func_extract_transcript_from_dg_response(deepgram_response_json)
