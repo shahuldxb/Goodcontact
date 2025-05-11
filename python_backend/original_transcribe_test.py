@@ -245,6 +245,7 @@ def transcribe_audio_file(file_path, api_key, model="nova-2", diarize=True):
 def store_in_sql_database(fileid, blob_name, transcription_result):
     """Store transcription results in Azure SQL database"""
     try:
+        # Use the global SOURCE_CONTAINER variable
         if not transcription_result['success']:
             logger.error(f"Cannot store unsuccessful transcription: {transcription_result['error']}")
             return False, {"error": transcription_result['error']}
@@ -257,6 +258,41 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
         # Connect to database
         conn = get_sql_connection()
         cursor = conn.cursor()
+        
+        # First, insert a record into rdt_assets
+        logger.info("Inserting asset record")
+        cursor.execute("""
+            INSERT INTO rdt_assets (
+                fileid, 
+                filename, 
+                source_path, 
+                destination_path, 
+                file_size,
+                upload_date,
+                status,
+                created_dt
+            )
+            VALUES (
+                %s, 
+                %s, 
+                %s, 
+                %s, 
+                %s,
+                %s,
+                %s,
+                %s
+            )
+        """, (
+            fileid,
+            blob_name,
+            SOURCE_CONTAINER,  # Source container - use global variable
+            None,              # Destination path
+            0,                 # File size (not available)
+            datetime.now(),    # Upload date
+            "completed",       # Status
+            datetime.now()     # Created date
+        ))
+        logger.info("Asset record inserted successfully")
         
         # Insert audio metadata
         logger.info("Inserting audio metadata")
