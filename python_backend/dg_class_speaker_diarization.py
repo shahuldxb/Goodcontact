@@ -6,7 +6,7 @@ Refactored into a Python class.
 import os
 import json
 import asyncio
-from deepgram import Deepgram # Assuming DeepgramClient is imported as Deepgram
+import requests
 
 class DgClassSpeakerDiarization:
     def __init__(self, deepgram_api_key, sql_helper=None):
@@ -30,28 +30,47 @@ class DgClassSpeakerDiarization:
         """
         try:
             with open(audio_file_path, "rb") as audio:
-                # Assuming FileSource is available from deepgram import or needs to be imported
-                # from deepgram import FileSource (if not covered by `from deepgram import Deepgram`)
-                # The orchestrator uses: from deepgram import DeepgramClient, PrerecordedOptions, FileSource
-                # This class should probably do the same for consistency if `Deepgram` is not the client.
-                # For now, assuming `source = {"buffer": audio, "mimetype": "audio/wav"}` is the correct way for the used SDK version.
-                source = {"buffer": audio, "mimetype": "audio/wav"} 
-                options = {
-                    "punctuate": True,
-                    "diarize": True,
-                    "detect_language": True,
-                    "model": "nova-2",
-                    "smart_format": True,
-                    "utterances": True
+                # Determine file type from extension
+                file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
+                file_type = file_extension if file_extension in ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a'] else 'wav'
+                
+                # Set up the API URL with query parameters
+                api_url = "https://api.deepgram.com/v1/listen"
+                params = {
+                    "punctuate": "true", 
+                    "diarize": "true", 
+                    "detect_language": "true",
+                    "model": "nova-2", 
+                    "smart_format": "true",
+                    "utterances": "true"
                 }
+                
+                # Set up headers with API key
+                headers = {
+                    "Authorization": f"Token {self.deepgram_api_key}",
+                    "Content-Type": f"audio/{file_type}"
+                }
+                
                 print(f"Sending audio file {audio_file_path} to Deepgram for diarization...")
-                # Assuming PrerecordedOptions is not needed if options are passed directly.
-                # response = await self.deepgram.transcription.prerecorded(source, options)
-                # The orchestrator uses: response = await deepgram_client.listen.rest.v("1").transcribe_file(source, options)
-                # This class uses: response = await self.deepgram.transcription.prerecorded(source, options)
-                # These are different SDK call styles. I will keep the class_file style for now.
-                response = await self.deepgram.transcription.prerecorded(source, options)
-                return response
+                
+                # Read the audio file
+                audio_data = audio.read()
+                
+                # Make async request
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: requests.post(api_url, params=params, headers=headers, data=audio_data)
+                )
+                
+                # Check if the request was successful
+                if response.status_code != 200:
+                    print(f"Deepgram API error: {response.status_code}, {response.text}")
+                    return None
+                
+                # Parse JSON response
+                response_json = response.json()
+                return response_json
         except Exception as e:
             print(f"Error during transcription with diarization: {e}")
             return None

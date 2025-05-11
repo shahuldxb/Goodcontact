@@ -11,7 +11,7 @@ import os
 import json
 import asyncio
 import re
-from deepgram import Deepgram # Assuming DeepgramClient is imported as Deepgram
+import requests
 
 # Attempt to import NLTK and scikit-learn, provide guidance if missing
 try:
@@ -77,17 +77,48 @@ class DgClassTopicDetection:
         """
         try:
             with open(audio_file_path, "rb") as audio:
-                source = {"buffer": audio, "mimetype": "audio/wav"}
-                options = {
-                    "punctuate": True, "diarize": True, "detect_language": True,
-                    "model": "nova-2", "smart_format": True
+                # Determine file type from extension
+                file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
+                file_type = file_extension if file_extension in ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a'] else 'wav'
+                
+                # Set up the API URL with query parameters
+                api_url = "https://api.deepgram.com/v1/listen"
+                params = {
+                    "punctuate": "true", 
+                    "diarize": "true", 
+                    "detect_language": "true",
+                    "model": "nova-2", 
+                    "smart_format": "true"
                 }
                 if enable_dg_summarize:
-                    options["summarize"] = "v2"
+                    params["summarize"] = "v2"
+                
+                # Set up headers with API key
+                headers = {
+                    "Authorization": f"Token {self.deepgram_api_key}",
+                    "Content-Type": f"audio/{file_type}"
+                }
                 
                 print(f"Sending audio file {audio_file_path} to Deepgram for transcription (Topic Detection)...")
-                response = await self.deepgram.transcription.prerecorded(source, options)
-                return response
+                
+                # Read the audio file
+                audio_data = audio.read()
+                
+                # Make async request
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: requests.post(api_url, params=params, headers=headers, data=audio_data)
+                )
+                
+                # Check if the request was successful
+                if response.status_code != 200:
+                    print(f"Deepgram API error: {response.status_code}, {response.text}")
+                    return None
+                
+                # Parse JSON response
+                response_json = response.json()
+                return response_json
         except Exception as e:
             print(f"Error during transcription (Topic Detection) for {audio_file_path}: {e}")
             return None
