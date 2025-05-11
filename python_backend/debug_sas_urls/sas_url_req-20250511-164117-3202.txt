@@ -1,0 +1,5 @@
+SAS URL for blob samplesmall.mp3:
+
+https://infolder.blob.core.windows.net/shahulin/samplesmall.mp3?se=2025-05-21T16%3A41%3A17Z&sp=r&sv=2025-05-05&sr=b&sig=ecG6%2BqNVuAwneQd1H%2BCHOACoMR282Zd3GwkIlly5Ha0%3D
+
+You can paste this URL in a browser to verify access to the asset.

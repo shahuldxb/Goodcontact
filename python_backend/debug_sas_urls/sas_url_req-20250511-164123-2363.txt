@@ -1,0 +1,5 @@
+SAS URL for blob kcal_ad.wav:
+
+https://infolder.blob.core.windows.net/shahulin/kcal_ad.wav?se=2025-05-21T16%3A41%3A23Z&sp=r&sv=2025-05-05&sr=b&sig=o3qdSTLKipZJ7ctGE0X3Ex%2BwYMOzfZ5mOeSTHLVBpeE%3D
+
+You can paste this URL in a browser to verify access to the asset.

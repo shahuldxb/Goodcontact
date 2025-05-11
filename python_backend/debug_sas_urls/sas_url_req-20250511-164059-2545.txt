@@ -1,0 +1,5 @@
+SAS URL for blob banking_enquiries_hindi.mp3:
+
+https://infolder.blob.core.windows.net/shahulin/banking_enquiries_hindi.mp3?se=2025-05-21T16%3A40%3A59Z&sp=r&sv=2025-05-05&sr=b&sig=AfWxAn9JzT8qBw15VNOzoAijenZVkB7iaJlQPkyRfaE%3D
+
+You can paste this URL in a browser to verify access to the asset.

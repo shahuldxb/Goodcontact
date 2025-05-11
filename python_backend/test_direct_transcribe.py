@@ -151,7 +151,7 @@ def test_transcription(blob_name, api_key):
         logger.error(f"Error in test_transcription: {str(e)}")
         return {"success": False, "error": str(e)}
 
-async def main():
+def main():
     """
     Main function that tests transcription on two different blob files
     """
@@ -160,13 +160,13 @@ async def main():
     
     # Test files to transcribe (real Azure blob files)
     test_files = [
-        "agricultural_finance_(murabaha)_angry.mp3",
-        "banking_enquiries_hindi.mp3"
+        "samplesmall.mp3",  # Known to exist in previous testing
+        "kcal_ad.wav"       # Known to exist in previous testing
     ]
     
     for i, blob_name in enumerate(test_files):
         logger.info(f"TEST {i+1}: Testing transcription of {blob_name}")
-        result = await test_transcription(blob_name, api_key)
+        result = test_transcription(blob_name, api_key)
         
         if result["success"]:
             transcript_status = "with transcript" if result.get("transcript_present", False) else "without transcript"
@@ -182,7 +182,8 @@ async def main():
         # Sleep between tests to avoid rate limiting
         if i < len(test_files) - 1:
             logger.info("Waiting 5 seconds before next test...")
-            await asyncio.sleep(5)
+            import time
+            time.sleep(5)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
