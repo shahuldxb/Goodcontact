@@ -122,19 +122,44 @@ export function SettingsPanel() {
                 ))}
               </SelectContent>
             </Select>
-            {selectedMethod === 'sdk' ? (
-              <p className="text-xs text-muted-foreground mt-2">
-                Uses the official Deepgram SDK for transcription with better error handling and direct authentication.
-              </p>
-            ) : selectedMethod === 'rest_api' ? (
-              <p className="text-xs text-muted-foreground mt-2">
-                Uses direct REST API calls to Deepgram (original implementation).
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground mt-2">
-                Uses the optimized REST API implementation with proven reliability for Azure blob transcription.
-              </p>
-            )}
+            <div className="mt-3 p-3 bg-muted/30 rounded-md">
+              {selectedMethod === 'sdk' ? (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Deepgram SDK</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Uses the official Deepgram SDK for transcription with better error handling and direct authentication.
+                  </p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Reliable</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Official Support</span>
+                    <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full">Higher Latency</span>
+                  </div>
+                </div>
+              ) : selectedMethod === 'rest_api' ? (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">REST API</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Uses direct REST API calls to Deepgram (original implementation).
+                  </p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Standard</span>
+                    <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full">Medium Performance</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Direct REST API</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Uses the optimized REST API implementation with proven reliability for Azure blob transcription.
+                  </p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Optimized</span>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Faster</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Azure Integration</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
