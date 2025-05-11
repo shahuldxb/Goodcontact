@@ -206,7 +206,10 @@ def fix_record(record):
                     if paragraphs:
                         # Import store_transcription_details from update_sentence_tables
                         try:
-                            from update_sentence_tables import store_transcription_details
+                            import os
+                            import sys
+                            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                            from python_backend.update_sentence_tables import store_transcription_details
                             
                             # Store the transcription details
                             result = store_transcription_details(fileid, structured_response)
