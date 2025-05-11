@@ -9,7 +9,7 @@ import {
   RdtSpeakerDiarization, InsertRdtSpeakerDiarization,
   RdtSpeakerSegments, InsertRdtSpeakerSegments
 } from "@shared/schema";
-import { sql } from "@neondatabase/serverless";
+// import { sql } from "@neondatabase/serverless";
 import { nanoid } from 'nanoid';
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { DgClassSpeakerDiarization } from "./services/deepgram";
@@ -94,24 +94,92 @@ export class MemStorage implements IStorage {
   }
 
   async createAsset(asset: InsertRdtAsset): Promise<RdtAsset> {
-    const id = this.currentAssetId++;
-    const newAsset: RdtAsset = { 
-      ...asset, 
-      id, 
-      created_dt: new Date(),
-      created_by: 1
-    };
-    this.assets.set(asset.fileid, newAsset);
-    return newAsset;
+    try {
+      // First, store in memory
+      const id = this.currentAssetId++;
+      const newAsset: RdtAsset = { 
+        ...asset, 
+        id, 
+        created_dt: new Date(),
+        created_by: 1
+      };
+      this.assets.set(asset.fileid, newAsset);
+      
+      // Then, persist to SQL database
+      const { insertRecord } = await import('./services/azure-sql');
+      
+      // Convert property names to SQL column names (camelCase to snake_case)
+      const sqlData = {
+        fileid: asset.fileid,
+        filename: asset.filename,
+        source_path: asset.sourcePath,
+        destination_path: asset.destinationPath,
+        file_size: asset.fileSize || 0,
+        status: asset.status || 'pending',
+        created_by: 1
+      };
+      
+      // Insert into SQL database
+      await insertRecord('rdt_assets', sqlData);
+      
+      console.log(`Asset created in SQL database: ${asset.fileid}`);
+      return newAsset;
+    } catch (error) {
+      console.error('Error creating asset in SQL database:', error);
+      // Still return the in-memory asset even if SQL insertion fails
+      const inMemoryAsset = this.assets.get(asset.fileid);
+      if (inMemoryAsset) return inMemoryAsset;
+      throw error;
+    }
   }
 
   async updateAsset(fileid: string, updates: Partial<RdtAsset>): Promise<RdtAsset | undefined> {
-    const asset = this.assets.get(fileid);
-    if (!asset) return undefined;
-    
-    const updatedAsset = { ...asset, ...updates };
-    this.assets.set(fileid, updatedAsset);
-    return updatedAsset;
+    try {
+      // First update in memory
+      const asset = this.assets.get(fileid);
+      if (!asset) return undefined;
+      
+      const updatedAsset = { ...asset, ...updates };
+      this.assets.set(fileid, updatedAsset);
+      
+      // Then update in SQL database
+      const { executeQuery } = await import('./services/azure-sql');
+      
+      // Convert camelCase to snake_case for SQL columns
+      const sqlUpdates: Record<string, any> = {};
+      if (updates.status) sqlUpdates.status = updates.status;
+      if (updates.processedDate) sqlUpdates.processed_date = updates.processedDate;
+      if (updates.transcription) sqlUpdates.transcription = updates.transcription;
+      if (updates.transcriptionJson) sqlUpdates.transcription_json = updates.transcriptionJson;
+      if (updates.fileSize) sqlUpdates.file_size = updates.fileSize;
+      if (updates.languageDetected) sqlUpdates.language_detected = updates.languageDetected;
+      if (updates.errorMessage) sqlUpdates.error_message = updates.errorMessage;
+      if (updates.processingDuration) sqlUpdates.processing_duration = updates.processingDuration;
+      
+      // Build SQL update query
+      if (Object.keys(sqlUpdates).length > 0) {
+        const setClause = Object.entries(sqlUpdates)
+          .map(([key, _], index) => `${key} = @param${index}`)
+          .join(', ');
+        
+        const values = [...Object.values(sqlUpdates), fileid];
+        
+        const query = `
+          UPDATE rdt_assets
+          SET ${setClause}
+          WHERE fileid = @param${Object.values(sqlUpdates).length};
+        `;
+        
+        await executeQuery(query, values);
+        console.log(`Asset updated in SQL database: ${fileid}`);
+      }
+      
+      return updatedAsset;
+    } catch (error) {
+      console.error('Error updating asset in SQL database:', error);
+      // Still return the in-memory asset even if SQL update fails
+      return this.assets.get(fileid);
+    }
   }
 
   async getSourceFiles(): Promise<any[]> {
