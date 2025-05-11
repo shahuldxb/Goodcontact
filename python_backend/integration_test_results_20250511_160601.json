@@ -1,0 +1,58 @@
+{
+  "test_id": "a574484e-7641-4785-9927-16d15bdba1f5",
+  "timestamp": "2025-05-11 16:05:56",
+  "steps": [
+    {
+      "step": "connect_storage",
+      "status": "success"
+    },
+    {
+      "step": "select_blob",
+      "status": "success",
+      "blob_name": "agricultural_finance_(murabaha)_angry.mp3"
+    },
+    {
+      "step": "generate_sas",
+      "status": "success"
+    },
+    {
+      "step": "transcribe",
+      "status": "success",
+      "request_id": "req-20250511-160557-1091",
+      "duration": 0.844716
+    },
+    {
+      "step": "store_in_db",
+      "status": "success",
+      "metadata_stored": true,
+      "paragraphs_stored": 0,
+      "sentences_stored": 0
+    },
+    {
+      "step": "verify_db",
+      "status": "success",
+      "metadata_found": true,
+      "paragraphs_count": 0,
+      "sentences_count": 0
+    },
+    {
+      "step": "check_logs",
+      "status": "success",
+      "log_files_count": 3,
+      "log_files": [
+        "logs/requests/request_req-20250511-160557-1091.json",
+        "logs/responses/response_req-20250511-160557-1091.json",
+        "logs/deepgram_transcription.log"
+      ]
+    }
+  ],
+  "overall_status": "success",
+  "summary": {
+    "blob_name": "agricultural_finance_(murabaha)_angry.mp3",
+    "fileid": "integration_test_20250511_160557",
+    "transcription_duration": 0.844716,
+    "paragraphs_stored": 0,
+    "sentences_stored": 0,
+    "log_files_count": 3
+  }
+}
