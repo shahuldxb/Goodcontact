@@ -1,0 +1,5 @@
+SAS URL for blob 0bq6tyQ%3D:
+
+https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(murabaha)_neutral.mp3?se=2025-05-21T15%3A39%3A08Z&sp=r&sv=2025-05-05&sr=b&sig=E8eIgVJByQ2HbDTxQudv5uRu0GpB%2B9OknMc/0bq6tyQ%3D
+
+You can paste this URL in a browser to verify access to the asset.

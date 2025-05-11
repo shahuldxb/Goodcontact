@@ -1,0 +1,4294 @@
+{
+  "success": true,
+  "request_id": "req-20250511-153908-8957",
+  "duration": 1.013575,
+  "blob_name": "0bq6tyQ%3D",
+  "full_response": {
+    "metadata": {
+      "transaction_key": "deprecated",
+      "request_id": "5096b18f-14f6-4a62-9ec4-13750fa0285f",
+      "sha256": "fb732bcf93b637687006898d6a45a1d9c4d46c07fff720e2d3efd2b76c25e1dd",
+      "created": "2025-05-11T15:39:09.343Z",
+      "duration": 279.792,
+      "channels": 1,
+      "models": [
+        "1ed36bac-f71c-4f3f-a31f-02fd6525c489"
+      ],
+      "model_info": {
+        "1ed36bac-f71c-4f3f-a31f-02fd6525c489": {
+          "name": "general",
+          "version": "2024-01-26.8851",
+          "arch": "base"
+        }
+      }
+    },
+    "results": {
+      "channels": [
+        {
+          "alternatives": [
+            {
+              "transcript": "ass jamal welcome to islamic bank how may i assist you today while lake mass i'm a farmer and i've been exploring financing options for agricultural equipment i've heard about your agricultural finance based on mo ab can you explain how it works certainly jamal mo is a compliant financing structure in this arrangement the bank purchases the asset such as agricultural equipment on your behalf and sells it to you at a fixed profit margin the cost price and profit margin are disclosed front ensuring transparency i see how does this differ from conventional loans the primary distinction lies in the absence of interest re as it is prohibited in islam with mara the transaction is trade based the bank first takes ownership of the asset and then sells it to you with an agreed upon profit this structure adhere to shi principles got it and what are some benefits of using agricultural finance through mo ab good question first it is fully shi compliant aligning with islamic values second the fixed profit margin provides predictability in repayment amounts which can assist with financial planning third the financing is versatile covering various agricultural needs such as equipment seeds fertilizer and irrigation systems that's helpful to know what types of agricultural equipment can i finance through this product a variety of agricultural equipment can be financed including tractors harvest irrigation machinery and other specialized tools if you have a specific item in mind we can discuss it further to confirm whether it qualifies under more understood are there any particular requirements i need to meet to apply for this financing yes jamal we require documents such as proof of income from your farming activities business registration or farm ownership documents and a detailed proposal outlining the purpose of the financing additionally we assess your repayment capacity to ensure the arrangement is sustainable i see what is the process of applying for agricultural finance under mo ab the application process is straightforward first you submit your application along with the required documents next we review your application and evaluate the asset you wish to acquire once approved the bank purchases the asset and takes ownership finally we sell the asset to you at the agreed upon price and you repay in installments over the specified period once i take ownership of the asset does the bank remain involved in any way after the asset is sold to you through more it becomes your property completely the bank no longer has any ownership or involvement with the asset however we are available to assist you with any questions or concerns during the repayment period that's clear is there a maximum or minimum amount i can apply for under this financing the financing amount depends on your needs and financial capacity generally there is a minimum financing amount but there is flexibility to accommodate the size of your agricultural operations we can discuss your specific requirements to determine an appropriate arrangement what kinds of repayment terms are available i'm curious if they can be adjusted for farmers like me since farming income can be seasonal that's a valid point jamal we recognize that farming income is often seasonal while repayment terms are typically fixed we can structure the installments to align with your harvest cycles which could make managing payments more convenient for you that's good to hear what happens if i face unexpected challenges and find it difficult to repay on time if you encounter difficulties we recommend reaching out to us promptly in islamic banking penalties that are purely punitive are avoided however a small administrative fee may be charged to cover actual costs as permitted under shi our aim is to collaborate with you on a solution that is fair and manageable that's reassuring are there any additional fees or charges i should be aware of all applicable fees such as administrative or processing charges will be disclosed to you upfront before you proceed transparency is a core principle in islamic banking and we ensure that there are no hidden charges i appreciate that how long does the entire process usually take from application to receiving the finance asset once we have received your application and all required documents",
+              "confidence": 0.997993,
+              "words": [
+                {
+                  "word": "ass",
+                  "start": 0.19936709,
+                  "end": 0.6993671,
+                  "confidence": 0.95653284
+                },
+                {
+                  "word": "jamal",
+                  "start": 1.7145569,
+                  "end": 1.9537975,
+                  "confidence": 0.901355
+                },
+                {
+                  "word": "welcome",
+                  "start": 2.5120254,
+                  "end": 2.8310127,
+                  "confidence": 0.9964162
+                },
+                {
+                  "word": "to",
+                  "start": 2.8310127,
+                  "end": 2.9905064,
+                  "confidence": 0.99839574
+                },
+                {
+                  "word": "islamic",
+                  "start": 3.2297468,
+                  "end": 3.4689872,
+                  "confidence": 0.9970066
+                },
+                {
+                  "word": "bank",
+                  "start": 3.628481,
+                  "end": 3.8677216,
+                  "confidence": 0.9704364
+                },
+                {
+                  "word": "how",
+                  "start": 4.5056963,
+                  "end": 4.6651897,
+                  "confidence": 0.99996936
+                },
+                {
+                  "word": "may",
+                  "start": 4.6651897,
+                  "end": 4.7449365,
+                  "confidence": 0.998393
+                },
+                {
+                  "word": "i",
+                  "start": 4.8246837,
+                  "end": 4.984177,
+                  "confidence": 0.9975752
+                },
+                {
+                  "word": "assist",
+                  "start": 4.984177,
+                  "end": 5.2234178,
+                  "confidence": 0.99993515
+                },
+                {
+                  "word": "you",
+                  "start": 5.2234178,
+                  "end": 5.542405,
+                  "confidence": 0.99945205
+                },
+                {
+                  "word": "today",
+                  "start": 5.542405,
+                  "end": 5.7018986,
+                  "confidence": 0.9995357
+                },
+                {
+                  "word": "while",
+                  "start": 6.2601266,
+                  "end": 6.41962,
+                  "confidence": 0.92840475
+                },
+                {
+                  "word": "lake",
+                  "start": 6.499367,
+                  "end": 6.7386074,
+                  "confidence": 0.4822091
+                },
+                {
+                  "word": "mass",
+                  "start": 6.8183546,
+                  "end": 7.057595,
+                  "confidence": 0.25339562
+                },
+                {
+                  "word": "i'm",
+                  "start": 8.17405,
+                  "end": 8.333544,
+                  "confidence": 0.996369
+                },
+                {
+                  "word": "a",
+                  "start": 8.333544,
+                  "end": 8.493038,
+                  "confidence": 0.99499774
+                },
+                {
+                  "word": "farmer",
+                  "start": 8.493038,
+                  "end": 8.732279,
+                  "confidence": 0.9981852
+                },
+                {
+                  "word": "and",
+                  "start": 8.891772,
+                  "end": 9.051266,
+                  "confidence": 0.9992449
+                },
+                {
+                  "word": "i've",
+                  "start": 9.210759,
+                  "end": 9.45,
+                  "confidence": 0.97593296
+                },
+                {
+                  "word": "been",
+                  "start": 9.45,
+                  "end": 9.768988,
+                  "confidence": 0.9999094
+                },
+                {
+                  "word": "exploring",
+                  "start": 9.768988,
+                  "end": 10.167722,
+                  "confidence": 0.9979128
+                },
+                {
+                  "word": "financing",
+                  "start": 10.167722,
+                  "end": 10.667722,
+                  "confidence": 0.9996213
+                },
+                {
+                  "word": "options",
+                  "start": 10.8056965,
+                  "end": 11.124683,
+                  "confidence": 0.9993674
+                },
+                {
+                  "word": "for",
+                  "start": 11.124683,
+                  "end": 11.603165,
+                  "confidence": 0.9997694
+                },
+                {
+                  "word": "agricultural",
+                  "start": 11.603165,
+                  "end": 12.081646,
+                  "confidence": 0.8754868
+                },
+                {
+                  "word": "equipment",
+                  "start": 12.081646,
+                  "end": 12.320886,
+                  "confidence": 0.9996099
+                },
+                {
+                  "word": "i've",
+                  "start": 12.814741,
+                  "end": 12.974533,
+                  "confidence": 0.99671483
+                },
+                {
+                  "word": "heard",
+                  "start": 12.974533,
+                  "end": 13.214223,
+                  "confidence": 0.9999702
+                },
+                {
+                  "word": "about",
+                  "start": 13.214223,
+                  "end": 13.453912,
+                  "confidence": 0.99995136
+                },
+                {
+                  "word": "your",
+                  "start": 13.453912,
+                  "end": 13.9332905,
+                  "confidence": 0.999511
+                },
+                {
+                  "word": "agricultural",
+                  "start": 13.9332905,
+                  "end": 14.332772,
+                  "confidence": 0.9672311
+                },
+                {
+                  "word": "finance",
+                  "start": 14.332772,
+                  "end": 14.832772,
+                  "confidence": 0.9872976
+                },
+                {
+                  "word": "based",
+                  "start": 14.892046,
+                  "end": 15.211632,
+                  "confidence": 0.99891126
+                },
+                {
+                  "word": "on",
+                  "start": 15.211632,
+                  "end": 15.291529,
+                  "confidence": 0.9975789
+                },
+                {
+                  "word": "mo",
+                  "start": 15.371425,
+                  "end": 15.611114,
+                  "confidence": 0.43043616
+                },
+                {
+                  "word": "ab",
+                  "start": 15.611114,
+                  "end": 15.930699,
+                  "confidence": 0.095767155
+                },
+                {
+                  "word": "can",
+                  "start": 16.330181,
+                  "end": 16.489975,
+                  "confidence": 0.9997644
+                },
+                {
+                  "word": "you",
+                  "start": 16.489975,
+                  "end": 16.809559,
+                  "confidence": 0.99984336
+                },
+                {
+                  "word": "explain",
+                  "start": 16.809559,
+                  "end": 17.049248,
+                  "confidence": 0.9999045
+                },
+                {
+                  "word": "how",
+                  "start": 17.049248,
+                  "end": 17.209042,
+                  "confidence": 0.9998404
+                },
+                {
+                  "word": "it",
+                  "start": 17.209042,
+                  "end": 17.368834,
+                  "confidence": 0.99989986
+                },
+                {
+                  "word": "works",
+                  "start": 17.368834,
+                  "end": 17.608524,
+                  "confidence": 0.9998227
+                },
+                {
+                  "word": "certainly",
+                  "start": 18.32759,
+                  "end": 18.56728,
+                  "confidence": 0.9983347
+                },
+                {
+                  "word": "jamal",
+                  "start": 18.966763,
+                  "end": 19.206451,
+                  "confidence": 0.91608346
+                },
+                {
+                  "word": "mo",
+                  "start": 19.845621,
+                  "end": 20.345621,
+                  "confidence": 0.31320304
+                },
+                {
+                  "word": "is",
+                  "start": 20.484793,
+                  "end": 20.56469,
+                  "confidence": 0.99936575
+                },
+                {
+                  "word": "a",
+                  "start": 20.56469,
+                  "end": 20.644585,
+                  "confidence": 0.9915929
+                },
+                {
+                  "word": "compliant",
+                  "start": 21.363653,
+                  "end": 21.683239,
+                  "confidence": 0.8542117
+                },
+                {
+                  "word": "financing",
+                  "start": 21.683239,
+                  "end": 22.183239,
+                  "confidence": 0.99832064
+                },
+                {
+                  "word": "structure",
+                  "start": 22.32241,
+                  "end": 22.721891,
+                  "confidence": 0.9992495
+                },
+                {
+                  "word": "in",
+                  "start": 23.281166,
+                  "end": 23.44096,
+                  "confidence": 0.99980396
+                },
+                {
+                  "word": "this",
+                  "start": 23.44096,
+                  "end": 23.760544,
+                  "confidence": 0.9998895
+                },
+                {
+                  "word": "arrangement",
+                  "start": 23.760544,
+                  "end": 24.160027,
+                  "confidence": 0.99936277
+                },
+                {
+                  "word": "the",
+                  "start": 24.399715,
+                  "end": 24.55951,
+                  "confidence": 0.99975604
+                },
+                {
+                  "word": "bank",
+                  "start": 24.55951,
+                  "end": 24.799198,
+                  "confidence": 0.99918634
+                },
+                {
+                  "word": "purchases",
+                  "start": 24.799198,
+                  "end": 25.299198,
+                  "confidence": 0.98222196
+                },
+                {
+                  "word": "the",
+                  "start": 25.35847,
+                  "end": 25.59816,
+                  "confidence": 0.9986945
+                },
+                {
+                  "word": "asset",
+                  "start": 25.59816,
+                  "end": 26.09816,
+                  "confidence": 0.98857737
+                },
+                {
+                  "word": "such",
+                  "start": 26.237331,
+                  "end": 26.397125,
+                  "confidence": 0.9994764
+                },
+                {
+                  "word": "as",
+                  "start": 26.397125,
+                  "end": 26.897125,
+                  "confidence": 0.99844533
+                },
+                {
+                  "word": "agricultural",
+                  "start": 27.036297,
+                  "end": 27.515675,
+                  "confidence": 0.9817995
+                },
+                {
+                  "word": "equipment",
+                  "start": 27.515675,
+                  "end": 28.015675,
+                  "confidence": 0.9992964
+                },
+                {
+                  "word": "on",
+                  "start": 28.249218,
+                  "end": 28.408592,
+                  "confidence": 0.9999238
+                },
+                {
+                  "word": "your",
+                  "start": 28.408592,
+                  "end": 28.727343,
+                  "confidence": 0.99936515
+                },
+                {
+                  "word": "behalf",
+                  "start": 28.727343,
+                  "end": 29.227343,
+                  "confidence": 0.999688
+                },
+                {
+                  "word": "and",
+                  "start": 29.285156,
+                  "end": 29.524218,
+                  "confidence": 0.9981875
+                },
+                {
+                  "word": "sells",
+                  "start": 29.524218,
+                  "end": 29.683594,
+                  "confidence": 0.99261355
+                },
+                {
+                  "word": "it",
+                  "start": 29.683594,
+                  "end": 29.842968,
+                  "confidence": 0.9991806
+                },
+                {
+                  "word": "to",
+                  "start": 29.842968,
+                  "end": 30.002342,
+                  "confidence": 0.9993587
+                },
+                {
+                  "word": "you",
+                  "start": 30.002342,
+                  "end": 30.241405,
+                  "confidence": 0.9978484
+                },
+                {
+                  "word": "at",
+                  "start": 30.241405,
+                  "end": 30.321093,
+                  "confidence": 0.97134864
+                },
+                {
+                  "word": "a",
+                  "start": 30.321093,
+                  "end": 30.560156,
+                  "confidence": 0.7886377
+                },
+                {
+                  "word": "fixed",
+                  "start": 30.560156,
+                  "end": 30.799217,
+                  "confidence": 0.9937198
+                },
+                {
+                  "word": "profit",
+                  "start": 30.799217,
+                  "end": 31.197655,
+                  "confidence": 0.99552506
+                },
+                {
+                  "word": "margin",
+                  "start": 31.197655,
+                  "end": 31.596092,
+                  "confidence": 0.99794143
+                },
+                {
+                  "word": "the",
+                  "start": 32.153904,
+                  "end": 32.392967,
+                  "confidence": 0.99933654
+                },
+                {
+                  "word": "cost",
+                  "start": 32.392967,
+                  "end": 32.71172,
+                  "confidence": 0.9925957
+                },
+                {
+                  "word": "price",
+                  "start": 32.71172,
+                  "end": 33.030468,
+                  "confidence": 0.9973393
+                },
+                {
+                  "word": "and",
+                  "start": 33.030468,
+                  "end": 33.26953,
+                  "confidence": 0.99429506
+                },
+                {
+                  "word": "profit",
+                  "start": 33.26953,
+                  "end": 33.58828,
+                  "confidence": 0.9965604
+                },
+                {
+                  "word": "margin",
+                  "start": 33.58828,
+                  "end": 33.986717,
+                  "confidence": 0.9933061
+                },
+                {
+                  "word": "are",
+                  "start": 33.986717,
+                  "end": 34.385155,
+                  "confidence": 0.9958949
+                },
+                {
+                  "word": "disclosed",
+                  "start": 34.385155,
+                  "end": 34.885155,
+                  "confidence": 0.9789245
+                },
+                {
+                  "word": "front",
+                  "start": 34.942966,
+                  "end": 35.18203,
+                  "confidence": 0.7724959
+                },
+                {
+                  "word": "ensuring",
+                  "start": 35.81953,
+                  "end": 36.31953,
+                  "confidence": 0.9504563
+                },
+                {
+                  "word": "transparency",
+                  "start": 36.45703,
+                  "end": 36.95703,
+                  "confidence": 0.9982352
+                },
+                {
+                  "word": "i",
+                  "start": 37.652344,
+                  "end": 37.891403,
+                  "confidence": 0.99833125
+                },
+                {
+                  "word": "see",
+                  "start": 37.891403,
+                  "end": 38.05078,
+                  "confidence": 0.9990652
+                },
+                {
+                  "word": "how",
+                  "start": 38.528904,
+                  "end": 38.68828,
+                  "confidence": 0.9974365
+                },
+                {
+                  "word": "does",
+                  "start": 38.68828,
+                  "end": 38.847656,
+                  "confidence": 0.9985422
+                },
+                {
+                  "word": "this",
+                  "start": 38.847656,
+                  "end": 39.086716,
+                  "confidence": 0.99966335
+                },
+                {
+                  "word": "differ",
+                  "start": 39.086716,
+                  "end": 39.32578,
+                  "confidence": 0.9958535
+                },
+                {
+                  "word": "from",
+                  "start": 39.32578,
+                  "end": 39.803905,
+                  "confidence": 0.99980944
+                },
+                {
+                  "word": "conventional",
+                  "start": 39.803905,
+                  "end": 40.04297,
+                  "confidence": 0.9981464
+                },
+                {
+                  "word": "loans",
+                  "start": 40.04297,
+                  "end": 40.361717,
+                  "confidence": 0.99671423
+                },
+                {
+                  "word": "the",
+                  "start": 41.094254,
+                  "end": 41.25383,
+                  "confidence": 0.9980324
+                },
+                {
+                  "word": "primary",
+                  "start": 41.25383,
+                  "end": 41.75383,
+                  "confidence": 0.9983864
+                },
+                {
+                  "word": "distinction",
+                  "start": 41.971912,
+                  "end": 42.211277,
+                  "confidence": 0.99811697
+                },
+                {
+                  "word": "lies",
+                  "start": 42.211277,
+                  "end": 42.450638,
+                  "confidence": 0.99644405
+                },
+                {
+                  "word": "in",
+                  "start": 42.450638,
+                  "end": 42.61021,
+                  "confidence": 0.9893176
+                },
+                {
+                  "word": "the",
+                  "start": 42.61021,
+                  "end": 42.84957,
+                  "confidence": 0.9981133
+                },
+                {
+                  "word": "absence",
+                  "start": 42.84957,
+                  "end": 43.16872,
+                  "confidence": 0.99996006
+                },
+                {
+                  "word": "of",
+                  "start": 43.16872,
+                  "end": 43.647446,
+                  "confidence": 0.9947465
+                },
+                {
+                  "word": "interest",
+                  "start": 43.647446,
+                  "end": 43.886806,
+                  "confidence": 0.9882575
+                },
+                {
+                  "word": "re",
+                  "start": 44.126167,
+                  "end": 44.626167,
+                  "confidence": 0.83891344
+                },
+                {
+                  "word": "as",
+                  "start": 44.844254,
+                  "end": 45.00383,
+                  "confidence": 0.9965647
+                },
+                {
+                  "word": "it",
+                  "start": 45.00383,
+                  "end": 45.163403,
+                  "confidence": 0.9941993
+                },
+                {
+                  "word": "is",
+                  "start": 45.163403,
+                  "end": 45.56234,
+                  "confidence": 0.99168676
+                },
+                {
+                  "word": "prohibited",
+                  "start": 45.56234,
+                  "end": 45.961273,
+                  "confidence": 0.99970466
+                },
+                {
+                  "word": "in",
+                  "start": 45.961273,
+                  "end": 46.36021,
+                  "confidence": 0.9969674
+                },
+                {
+                  "word": "islam",
+                  "start": 46.36021,
+                  "end": 46.59957,
+                  "confidence": 0.9780154
+                },
+                {
+                  "word": "with",
+                  "start": 47.158085,
+                  "end": 47.317657,
+                  "confidence": 0.99864084
+                },
+                {
+                  "word": "mara",
+                  "start": 47.397446,
+                  "end": 47.897446,
+                  "confidence": 0.20483337
+                },
+                {
+                  "word": "the",
+                  "start": 48.275105,
+                  "end": 48.775105,
+                  "confidence": 0.9987357
+                },
+                {
+                  "word": "transaction",
+                  "start": 48.913403,
+                  "end": 49.152763,
+                  "confidence": 0.99964213
+                },
+                {
+                  "word": "is",
+                  "start": 49.152763,
+                  "end": 49.392128,
+                  "confidence": 0.9981871
+                },
+                {
+                  "word": "trade",
+                  "start": 49.392128,
+                  "end": 49.711273,
+                  "confidence": 0.94415635
+                },
+                {
+                  "word": "based",
+                  "start": 49.711273,
+                  "end": 50.030426,
+                  "confidence": 0.968837
+                },
+                {
+                  "word": "the",
+                  "start": 50.509148,
+                  "end": 50.74851,
+                  "confidence": 0.9994311
+                },
+                {
+                  "word": "bank",
+                  "start": 50.74851,
+                  "end": 50.98787,
+                  "confidence": 0.9982148
+                },
+                {
+                  "word": "first",
+                  "start": 50.98787,
+                  "end": 51.227234,
+                  "confidence": 0.9980623
+                },
+                {
+                  "word": "takes",
+                  "start": 51.227234,
+                  "end": 51.727234,
+                  "confidence": 0.9987054
+                },
+                {
+                  "word": "ownership",
+                  "start": 51.785744,
+                  "end": 51.945316,
+                  "confidence": 0.9999838
+                },
+                {
+                  "word": "of",
+                  "start": 51.945316,
+                  "end": 52.104893,
+                  "confidence": 0.99820316
+                },
+                {
+                  "word": "the",
+                  "start": 52.104893,
+                  "end": 52.264465,
+                  "confidence": 0.9947013
+                },
+                {
+                  "word": "asset",
+                  "start": 52.264465,
+                  "end": 52.764465,
+                  "confidence": 0.9927275
+                },
+                {
+                  "word": "and",
+                  "start": 52.902763,
+                  "end": 53.06234,
+                  "confidence": 0.99732363
+                },
+                {
+                  "word": "then",
+                  "start": 53.06234,
+                  "end": 53.3017,
+                  "confidence": 0.9918542
+                },
+                {
+                  "word": "sells",
+                  "start": 53.3017,
+                  "end": 53.54106,
+                  "confidence": 0.9953171
+                },
+                {
+                  "word": "it",
+                  "start": 53.54106,
+                  "end": 53.700638,
+                  "confidence": 0.99626803
+                },
+                {
+                  "word": "to",
+                  "start": 53.700638,
+                  "end": 53.86021,
+                  "confidence": 0.99878913
+                },
+                {
+                  "word": "you",
+                  "start": 53.86021,
+                  "end": 54.019787,
+                  "confidence": 0.9958691
+                },
+                {
+                  "word": "with",
+                  "start": 54.019787,
+                  "end": 54.17936,
+                  "confidence": 0.9976782
+                },
+                {
+                  "word": "an",
+                  "start": 54.17936,
+                  "end": 54.49851,
+                  "confidence": 0.99345475
+                },
+                {
+                  "word": "agreed",
+                  "start": 54.49851,
+                  "end": 54.817657,
+                  "confidence": 0.99992394
+                },
+                {
+                  "word": "upon",
+                  "start": 54.817657,
+                  "end": 55.05702,
+                  "confidence": 0.9993382
+                },
+                {
+                  "word": "profit",
+                  "start": 55.05702,
+                  "end": 55.455956,
+                  "confidence": 0.991491
+                },
+                {
+                  "word": "this",
+                  "start": 56.109,
+                  "end": 56.348145,
+                  "confidence": 0.9985183
+                },
+                {
+                  "word": "structure",
+                  "start": 56.348145,
+                  "end": 56.848145,
+                  "confidence": 0.9975534
+                },
+                {
+                  "word": "adhere",
+                  "start": 56.906143,
+                  "end": 57.304718,
+                  "confidence": 0.98974717
+                },
+                {
+                  "word": "to",
+                  "start": 57.304718,
+                  "end": 57.38443,
+                  "confidence": 0.9972409
+                },
+                {
+                  "word": "shi",
+                  "start": 57.464146,
+                  "end": 57.94243,
+                  "confidence": 0.5540554
+                },
+                {
+                  "word": "principles",
+                  "start": 57.94243,
+                  "end": 58.420715,
+                  "confidence": 0.9944066
+                },
+                {
+                  "word": "got",
+                  "start": 59.138145,
+                  "end": 59.297573,
+                  "confidence": 0.99331677
+                },
+                {
+                  "word": "it",
+                  "start": 59.297573,
+                  "end": 59.37729,
+                  "confidence": 0.9959694
+                },
+                {
+                  "word": "and",
+                  "start": 59.77586,
+                  "end": 59.935287,
+                  "confidence": 0.99800223
+                },
+                {
+                  "word": "what",
+                  "start": 59.935287,
+                  "end": 60.094715,
+                  "confidence": 0.99969053
+                },
+                {
+                  "word": "are",
+                  "start": 60.094715,
+                  "end": 60.254143,
+                  "confidence": 0.9989505
+                },
+                {
+                  "word": "some",
+                  "start": 60.254143,
+                  "end": 60.413574,
+                  "confidence": 0.99933666
+                },
+                {
+                  "word": "benefits",
+                  "start": 60.413574,
+                  "end": 60.812145,
+                  "confidence": 0.9982553
+                },
+                {
+                  "word": "of",
+                  "start": 60.812145,
+                  "end": 61.05129,
+                  "confidence": 0.99912566
+                },
+                {
+                  "word": "using",
+                  "start": 61.05129,
+                  "end": 61.55129,
+                  "confidence": 0.999382
+                },
+                {
+                  "word": "agricultural",
+                  "start": 61.689003,
+                  "end": 62.087574,
+                  "confidence": 0.9588998
+                },
+                {
+                  "word": "finance",
+                  "start": 62.087574,
+                  "end": 62.587574,
+                  "confidence": 0.9772927
+                },
+                {
+                  "word": "through",
+                  "start": 62.72529,
+                  "end": 62.805,
+                  "confidence": 0.9521248
+                },
+                {
+                  "word": "mo",
+                  "start": 62.96443,
+                  "end": 63.12386,
+                  "confidence": 0.44024497
+                },
+                {
+                  "word": "ab",
+                  "start": 63.12386,
+                  "end": 63.52243,
+                  "confidence": 0.32580203
+                },
+                {
+                  "word": "good",
+                  "start": 64.08043,
+                  "end": 64.31957,
+                  "confidence": 0.9981694
+                },
+                {
+                  "word": "question",
+                  "start": 64.31957,
+                  "end": 64.71815,
+                  "confidence": 0.9985441
+                },
+                {
+                  "word": "first",
+                  "start": 65.276146,
+                  "end": 65.595,
+                  "confidence": 0.99919254
+                },
+                {
+                  "word": "it",
+                  "start": 65.91386,
+                  "end": 66.07329,
+                  "confidence": 0.99534494
+                },
+                {
+                  "word": "is",
+                  "start": 66.07329,
+                  "end": 66.23271,
+                  "confidence": 0.9934836
+                },
+                {
+                  "word": "fully",
+                  "start": 66.23271,
+                  "end": 66.47186,
+                  "confidence": 0.9983973
+                },
+                {
+                  "word": "shi",
+                  "start": 66.551575,
+                  "end": 67.051575,
+                  "confidence": 0.45977733
+                },
+                {
+                  "word": "compliant",
+                  "start": 67.189285,
+                  "end": 67.689285,
+                  "confidence": 0.97144574
+                },
+                {
+                  "word": "aligning",
+                  "start": 67.98643,
+                  "end": 68.22557,
+                  "confidence": 0.9985701
+                },
+                {
+                  "word": "with",
+                  "start": 68.22557,
+                  "end": 68.624146,
+                  "confidence": 0.9956723
+                },
+                {
+                  "word": "islamic",
+                  "start": 68.624146,
+                  "end": 68.943,
+                  "confidence": 0.9999287
+                },
+                {
+                  "word": "values",
+                  "start": 68.943,
+                  "end": 69.42129,
+                  "confidence": 0.99900717
+                },
+                {
+                  "word": "second",
+                  "start": 70.07417,
+                  "end": 70.552765,
+                  "confidence": 0.99783236
+                },
+                {
+                  "word": "the",
+                  "start": 70.87182,
+                  "end": 71.111115,
+                  "confidence": 0.9992843
+                },
+                {
+                  "word": "fixed",
+                  "start": 71.111115,
+                  "end": 71.35041,
+                  "confidence": 0.9852077
+                },
+                {
+                  "word": "profit",
+                  "start": 71.35041,
+                  "end": 71.74924,
+                  "confidence": 0.9982304
+                },
+                {
+                  "word": "margin",
+                  "start": 71.74924,
+                  "end": 72.22782,
+                  "confidence": 0.9992022
+                },
+                {
+                  "word": "provides",
+                  "start": 72.22782,
+                  "end": 72.72782,
+                  "confidence": 0.9983333
+                },
+                {
+                  "word": "predictability",
+                  "start": 72.78617,
+                  "end": 73.10523,
+                  "confidence": 0.99992824
+                },
+                {
+                  "word": "in",
+                  "start": 73.10523,
+                  "end": 73.50406,
+                  "confidence": 0.8344865
+                },
+                {
+                  "word": "repayment",
+                  "start": 73.50406,
+                  "end": 73.90288,
+                  "confidence": 0.99665016
+                },
+                {
+                  "word": "amounts",
+                  "start": 73.90288,
+                  "end": 74.14217,
+                  "confidence": 0.99536157
+                },
+                {
+                  "word": "which",
+                  "start": 74.541,
+                  "end": 74.70053,
+                  "confidence": 0.99972326
+                },
+                {
+                  "word": "can",
+                  "start": 74.70053,
+                  "end": 75.019585,
+                  "confidence": 0.9980128
+                },
+                {
+                  "word": "assist",
+                  "start": 75.019585,
+                  "end": 75.25888,
+                  "confidence": 0.9847432
+                },
+                {
+                  "word": "with",
+                  "start": 75.25888,
+                  "end": 75.737465,
+                  "confidence": 0.9967236
+                },
+                {
+                  "word": "financial",
+                  "start": 75.737465,
+                  "end": 76.056526,
+                  "confidence": 0.9939698
+                },
+                {
+                  "word": "planning",
+                  "start": 76.056526,
+                  "end": 76.37559,
+                  "confidence": 0.99980444
+                },
+                {
+                  "word": "third",
+                  "start": 76.93394,
+                  "end": 77.253,
+                  "confidence": 0.997426
+                },
+                {
+                  "word": "the",
+                  "start": 77.73158,
+                  "end": 77.97088,
+                  "confidence": 0.9993462
+                },
+                {
+                  "word": "financing",
+                  "start": 77.97088,
+                  "end": 78.47088,
+                  "confidence": 0.99942243
+                },
+                {
+                  "word": "is",
+                  "start": 78.529236,
+                  "end": 78.68877,
+                  "confidence": 0.99946374
+                },
+                {
+                  "word": "versatile",
+                  "start": 78.68877,
+                  "end": 79.16735,
+                  "confidence": 0.99971896
+                },
+                {
+                  "word": "covering",
+                  "start": 79.645935,
+                  "end": 79.965,
+                  "confidence": 0.99947864
+                },
+                {
+                  "word": "various",
+                  "start": 79.965,
+                  "end": 80.465,
+                  "confidence": 0.99986136
+                },
+                {
+                  "word": "agricultural",
+                  "start": 80.68288,
+                  "end": 81.0817,
+                  "confidence": 0.9890981
+                },
+                {
+                  "word": "needs",
+                  "start": 81.0817,
+                  "end": 81.400764,
+                  "confidence": 0.9913195
+                },
+                {
+                  "word": "such",
+                  "start": 81.400764,
+                  "end": 81.48053,
+                  "confidence": 0.999466
+                },
+                {
+                  "word": "as",
+                  "start": 81.48053,
+                  "end": 81.87935,
+                  "confidence": 0.99764365
+                },
+                {
+                  "word": "equipment",
+                  "start": 81.87935,
+                  "end": 82.37935,
+                  "confidence": 0.99954575
+                },
+                {
+                  "word": "seeds",
+                  "start": 82.59723,
+                  "end": 82.996056,
+                  "confidence": 0.9411798
+                },
+                {
+                  "word": "fertilizer",
+                  "start": 83.88768,
+                  "end": 84.20625,
+                  "confidence": 0.99995136
+                },
+                {
+                  "word": "and",
+                  "start": 84.36554,
+                  "end": 84.86554,
+                  "confidence": 0.9947273
+                },
+                {
+                  "word": "irrigation",
+                  "start": 84.923035,
+                  "end": 85.24161,
+                  "confidence": 0.99998224
+                },
+                {
+                  "word": "systems",
+                  "start": 85.24161,
+                  "end": 85.71947,
+                  "confidence": 0.99886096
+                },
+                {
+                  "word": "that's",
+                  "start": 86.35661,
+                  "end": 86.595535,
+                  "confidence": 0.9982168
+                },
+                {
+                  "word": "helpful",
+                  "start": 86.595535,
+                  "end": 86.91411,
+                  "confidence": 0.9972039
+                },
+                {
+                  "word": "to",
+                  "start": 86.91411,
+                  "end": 87.073395,
+                  "confidence": 0.9997472
+                },
+                {
+                  "word": "know",
+                  "start": 87.073395,
+                  "end": 87.23268,
+                  "confidence": 0.99901545
+                },
+                {
+                  "word": "what",
+                  "start": 87.71054,
+                  "end": 87.94946,
+                  "confidence": 0.9997484
+                },
+                {
+                  "word": "types",
+                  "start": 87.94946,
+                  "end": 88.10875,
+                  "confidence": 0.9981767
+                },
+                {
+                  "word": "of",
+                  "start": 88.10875,
+                  "end": 88.60875,
+                  "confidence": 0.9986413
+                },
+                {
+                  "word": "agricultural",
+                  "start": 88.66625,
+                  "end": 89.06447,
+                  "confidence": 0.97079355
+                },
+                {
+                  "word": "equipment",
+                  "start": 89.06447,
+                  "end": 89.462685,
+                  "confidence": 0.99940324
+                },
+                {
+                  "word": "can",
+                  "start": 89.462685,
+                  "end": 89.54233,
+                  "confidence": 0.99960536
+                },
+                {
+                  "word": "i",
+                  "start": 89.62196,
+                  "end": 89.78125,
+                  "confidence": 0.9988116
+                },
+                {
+                  "word": "finance",
+                  "start": 89.78125,
+                  "end": 90.28125,
+                  "confidence": 0.9983536
+                },
+                {
+                  "word": "through",
+                  "start": 90.33875,
+                  "end": 90.49804,
+                  "confidence": 0.9996164
+                },
+                {
+                  "word": "this",
+                  "start": 90.49804,
+                  "end": 90.73697,
+                  "confidence": 0.99903345
+                },
+                {
+                  "word": "product",
+                  "start": 90.73697,
+                  "end": 91.05554,
+                  "confidence": 0.9983027
+                },
+                {
+                  "word": "a",
+                  "start": 91.61304,
+                  "end": 91.93161,
+                  "confidence": 0.99583167
+                },
+                {
+                  "word": "variety",
+                  "start": 91.93161,
+                  "end": 92.17054,
+                  "confidence": 0.9995592
+                },
+                {
+                  "word": "of",
+                  "start": 92.17054,
+                  "end": 92.64839,
+                  "confidence": 0.99938333
+                },
+                {
+                  "word": "agricultural",
+                  "start": 92.64839,
+                  "end": 93.12625,
+                  "confidence": 0.97087383
+                },
+                {
+                  "word": "equipment",
+                  "start": 93.12625,
+                  "end": 93.444824,
+                  "confidence": 0.9991856
+                },
+                {
+                  "word": "can",
+                  "start": 93.444824,
+                  "end": 93.60411,
+                  "confidence": 0.99900657
+                },
+                {
+                  "word": "be",
+                  "start": 93.60411,
+                  "end": 93.683754,
+                  "confidence": 0.99920976
+                },
+                {
+                  "word": "financed",
+                  "start": 93.683754,
+                  "end": 94.161606,
+                  "confidence": 0.94082075
+                },
+                {
+                  "word": "including",
+                  "start": 94.71911,
+                  "end": 95.03768,
+                  "confidence": 0.9993548
+                },
+                {
+                  "word": "tractors",
+                  "start": 95.03768,
+                  "end": 95.4359,
+                  "confidence": 0.9989483
+                },
+                {
+                  "word": "harvest",
+                  "start": 95.91375,
+                  "end": 96.41375,
+                  "confidence": 0.99140394
+                },
+                {
+                  "word": "irrigation",
+                  "start": 97.283,
+                  "end": 97.60177,
+                  "confidence": 0.9999219
+                },
+                {
+                  "word": "machinery",
+                  "start": 97.60177,
+                  "end": 98.10177,
+                  "confidence": 0.99964595
+                },
+                {
+                  "word": "and",
+                  "start": 98.2393,
+                  "end": 98.558075,
+                  "confidence": 0.9986088
+                },
+                {
+                  "word": "other",
+                  "start": 98.558075,
+                  "end": 99.058075,
+                  "confidence": 0.99102354
+                },
+                {
+                  "word": "specialized",
+                  "start": 99.11592,
+                  "end": 99.61592,
+                  "confidence": 0.9968522
+                },
+                {
+                  "word": "tools",
+                  "start": 99.67377,
+                  "end": 99.99254,
+                  "confidence": 0.99877113
+                },
+                {
+                  "word": "if",
+                  "start": 100.550385,
+                  "end": 100.70977,
+                  "confidence": 0.99981016
+                },
+                {
+                  "word": "you",
+                  "start": 100.70977,
+                  "end": 100.869156,
+                  "confidence": 0.9997576
+                },
+                {
+                  "word": "have",
+                  "start": 100.869156,
+                  "end": 100.948845,
+                  "confidence": 0.9995883
+                },
+                {
+                  "word": "a",
+                  "start": 100.948845,
+                  "end": 101.26762,
+                  "confidence": 0.9962345
+                },
+                {
+                  "word": "specific",
+                  "start": 101.26762,
+                  "end": 101.58638,
+                  "confidence": 0.9997627
+                },
+                {
+                  "word": "item",
+                  "start": 101.58638,
+                  "end": 101.745766,
+                  "confidence": 0.99700755
+                },
+                {
+                  "word": "in",
+                  "start": 101.745766,
+                  "end": 101.98485,
+                  "confidence": 0.999723
+                },
+                {
+                  "word": "mind",
+                  "start": 101.98485,
+                  "end": 102.22392,
+                  "confidence": 0.9999778
+                },
+                {
+                  "word": "we",
+                  "start": 102.70207,
+                  "end": 102.78177,
+                  "confidence": 0.99989283
+                },
+                {
+                  "word": "can",
+                  "start": 102.78177,
+                  "end": 103.18023,
+                  "confidence": 0.9991665
+                },
+                {
+                  "word": "discuss",
+                  "start": 103.18023,
+                  "end": 103.25992,
+                  "confidence": 0.9998448
+                },
+                {
+                  "word": "it",
+                  "start": 103.25992,
+                  "end": 103.499,
+                  "confidence": 0.99891853
+                },
+                {
+                  "word": "further",
+                  "start": 103.499,
+                  "end": 103.817764,
+                  "confidence": 0.99952555
+                },
+                {
+                  "word": "to",
+                  "start": 103.817764,
+                  "end": 104.136536,
+                  "confidence": 0.9996166
+                },
+                {
+                  "word": "confirm",
+                  "start": 104.136536,
+                  "end": 104.45531,
+                  "confidence": 0.99957806
+                },
+                {
+                  "word": "whether",
+                  "start": 104.45531,
+                  "end": 104.69438,
+                  "confidence": 0.9993082
+                },
+                {
+                  "word": "it",
+                  "start": 104.69438,
+                  "end": 104.93346,
+                  "confidence": 0.99969125
+                },
+                {
+                  "word": "qualifies",
+                  "start": 104.93346,
+                  "end": 105.43346,
+                  "confidence": 0.99813133
+                },
+                {
+                  "word": "under",
+                  "start": 105.571,
+                  "end": 105.810074,
+                  "confidence": 0.999772
+                },
+                {
+                  "word": "more",
+                  "start": 105.88977,
+                  "end": 106.38977,
+                  "confidence": 0.2993824
+                },
+                {
+                  "word": "understood",
+                  "start": 107.40392,
+                  "end": 107.643,
+                  "confidence": 0.9992198
+                },
+                {
+                  "word": "are",
+                  "start": 108.121155,
+                  "end": 108.28054,
+                  "confidence": 0.99935025
+                },
+                {
+                  "word": "there",
+                  "start": 108.28054,
+                  "end": 108.519615,
+                  "confidence": 0.9997929
+                },
+                {
+                  "word": "any",
+                  "start": 108.519615,
+                  "end": 108.918076,
+                  "confidence": 0.99982655
+                },
+                {
+                  "word": "particular",
+                  "start": 108.918076,
+                  "end": 109.39623,
+                  "confidence": 0.99990666
+                },
+                {
+                  "word": "requirements",
+                  "start": 109.39623,
+                  "end": 109.79469,
+                  "confidence": 0.99763775
+                },
+                {
+                  "word": "i",
+                  "start": 109.95408,
+                  "end": 110.113464,
+                  "confidence": 0.999616
+                },
+                {
+                  "word": "need",
+                  "start": 110.113464,
+                  "end": 110.27284,
+                  "confidence": 0.9997733
+                },
+                {
+                  "word": "to",
+                  "start": 110.27284,
+                  "end": 110.43223,
+                  "confidence": 0.99058855
+                },
+                {
+                  "word": "meet",
+                  "start": 110.43223,
+                  "end": 110.511925,
+                  "confidence": 0.95154434
+                },
+                {
+                  "word": "to",
+                  "start": 110.511925,
+                  "end": 110.83069,
+                  "confidence": 0.98463386
+                },
+                {
+                  "word": "apply",
+                  "start": 110.83069,
+                  "end": 111.06977,
+                  "confidence": 0.9988018
+                },
+                {
+                  "word": "for",
+                  "start": 111.06977,
+                  "end": 111.22916,
+                  "confidence": 0.9991592
+                },
+                {
+                  "word": "this",
+                  "start": 111.22916,
+                  "end": 111.388535,
+                  "confidence": 0.99654704
+                },
+                {
+                  "word": "financing",
+                  "start": 111.388535,
+                  "end": 111.888535,
+                  "confidence": 0.99978787
+                },
+                {
+                  "word": "yes",
+                  "start": 112.6,
+                  "end": 112.68,
+                  "confidence": 0.99784756
+                },
+                {
+                  "word": "jamal",
+                  "start": 113.08,
+                  "end": 113.24,
+                  "confidence": 0.625354
+                },
+                {
+                  "word": "we",
+                  "start": 113.88,
+                  "end": 114.2,
+                  "confidence": 0.99928504
+                },
+                {
+                  "word": "require",
+                  "start": 114.2,
+                  "end": 114.52,
+                  "confidence": 0.8921203
+                },
+                {
+                  "word": "documents",
+                  "start": 114.52,
+                  "end": 115.0,
+                  "confidence": 0.9964784
+                },
+                {
+                  "word": "such",
+                  "start": 115.0,
+                  "end": 115.159996,
+                  "confidence": 0.99979335
+                },
+                {
+                  "word": "as",
+                  "start": 115.159996,
+                  "end": 115.4,
+                  "confidence": 0.9990606
+                },
+                {
+                  "word": "proof",
+                  "start": 115.4,
+                  "end": 115.64,
+                  "confidence": 0.99987686
+                },
+                {
+                  "word": "of",
+                  "start": 115.64,
+                  "end": 116.04,
+                  "confidence": 0.99854016
+                },
+                {
+                  "word": "income",
+                  "start": 116.04,
+                  "end": 116.2,
+                  "confidence": 0.9990777
+                },
+                {
+                  "word": "from",
+                  "start": 116.2,
+                  "end": 116.36,
+                  "confidence": 0.999297
+                },
+                {
+                  "word": "your",
+                  "start": 116.36,
+                  "end": 116.6,
+                  "confidence": 0.9985965
+                },
+                {
+                  "word": "farming",
+                  "start": 116.6,
+                  "end": 117.08,
+                  "confidence": 0.99476963
+                },
+                {
+                  "word": "activities",
+                  "start": 117.08,
+                  "end": 117.479996,
+                  "confidence": 0.99916756
+                },
+                {
+                  "word": "business",
+                  "start": 117.96,
+                  "end": 118.46,
+                  "confidence": 0.99964845
+                },
+                {
+                  "word": "registration",
+                  "start": 118.84,
+                  "end": 119.0,
+                  "confidence": 0.9993307
+                },
+                {
+                  "word": "or",
+                  "start": 119.4,
+                  "end": 119.64,
+                  "confidence": 0.9955758
+                },
+                {
+                  "word": "farm",
+                  "start": 119.64,
+                  "end": 120.14,
+                  "confidence": 0.97816837
+                },
+                {
+                  "word": "ownership",
+                  "start": 120.2,
+                  "end": 120.44,
+                  "confidence": 0.9982034
+                },
+                {
+                  "word": "documents",
+                  "start": 120.44,
+                  "end": 120.84,
+                  "confidence": 0.9949779
+                },
+                {
+                  "word": "and",
+                  "start": 121.24,
+                  "end": 121.4,
+                  "confidence": 0.99882084
+                },
+                {
+                  "word": "a",
+                  "start": 121.4,
+                  "end": 121.72,
+                  "confidence": 0.99326783
+                },
+                {
+                  "word": "detailed",
+                  "start": 121.72,
+                  "end": 122.12,
+                  "confidence": 0.99725085
+                },
+                {
+                  "word": "proposal",
+                  "start": 122.12,
+                  "end": 122.62,
+                  "confidence": 0.9998122
+                },
+                {
+                  "word": "outlining",
+                  "start": 122.76,
+                  "end": 123.08,
+                  "confidence": 0.9996995
+                },
+                {
+                  "word": "the",
+                  "start": 123.08,
+                  "end": 123.24,
+                  "confidence": 0.9983302
+                },
+                {
+                  "word": "purpose",
+                  "start": 123.24,
+                  "end": 123.56,
+                  "confidence": 0.99966276
+                },
+                {
+                  "word": "of",
+                  "start": 123.56,
+                  "end": 123.72,
+                  "confidence": 0.9994817
+                },
+                {
+                  "word": "the",
+                  "start": 123.72,
+                  "end": 123.88,
+                  "confidence": 0.99755377
+                },
+                {
+                  "word": "financing",
+                  "start": 123.88,
+                  "end": 124.38,
+                  "confidence": 0.99914324
+                },
+                {
+                  "word": "additionally",
+                  "start": 125.333145,
+                  "end": 125.652,
+                  "confidence": 0.99972826
+                },
+                {
+                  "word": "we",
+                  "start": 126.28972,
+                  "end": 126.52886,
+                  "confidence": 0.93111825
+                },
+                {
+                  "word": "assess",
+                  "start": 126.52886,
+                  "end": 126.768005,
+                  "confidence": 0.9808815
+                },
+                {
+                  "word": "your",
+                  "start": 126.768005,
+                  "end": 127.246284,
+                  "confidence": 0.99358255
+                },
+                {
+                  "word": "repayment",
+                  "start": 127.246284,
+                  "end": 127.64486,
+                  "confidence": 0.9965701
+                },
+                {
+                  "word": "capacity",
+                  "start": 127.64486,
+                  "end": 128.14487,
+                  "confidence": 0.9992229
+                },
+                {
+                  "word": "to",
+                  "start": 128.442,
+                  "end": 128.76086,
+                  "confidence": 0.99990857
+                },
+                {
+                  "word": "ensure",
+                  "start": 128.76086,
+                  "end": 128.92029,
+                  "confidence": 0.99774027
+                },
+                {
+                  "word": "the",
+                  "start": 128.92029,
+                  "end": 129.15942,
+                  "confidence": 0.99924725
+                },
+                {
+                  "word": "arrangement",
+                  "start": 129.15942,
+                  "end": 129.63771,
+                  "confidence": 0.9961922
+                },
+                {
+                  "word": "is",
+                  "start": 129.63771,
+                  "end": 129.95657,
+                  "confidence": 0.99946636
+                },
+                {
+                  "word": "sustainable",
+                  "start": 129.95657,
+                  "end": 130.43486,
+                  "confidence": 0.999752
+                },
+                {
+                  "word": "i",
+                  "start": 131.07257,
+                  "end": 131.31172,
+                  "confidence": 0.99830234
+                },
+                {
+                  "word": "see",
+                  "start": 131.31172,
+                  "end": 131.55086,
+                  "confidence": 0.99894685
+                },
+                {
+                  "word": "what",
+                  "start": 132.10886,
+                  "end": 132.2683,
+                  "confidence": 0.9979614
+                },
+                {
+                  "word": "is",
+                  "start": 132.2683,
+                  "end": 132.348,
+                  "confidence": 0.9934389
+                },
+                {
+                  "word": "the",
+                  "start": 132.348,
+                  "end": 132.50743,
+                  "confidence": 0.9985526
+                },
+                {
+                  "word": "process",
+                  "start": 132.50743,
+                  "end": 132.906,
+                  "confidence": 0.99935466
+                },
+                {
+                  "word": "of",
+                  "start": 132.906,
+                  "end": 133.22485,
+                  "confidence": 0.999146
+                },
+                {
+                  "word": "applying",
+                  "start": 133.22485,
+                  "end": 133.464,
+                  "confidence": 0.99994135
+                },
+                {
+                  "word": "for",
+                  "start": 133.464,
+                  "end": 133.964,
+                  "confidence": 0.99968207
+                },
+                {
+                  "word": "agricultural",
+                  "start": 134.022,
+                  "end": 134.34087,
+                  "confidence": 0.94990903
+                },
+                {
+                  "word": "finance",
+                  "start": 134.34087,
+                  "end": 134.84087,
+                  "confidence": 0.9920757
+                },
+                {
+                  "word": "under",
+                  "start": 134.97858,
+                  "end": 135.138,
+                  "confidence": 0.9992931
+                },
+                {
+                  "word": "mo",
+                  "start": 135.21771,
+                  "end": 135.37715,
+                  "confidence": 0.27934524
+                },
+                {
+                  "word": "ab",
+                  "start": 135.37715,
+                  "end": 135.696,
+                  "confidence": 0.18590042
+                },
+                {
+                  "word": "the",
+                  "start": 136.09457,
+                  "end": 136.59457,
+                  "confidence": 0.9965412
+                },
+                {
+                  "word": "application",
+                  "start": 136.73228,
+                  "end": 136.97144,
+                  "confidence": 0.99956053
+                },
+                {
+                  "word": "process",
+                  "start": 136.97144,
+                  "end": 137.47144,
+                  "confidence": 0.9992322
+                },
+                {
+                  "word": "is",
+                  "start": 137.60915,
+                  "end": 138.08743,
+                  "confidence": 0.99871755
+                },
+                {
+                  "word": "straightforward",
+                  "start": 138.08743,
+                  "end": 138.58743,
+                  "confidence": 0.99133515
+                },
+                {
+                  "word": "first",
+                  "start": 139.06,
+                  "end": 139.3,
+                  "confidence": 0.9983058
+                },
+                {
+                  "word": "you",
+                  "start": 139.7,
+                  "end": 140.1,
+                  "confidence": 0.98595685
+                },
+                {
+                  "word": "submit",
+                  "start": 140.1,
+                  "end": 140.26,
+                  "confidence": 0.9966515
+                },
+                {
+                  "word": "your",
+                  "start": 140.26,
+                  "end": 140.76,
+                  "confidence": 0.9989305
+                },
+                {
+                  "word": "application",
+                  "start": 140.81999,
+                  "end": 141.31999,
+                  "confidence": 0.99907434
+                },
+                {
+                  "word": "along",
+                  "start": 141.54,
+                  "end": 141.7,
+                  "confidence": 0.9989384
+                },
+                {
+                  "word": "with",
+                  "start": 141.7,
+                  "end": 141.86,
+                  "confidence": 0.9983405
+                },
+                {
+                  "word": "the",
+                  "start": 141.86,
+                  "end": 142.18,
+                  "confidence": 0.985387
+                },
+                {
+                  "word": "required",
+                  "start": 142.18,
+                  "end": 142.58,
+                  "confidence": 0.99424803
+                },
+                {
+                  "word": "documents",
+                  "start": 142.58,
+                  "end": 143.08,
+                  "confidence": 0.9903211
+                },
+                {
+                  "word": "next",
+                  "start": 143.78,
+                  "end": 143.94,
+                  "confidence": 0.9997032
+                },
+                {
+                  "word": "we",
+                  "start": 144.1,
+                  "end": 144.42,
+                  "confidence": 0.9975655
+                },
+                {
+                  "word": "review",
+                  "start": 144.42,
+                  "end": 144.66,
+                  "confidence": 0.9988525
+                },
+                {
+                  "word": "your",
+                  "start": 144.66,
+                  "end": 145.16,
+                  "confidence": 0.9983308
+                },
+                {
+                  "word": "application",
+                  "start": 145.3,
+                  "end": 145.78,
+                  "confidence": 0.99955744
+                },
+                {
+                  "word": "and",
+                  "start": 145.78,
+                  "end": 146.1,
+                  "confidence": 0.9996942
+                },
+                {
+                  "word": "evaluate",
+                  "start": 146.1,
+                  "end": 146.58,
+                  "confidence": 0.99942386
+                },
+                {
+                  "word": "the",
+                  "start": 146.58,
+                  "end": 146.81999,
+                  "confidence": 0.9978103
+                },
+                {
+                  "word": "asset",
+                  "start": 146.81999,
+                  "end": 147.14,
+                  "confidence": 0.76264554
+                },
+                {
+                  "word": "you",
+                  "start": 147.14,
+                  "end": 147.3,
+                  "confidence": 0.9993088
+                },
+                {
+                  "word": "wish",
+                  "start": 147.3,
+                  "end": 147.54,
+                  "confidence": 0.9954257
+                },
+                {
+                  "word": "to",
+                  "start": 147.54,
+                  "end": 147.86,
+                  "confidence": 0.99853134
+                },
+                {
+                  "word": "acquire",
+                  "start": 147.86,
+                  "end": 148.18,
+                  "confidence": 0.99908614
+                },
+                {
+                  "word": "once",
+                  "start": 148.74,
+                  "end": 149.14,
+                  "confidence": 0.9995424
+                },
+                {
+                  "word": "approved",
+                  "start": 149.14,
+                  "end": 149.45999,
+                  "confidence": 0.99991083
+                },
+                {
+                  "word": "the",
+                  "start": 149.78,
+                  "end": 150.02,
+                  "confidence": 0.99934393
+                },
+                {
+                  "word": "bank",
+                  "start": 150.02,
+                  "end": 150.26,
+                  "confidence": 0.9997067
+                },
+                {
+                  "word": "purchases",
+                  "start": 150.26,
+                  "end": 150.74,
+                  "confidence": 0.97963065
+                },
+                {
+                  "word": "the",
+                  "start": 150.74,
+                  "end": 150.9,
+                  "confidence": 0.99792993
+                },
+                {
+                  "word": "asset",
+                  "start": 150.9,
+                  "end": 151.38,
+                  "confidence": 0.98802066
+                },
+                {
+                  "word": "and",
+                  "start": 151.38,
+                  "end": 151.54,
+                  "confidence": 0.99256843
+                },
+                {
+                  "word": "takes",
+                  "start": 151.54,
+                  "end": 152.04,
+                  "confidence": 0.9914166
+                },
+                {
+                  "word": "ownership",
+                  "start": 152.18,
+                  "end": 152.42,
+                  "confidence": 0.9994599
+                },
+                {
+                  "word": "finally",
+                  "start": 152.91472,
+                  "end": 153.31418,
+                  "confidence": 0.9998431
+                },
+                {
+                  "word": "we",
+                  "start": 153.63374,
+                  "end": 153.79353,
+                  "confidence": 0.9993205
+                },
+                {
+                  "word": "sell",
+                  "start": 153.79353,
+                  "end": 153.95331,
+                  "confidence": 0.9983021
+                },
+                {
+                  "word": "the",
+                  "start": 153.95331,
+                  "end": 154.19298,
+                  "confidence": 0.9968778
+                },
+                {
+                  "word": "asset",
+                  "start": 154.19298,
+                  "end": 154.51256,
+                  "confidence": 0.9943819
+                },
+                {
+                  "word": "to",
+                  "start": 154.51256,
+                  "end": 154.67233,
+                  "confidence": 0.9994248
+                },
+                {
+                  "word": "you",
+                  "start": 154.67233,
+                  "end": 154.912,
+                  "confidence": 0.99896526
+                },
+                {
+                  "word": "at",
+                  "start": 154.912,
+                  "end": 155.0718,
+                  "confidence": 0.9955531
+                },
+                {
+                  "word": "the",
+                  "start": 155.0718,
+                  "end": 155.31146,
+                  "confidence": 0.9935994
+                },
+                {
+                  "word": "agreed",
+                  "start": 155.31146,
+                  "end": 155.55113,
+                  "confidence": 0.9999778
+                },
+                {
+                  "word": "upon",
+                  "start": 155.55113,
+                  "end": 155.79082,
+                  "confidence": 0.9995802
+                },
+                {
+                  "word": "price",
+                  "start": 155.79082,
+                  "end": 156.03049,
+                  "confidence": 0.9993082
+                },
+                {
+                  "word": "and",
+                  "start": 156.50983,
+                  "end": 156.74951,
+                  "confidence": 0.9989718
+                },
+                {
+                  "word": "you",
+                  "start": 156.74951,
+                  "end": 157.14896,
+                  "confidence": 0.999265
+                },
+                {
+                  "word": "repay",
+                  "start": 157.14896,
+                  "end": 157.38864,
+                  "confidence": 0.99779224
+                },
+                {
+                  "word": "in",
+                  "start": 157.38864,
+                  "end": 157.7881,
+                  "confidence": 0.55033565
+                },
+                {
+                  "word": "installments",
+                  "start": 157.7881,
+                  "end": 158.26744,
+                  "confidence": 0.97625524
+                },
+                {
+                  "word": "over",
+                  "start": 158.26744,
+                  "end": 158.50711,
+                  "confidence": 0.99975723
+                },
+                {
+                  "word": "the",
+                  "start": 158.50711,
+                  "end": 158.6669,
+                  "confidence": 0.9941394
+                },
+                {
+                  "word": "specified",
+                  "start": 158.6669,
+                  "end": 159.1669,
+                  "confidence": 0.9995049
+                },
+                {
+                  "word": "period",
+                  "start": 159.22614,
+                  "end": 159.5457,
+                  "confidence": 0.9982175
+                },
+                {
+                  "word": "once",
+                  "start": 160.18483,
+                  "end": 160.4245,
+                  "confidence": 0.99938583
+                },
+                {
+                  "word": "i",
+                  "start": 160.5044,
+                  "end": 160.66418,
+                  "confidence": 0.9990023
+                },
+                {
+                  "word": "take",
+                  "start": 160.66418,
+                  "end": 161.14352,
+                  "confidence": 0.99942327
+                },
+                {
+                  "word": "ownership",
+                  "start": 161.14352,
+                  "end": 161.30331,
+                  "confidence": 0.99998736
+                },
+                {
+                  "word": "of",
+                  "start": 161.30331,
+                  "end": 161.38321,
+                  "confidence": 0.99925214
+                },
+                {
+                  "word": "the",
+                  "start": 161.38321,
+                  "end": 161.54298,
+                  "confidence": 0.997661
+                },
+                {
+                  "word": "asset",
+                  "start": 161.54298,
+                  "end": 161.86255,
+                  "confidence": 0.98968256
+                },
+                {
+                  "word": "does",
+                  "start": 162.18211,
+                  "end": 162.3419,
+                  "confidence": 0.9992537
+                },
+                {
+                  "word": "the",
+                  "start": 162.3419,
+                  "end": 162.50168,
+                  "confidence": 0.9993293
+                },
+                {
+                  "word": "bank",
+                  "start": 162.50168,
+                  "end": 162.90114,
+                  "confidence": 0.9991917
+                },
+                {
+                  "word": "remain",
+                  "start": 162.90114,
+                  "end": 163.2207,
+                  "confidence": 0.99956733
+                },
+                {
+                  "word": "involved",
+                  "start": 163.2207,
+                  "end": 163.3805,
+                  "confidence": 0.7905649
+                },
+                {
+                  "word": "in",
+                  "start": 163.3805,
+                  "end": 163.54027,
+                  "confidence": 0.9997392
+                },
+                {
+                  "word": "any",
+                  "start": 163.54027,
+                  "end": 163.77994,
+                  "confidence": 0.980792
+                },
+                {
+                  "word": "way",
+                  "start": 163.77994,
+                  "end": 163.93973,
+                  "confidence": 0.96667004
+                },
+                {
+                  "word": "after",
+                  "start": 164.57886,
+                  "end": 164.89842,
+                  "confidence": 0.99952495
+                },
+                {
+                  "word": "the",
+                  "start": 164.89842,
+                  "end": 165.0582,
+                  "confidence": 0.9983156
+                },
+                {
+                  "word": "asset",
+                  "start": 165.0582,
+                  "end": 165.37776,
+                  "confidence": 0.992884
+                },
+                {
+                  "word": "is",
+                  "start": 165.37776,
+                  "end": 165.61745,
+                  "confidence": 0.99623054
+                },
+                {
+                  "word": "sold",
+                  "start": 165.61745,
+                  "end": 165.85712,
+                  "confidence": 0.99954
+                },
+                {
+                  "word": "to",
+                  "start": 165.85712,
+                  "end": 166.01689,
+                  "confidence": 0.9991135
+                },
+                {
+                  "word": "you",
+                  "start": 166.01689,
+                  "end": 166.33646,
+                  "confidence": 0.99794596
+                },
+                {
+                  "word": "through",
+                  "start": 166.33646,
+                  "end": 166.49625,
+                  "confidence": 0.9980469
+                },
+                {
+                  "word": "more",
+                  "start": 166.65604,
+                  "end": 167.13538,
+                  "confidence": 0.2639046
+                },
+                {
+                  "word": "it",
+                  "start": 167.70999,
+                  "end": 168.03,
+                  "confidence": 0.9993414
+                },
+                {
+                  "word": "becomes",
+                  "start": 168.03,
+                  "end": 168.18999,
+                  "confidence": 0.99978596
+                },
+                {
+                  "word": "your",
+                  "start": 168.18999,
+                  "end": 168.43,
+                  "confidence": 0.9992021
+                },
+                {
+                  "word": "property",
+                  "start": 168.43,
+                  "end": 168.93,
+                  "confidence": 0.999079
+                },
+                {
+                  "word": "completely",
+                  "start": 169.15,
+                  "end": 169.54999,
+                  "confidence": 0.99858546
+                },
+                {
+                  "word": "the",
+                  "start": 169.95,
+                  "end": 170.18999,
+                  "confidence": 0.99952734
+                },
+                {
+                  "word": "bank",
+                  "start": 170.18999,
+                  "end": 170.43,
+                  "confidence": 0.9996493
+                },
+                {
+                  "word": "no",
+                  "start": 170.43,
+                  "end": 170.67,
+                  "confidence": 0.999716
+                },
+                {
+                  "word": "longer",
+                  "start": 170.67,
+                  "end": 170.98999,
+                  "confidence": 0.99996006
+                },
+                {
+                  "word": "has",
+                  "start": 170.98999,
+                  "end": 171.23,
+                  "confidence": 0.9985764
+                },
+                {
+                  "word": "any",
+                  "start": 171.23,
+                  "end": 171.73,
+                  "confidence": 0.9996873
+                },
+                {
+                  "word": "ownership",
+                  "start": 171.79,
+                  "end": 172.03,
+                  "confidence": 0.99977106
+                },
+                {
+                  "word": "or",
+                  "start": 172.03,
+                  "end": 172.34999,
+                  "confidence": 0.999401
+                },
+                {
+                  "word": "involvement",
+                  "start": 172.34999,
+                  "end": 172.67,
+                  "confidence": 0.9975516
+                },
+                {
+                  "word": "with",
+                  "start": 172.67,
+                  "end": 172.82999,
+                  "confidence": 0.99934167
+                },
+                {
+                  "word": "the",
+                  "start": 172.82999,
+                  "end": 173.06999,
+                  "confidence": 0.997006
+                },
+                {
+                  "word": "asset",
+                  "start": 173.06999,
+                  "end": 173.39,
+                  "confidence": 0.9955727
+                },
+                {
+                  "word": "however",
+                  "start": 174.03,
+                  "end": 174.43,
+                  "confidence": 0.99950016
+                },
+                {
+                  "word": "we",
+                  "start": 174.67,
+                  "end": 174.75,
+                  "confidence": 0.9848269
+                },
+                {
+                  "word": "are",
+                  "start": 174.75,
+                  "end": 174.98999,
+                  "confidence": 0.98798984
+                },
+                {
+                  "word": "available",
+                  "start": 174.98999,
+                  "end": 175.31,
+                  "confidence": 0.9998441
+                },
+                {
+                  "word": "to",
+                  "start": 175.31,
+                  "end": 175.62999,
+                  "confidence": 0.99940896
+                },
+                {
+                  "word": "assist",
+                  "start": 175.62999,
+                  "end": 175.79,
+                  "confidence": 0.9998754
+                },
+                {
+                  "word": "you",
+                  "start": 175.79,
+                  "end": 175.95,
+                  "confidence": 0.9993781
+                },
+                {
+                  "word": "with",
+                  "start": 175.95,
+                  "end": 176.18999,
+                  "confidence": 0.9994843
+                },
+                {
+                  "word": "any",
+                  "start": 176.18999,
+                  "end": 176.51,
+                  "confidence": 0.9984199
+                },
+                {
+                  "word": "questions",
+                  "start": 176.51,
+                  "end": 177.01,
+                  "confidence": 0.9988674
+                },
+                {
+                  "word": "or",
+                  "start": 177.15,
+                  "end": 177.54999,
+                  "confidence": 0.9998142
+                },
+                {
+                  "word": "concerns",
+                  "start": 177.54999,
+                  "end": 177.87,
+                  "confidence": 0.9999051
+                },
+                {
+                  "word": "during",
+                  "start": 177.87,
+                  "end": 178.10999,
+                  "confidence": 0.99962056
+                },
+                {
+                  "word": "the",
+                  "start": 178.10999,
+                  "end": 178.43,
+                  "confidence": 0.9976751
+                },
+                {
+                  "word": "repayment",
+                  "start": 178.43,
+                  "end": 178.75,
+                  "confidence": 0.99907756
+                },
+                {
+                  "word": "period",
+                  "start": 178.75,
+                  "end": 179.15,
+                  "confidence": 0.99409014
+                },
+                {
+                  "word": "that's",
+                  "start": 179.72414,
+                  "end": 179.9634,
+                  "confidence": 0.99912816
+                },
+                {
+                  "word": "clear",
+                  "start": 179.9634,
+                  "end": 180.20265,
+                  "confidence": 0.99833775
+                },
+                {
+                  "word": "is",
+                  "start": 180.68115,
+                  "end": 180.84065,
+                  "confidence": 0.99967694
+                },
+                {
+                  "word": "there",
+                  "start": 180.84065,
+                  "end": 181.00017,
+                  "confidence": 0.9989531
+                },
+                {
+                  "word": "a",
+                  "start": 181.00017,
+                  "end": 181.15967,
+                  "confidence": 0.99882346
+                },
+                {
+                  "word": "maximum",
+                  "start": 181.15967,
+                  "end": 181.65967,
+                  "confidence": 0.9981869
+                },
+                {
+                  "word": "or",
+                  "start": 181.71793,
+                  "end": 181.87743,
+                  "confidence": 0.9983658
+                },
+                {
+                  "word": "minimum",
+                  "start": 181.87743,
+                  "end": 182.27618,
+                  "confidence": 0.9952975
+                },
+                {
+                  "word": "amount",
+                  "start": 182.27618,
+                  "end": 182.43568,
+                  "confidence": 0.9990163
+                },
+                {
+                  "word": "i",
+                  "start": 182.51544,
+                  "end": 182.5952,
+                  "confidence": 0.9997019
+                },
+                {
+                  "word": "can",
+                  "start": 182.5952,
+                  "end": 182.83444,
+                  "confidence": 0.9984201
+                },
+                {
+                  "word": "apply",
+                  "start": 182.83444,
+                  "end": 183.0737,
+                  "confidence": 0.99978215
+                },
+                {
+                  "word": "for",
+                  "start": 183.0737,
+                  "end": 183.31296,
+                  "confidence": 0.99812037
+                },
+                {
+                  "word": "under",
+                  "start": 183.31296,
+                  "end": 183.55222,
+                  "confidence": 0.99932146
+                },
+                {
+                  "word": "this",
+                  "start": 183.55222,
+                  "end": 183.71172,
+                  "confidence": 0.9986732
+                },
+                {
+                  "word": "financing",
+                  "start": 183.71172,
+                  "end": 184.19023,
+                  "confidence": 0.99931335
+                },
+                {
+                  "word": "the",
+                  "start": 184.74849,
+                  "end": 184.90799,
+                  "confidence": 0.99908566
+                },
+                {
+                  "word": "financing",
+                  "start": 184.90799,
+                  "end": 185.40799,
+                  "confidence": 0.99812704
+                },
+                {
+                  "word": "amount",
+                  "start": 185.546,
+                  "end": 185.94476,
+                  "confidence": 0.99869823
+                },
+                {
+                  "word": "depends",
+                  "start": 185.94476,
+                  "end": 186.18402,
+                  "confidence": 0.99981755
+                },
+                {
+                  "word": "on",
+                  "start": 186.18402,
+                  "end": 186.34352,
+                  "confidence": 0.9992105
+                },
+                {
+                  "word": "your",
+                  "start": 186.34352,
+                  "end": 186.50302,
+                  "confidence": 0.9968548
+                },
+                {
+                  "word": "needs",
+                  "start": 186.50302,
+                  "end": 187.00302,
+                  "confidence": 0.99310356
+                },
+                {
+                  "word": "and",
+                  "start": 187.14104,
+                  "end": 187.64104,
+                  "confidence": 0.9983387
+                },
+                {
+                  "word": "financial",
+                  "start": 187.6993,
+                  "end": 188.0183,
+                  "confidence": 0.9975452
+                },
+                {
+                  "word": "capacity",
+                  "start": 188.0183,
+                  "end": 188.41705,
+                  "confidence": 0.99888176
+                },
+                {
+                  "word": "generally",
+                  "start": 189.05507,
+                  "end": 189.53358,
+                  "confidence": 0.9974867
+                },
+                {
+                  "word": "there",
+                  "start": 190.17159,
+                  "end": 190.3311,
+                  "confidence": 0.99610823
+                },
+                {
+                  "word": "is",
+                  "start": 190.3311,
+                  "end": 190.4906,
+                  "confidence": 0.9957658
+                },
+                {
+                  "word": "a",
+                  "start": 190.4906,
+                  "end": 190.6501,
+                  "confidence": 0.9963241
+                },
+                {
+                  "word": "minimum",
+                  "start": 190.6501,
+                  "end": 191.12862,
+                  "confidence": 0.99949133
+                },
+                {
+                  "word": "financing",
+                  "start": 191.12862,
+                  "end": 191.62862,
+                  "confidence": 0.9982376
+                },
+                {
+                  "word": "amount",
+                  "start": 191.76662,
+                  "end": 192.00587,
+                  "confidence": 0.99778664
+                },
+                {
+                  "word": "but",
+                  "start": 192.49933,
+                  "end": 192.65878,
+                  "confidence": 0.99962974
+                },
+                {
+                  "word": "there",
+                  "start": 192.65878,
+                  "end": 192.81824,
+                  "confidence": 0.9823442
+                },
+                {
+                  "word": "is",
+                  "start": 192.81824,
+                  "end": 192.97769,
+                  "confidence": 0.9953275
+                },
+                {
+                  "word": "flexibility",
+                  "start": 192.97769,
+                  "end": 193.47769,
+                  "confidence": 0.99954265
+                },
+                {
+                  "word": "to",
+                  "start": 193.69525,
+                  "end": 193.93443,
+                  "confidence": 0.99987674
+                },
+                {
+                  "word": "accommodate",
+                  "start": 193.93443,
+                  "end": 194.33307,
+                  "confidence": 0.9998135
+                },
+                {
+                  "word": "the",
+                  "start": 194.33307,
+                  "end": 194.49252,
+                  "confidence": 0.99917537
+                },
+                {
+                  "word": "size",
+                  "start": 194.49252,
+                  "end": 194.81145,
+                  "confidence": 0.9996037
+                },
+                {
+                  "word": "of",
+                  "start": 194.81145,
+                  "end": 194.9709,
+                  "confidence": 0.9990398
+                },
+                {
+                  "word": "your",
+                  "start": 194.9709,
+                  "end": 195.44926,
+                  "confidence": 0.9990808
+                },
+                {
+                  "word": "agricultural",
+                  "start": 195.44926,
+                  "end": 195.94926,
+                  "confidence": 0.95419323
+                },
+                {
+                  "word": "operations",
+                  "start": 196.24655,
+                  "end": 196.48573,
+                  "confidence": 0.9975853
+                },
+                {
+                  "word": "we",
+                  "start": 197.12357,
+                  "end": 197.28302,
+                  "confidence": 0.9998268
+                },
+                {
+                  "word": "can",
+                  "start": 197.28302,
+                  "end": 197.60193,
+                  "confidence": 0.99951196
+                },
+                {
+                  "word": "discuss",
+                  "start": 197.60193,
+                  "end": 197.84111,
+                  "confidence": 0.9998369
+                },
+                {
+                  "word": "your",
+                  "start": 197.84111,
+                  "end": 198.23976,
+                  "confidence": 0.9996935
+                },
+                {
+                  "word": "specific",
+                  "start": 198.23976,
+                  "end": 198.71812,
+                  "confidence": 0.9999573
+                },
+                {
+                  "word": "requirements",
+                  "start": 198.71812,
+                  "end": 199.1965,
+                  "confidence": 0.9988973
+                },
+                {
+                  "word": "to",
+                  "start": 199.1965,
+                  "end": 199.51541,
+                  "confidence": 0.9999138
+                },
+                {
+                  "word": "determine",
+                  "start": 199.51541,
+                  "end": 199.83432,
+                  "confidence": 0.99969614
+                },
+                {
+                  "word": "an",
+                  "start": 199.83432,
+                  "end": 200.0735,
+                  "confidence": 0.994783
+                },
+                {
+                  "word": "appropriate",
+                  "start": 200.0735,
+                  "end": 200.5735,
+                  "confidence": 0.9996037
+                },
+                {
+                  "word": "arrangement",
+                  "start": 200.6316,
+                  "end": 201.10997,
+                  "confidence": 0.99446326
+                },
+                {
+                  "word": "what",
+                  "start": 201.66808,
+                  "end": 201.90726,
+                  "confidence": 0.99940646
+                },
+                {
+                  "word": "kinds",
+                  "start": 201.90726,
+                  "end": 202.14644,
+                  "confidence": 0.9822278
+                },
+                {
+                  "word": "of",
+                  "start": 202.14644,
+                  "end": 202.46536,
+                  "confidence": 0.9993224
+                },
+                {
+                  "word": "repayment",
+                  "start": 202.46536,
+                  "end": 202.78427,
+                  "confidence": 0.9921444
+                },
+                {
+                  "word": "terms",
+                  "start": 202.78427,
+                  "end": 203.10318,
+                  "confidence": 0.9986707
+                },
+                {
+                  "word": "are",
+                  "start": 203.10318,
+                  "end": 203.26263,
+                  "confidence": 0.999546
+                },
+                {
+                  "word": "available",
+                  "start": 203.26263,
+                  "end": 203.66129,
+                  "confidence": 0.99996257
+                },
+                {
+                  "word": "i'm",
+                  "start": 204.13965,
+                  "end": 204.37883,
+                  "confidence": 0.9943943
+                },
+                {
+                  "word": "curious",
+                  "start": 204.37883,
+                  "end": 204.77748,
+                  "confidence": 0.999818
+                },
+                {
+                  "word": "if",
+                  "start": 204.77748,
+                  "end": 204.93694,
+                  "confidence": 0.99969506
+                },
+                {
+                  "word": "they",
+                  "start": 204.93694,
+                  "end": 205.09639,
+                  "confidence": 0.99846077
+                },
+                {
+                  "word": "can",
+                  "start": 205.09639,
+                  "end": 205.17612,
+                  "confidence": 0.9615636
+                },
+                {
+                  "word": "be",
+                  "start": 205.17612,
+                  "end": 205.4153,
+                  "confidence": 0.9994873
+                },
+                {
+                  "word": "adjusted",
+                  "start": 205.4153,
+                  "end": 205.73422,
+                  "confidence": 0.9929032
+                },
+                {
+                  "word": "for",
+                  "start": 205.73422,
+                  "end": 205.89368,
+                  "confidence": 0.9996476
+                },
+                {
+                  "word": "farmers",
+                  "start": 205.89368,
+                  "end": 206.29231,
+                  "confidence": 0.9993505
+                },
+                {
+                  "word": "like",
+                  "start": 206.29231,
+                  "end": 206.5315,
+                  "confidence": 0.9994312
+                },
+                {
+                  "word": "me",
+                  "start": 206.5315,
+                  "end": 206.69095,
+                  "confidence": 0.997855
+                },
+                {
+                  "word": "since",
+                  "start": 207.1844,
+                  "end": 207.42369,
+                  "confidence": 0.9993068
+                },
+                {
+                  "word": "farming",
+                  "start": 207.42369,
+                  "end": 207.90225,
+                  "confidence": 0.99638885
+                },
+                {
+                  "word": "income",
+                  "start": 207.90225,
+                  "end": 208.14153,
+                  "confidence": 0.99836034
+                },
+                {
+                  "word": "can",
+                  "start": 208.14153,
+                  "end": 208.30106,
+                  "confidence": 0.99799806
+                },
+                {
+                  "word": "be",
+                  "start": 208.30106,
+                  "end": 208.46057,
+                  "confidence": 0.9995665
+                },
+                {
+                  "word": "seasonal",
+                  "start": 208.46057,
+                  "end": 208.77962,
+                  "confidence": 0.99977607
+                },
+                {
+                  "word": "that's",
+                  "start": 209.33794,
+                  "end": 209.57721,
+                  "confidence": 0.99926955
+                },
+                {
+                  "word": "a",
+                  "start": 209.57721,
+                  "end": 209.73674,
+                  "confidence": 0.9974643
+                },
+                {
+                  "word": "valid",
+                  "start": 209.73674,
+                  "end": 210.05579,
+                  "confidence": 0.99950814
+                },
+                {
+                  "word": "point",
+                  "start": 210.05579,
+                  "end": 210.13554,
+                  "confidence": 0.9948179
+                },
+                {
+                  "word": "jamal",
+                  "start": 210.45457,
+                  "end": 210.69386,
+                  "confidence": 0.9860512
+                },
+                {
+                  "word": "we",
+                  "start": 211.33194,
+                  "end": 211.49147,
+                  "confidence": 0.9994937
+                },
+                {
+                  "word": "recognize",
+                  "start": 211.49147,
+                  "end": 211.99147,
+                  "confidence": 0.9803426
+                },
+                {
+                  "word": "that",
+                  "start": 212.12955,
+                  "end": 212.36884,
+                  "confidence": 0.99835736
+                },
+                {
+                  "word": "farming",
+                  "start": 212.36884,
+                  "end": 212.76764,
+                  "confidence": 0.9955012
+                },
+                {
+                  "word": "income",
+                  "start": 212.76764,
+                  "end": 212.92715,
+                  "confidence": 0.9998561
+                },
+                {
+                  "word": "is",
+                  "start": 212.92715,
+                  "end": 213.16644,
+                  "confidence": 0.99839693
+                },
+                {
+                  "word": "often",
+                  "start": 213.16644,
+                  "end": 213.645,
+                  "confidence": 0.9844791
+                },
+                {
+                  "word": "seasonal",
+                  "start": 213.645,
+                  "end": 214.04381,
+                  "confidence": 0.999863
+                },
+                {
+                  "word": "while",
+                  "start": 214.68188,
+                  "end": 215.16045,
+                  "confidence": 0.99671316
+                },
+                {
+                  "word": "repayment",
+                  "start": 215.16045,
+                  "end": 215.47949,
+                  "confidence": 0.992201
+                },
+                {
+                  "word": "terms",
+                  "start": 215.47949,
+                  "end": 215.79854,
+                  "confidence": 0.99832183
+                },
+                {
+                  "word": "are",
+                  "start": 215.79854,
+                  "end": 216.03781,
+                  "confidence": 0.99914825
+                },
+                {
+                  "word": "typically",
+                  "start": 216.03781,
+                  "end": 216.51637,
+                  "confidence": 0.99935776
+                },
+                {
+                  "word": "fixed",
+                  "start": 216.51637,
+                  "end": 216.75566,
+                  "confidence": 0.9995995
+                },
+                {
+                  "word": "we",
+                  "start": 217.0747,
+                  "end": 217.23422,
+                  "confidence": 0.99974865
+                },
+                {
+                  "word": "can",
+                  "start": 217.23422,
+                  "end": 217.47351,
+                  "confidence": 0.99865025
+                },
+                {
+                  "word": "structure",
+                  "start": 217.47351,
+                  "end": 217.8723,
+                  "confidence": 0.9988691
+                },
+                {
+                  "word": "the",
+                  "start": 217.8723,
+                  "end": 218.19135,
+                  "confidence": 0.99693906
+                },
+                {
+                  "word": "installments",
+                  "start": 218.19135,
+                  "end": 218.59015,
+                  "confidence": 0.9908025
+                },
+                {
+                  "word": "to",
+                  "start": 218.59015,
+                  "end": 218.9092,
+                  "confidence": 0.9997482
+                },
+                {
+                  "word": "align",
+                  "start": 218.9092,
+                  "end": 219.06871,
+                  "confidence": 0.99827003
+                },
+                {
+                  "word": "with",
+                  "start": 219.06871,
+                  "end": 219.22824,
+                  "confidence": 0.999166
+                },
+                {
+                  "word": "your",
+                  "start": 219.22824,
+                  "end": 219.46751,
+                  "confidence": 0.9973322
+                },
+                {
+                  "word": "harvest",
+                  "start": 219.46751,
+                  "end": 219.7068,
+                  "confidence": 0.98116523
+                },
+                {
+                  "word": "cycles",
+                  "start": 219.7068,
+                  "end": 220.02583,
+                  "confidence": 0.99571913
+                },
+                {
+                  "word": "which",
+                  "start": 220.51901,
+                  "end": 220.67822,
+                  "confidence": 0.99980086
+                },
+                {
+                  "word": "could",
+                  "start": 220.67822,
+                  "end": 220.83742,
+                  "confidence": 0.9343222
+                },
+                {
+                  "word": "make",
+                  "start": 220.83742,
+                  "end": 221.07623,
+                  "confidence": 0.9994854
+                },
+                {
+                  "word": "managing",
+                  "start": 221.07623,
+                  "end": 221.55385,
+                  "confidence": 0.99848336
+                },
+                {
+                  "word": "payments",
+                  "start": 221.55385,
+                  "end": 222.05385,
+                  "confidence": 0.999728
+                },
+                {
+                  "word": "more",
+                  "start": 222.11105,
+                  "end": 222.42947,
+                  "confidence": 0.99975747
+                },
+                {
+                  "word": "convenient",
+                  "start": 222.42947,
+                  "end": 222.82748,
+                  "confidence": 0.9997037
+                },
+                {
+                  "word": "for",
+                  "start": 222.82748,
+                  "end": 222.98668,
+                  "confidence": 0.9977368
+                },
+                {
+                  "word": "you",
+                  "start": 222.98668,
+                  "end": 223.14589,
+                  "confidence": 0.99915826
+                },
+                {
+                  "word": "that's",
+                  "start": 223.7827,
+                  "end": 224.02151,
+                  "confidence": 0.997993
+                },
+                {
+                  "word": "good",
+                  "start": 224.02151,
+                  "end": 224.18073,
+                  "confidence": 0.9984414
+                },
+                {
+                  "word": "to",
+                  "start": 224.18073,
+                  "end": 224.33992,
+                  "confidence": 0.99959093
+                },
+                {
+                  "word": "hear",
+                  "start": 224.33992,
+                  "end": 224.49913,
+                  "confidence": 0.99179345
+                },
+                {
+                  "word": "what",
+                  "start": 225.05634,
+                  "end": 225.21555,
+                  "confidence": 0.9995301
+                },
+                {
+                  "word": "happens",
+                  "start": 225.21555,
+                  "end": 225.53395,
+                  "confidence": 0.9991596
+                },
+                {
+                  "word": "if",
+                  "start": 225.53395,
+                  "end": 225.61356,
+                  "confidence": 0.99933475
+                },
+                {
+                  "word": "i",
+                  "start": 225.77277,
+                  "end": 225.93196,
+                  "confidence": 0.9976047
+                },
+                {
+                  "word": "face",
+                  "start": 225.93196,
+                  "end": 226.43196,
+                  "confidence": 0.98752856
+                },
+                {
+                  "word": "unexpected",
+                  "start": 226.48918,
+                  "end": 226.88719,
+                  "confidence": 0.9996507
+                },
+                {
+                  "word": "challenges",
+                  "start": 226.88719,
+                  "end": 227.38719,
+                  "confidence": 0.9990847
+                },
+                {
+                  "word": "and",
+                  "start": 227.68321,
+                  "end": 227.92203,
+                  "confidence": 0.9987079
+                },
+                {
+                  "word": "find",
+                  "start": 227.92203,
+                  "end": 228.08122,
+                  "confidence": 0.99877805
+                },
+                {
+                  "word": "it",
+                  "start": 228.08122,
+                  "end": 228.24043,
+                  "confidence": 0.9794543
+                },
+                {
+                  "word": "difficult",
+                  "start": 228.24043,
+                  "end": 228.63844,
+                  "confidence": 0.9983102
+                },
+                {
+                  "word": "to",
+                  "start": 228.63844,
+                  "end": 229.03645,
+                  "confidence": 0.9983197
+                },
+                {
+                  "word": "repay",
+                  "start": 229.03645,
+                  "end": 229.19566,
+                  "confidence": 0.99075854
+                },
+                {
+                  "word": "on",
+                  "start": 229.19566,
+                  "end": 229.43446,
+                  "confidence": 0.9982502
+                },
+                {
+                  "word": "time",
+                  "start": 229.43446,
+                  "end": 229.67328,
+                  "confidence": 0.99652135
+                },
+                {
+                  "word": "if",
+                  "start": 230.23048,
+                  "end": 230.3897,
+                  "confidence": 0.99986017
+                },
+                {
+                  "word": "you",
+                  "start": 230.3897,
+                  "end": 230.7081,
+                  "confidence": 0.9991831
+                },
+                {
+                  "word": "encounter",
+                  "start": 230.7081,
+                  "end": 230.94691,
+                  "confidence": 0.93441343
+                },
+                {
+                  "word": "difficulties",
+                  "start": 230.94691,
+                  "end": 231.44691,
+                  "confidence": 0.9977616
+                },
+                {
+                  "word": "we",
+                  "start": 231.90213,
+                  "end": 232.30016,
+                  "confidence": 0.99915457
+                },
+                {
+                  "word": "recommend",
+                  "start": 232.30016,
+                  "end": 232.69817,
+                  "confidence": 0.9998098
+                },
+                {
+                  "word": "reaching",
+                  "start": 232.69817,
+                  "end": 232.85736,
+                  "confidence": 0.9999167
+                },
+                {
+                  "word": "out",
+                  "start": 232.85736,
+                  "end": 233.09618,
+                  "confidence": 0.9995054
+                },
+                {
+                  "word": "to",
+                  "start": 233.09618,
+                  "end": 233.25537,
+                  "confidence": 0.99741364
+                },
+                {
+                  "word": "us",
+                  "start": 233.25537,
+                  "end": 233.57379,
+                  "confidence": 0.9986504
+                },
+                {
+                  "word": "promptly",
+                  "start": 233.57379,
+                  "end": 233.9718,
+                  "confidence": 0.9990551
+                },
+                {
+                  "word": "in",
+                  "start": 234.5445,
+                  "end": 234.7041,
+                  "confidence": 0.99454993
+                },
+                {
+                  "word": "islamic",
+                  "start": 234.9435,
+                  "end": 235.3425,
+                  "confidence": 0.9992374
+                },
+                {
+                  "word": "banking",
+                  "start": 235.3425,
+                  "end": 235.7415,
+                  "confidence": 0.9993862
+                },
+                {
+                  "word": "penalties",
+                  "start": 236.3001,
+                  "end": 236.8001,
+                  "confidence": 0.99922144
+                },
+                {
+                  "word": "that",
+                  "start": 236.8587,
+                  "end": 237.0183,
+                  "confidence": 0.9987104
+                },
+                {
+                  "word": "are",
+                  "start": 237.0183,
+                  "end": 237.1779,
+                  "confidence": 0.998073
+                },
+                {
+                  "word": "purely",
+                  "start": 237.1779,
+                  "end": 237.5769,
+                  "confidence": 0.99942255
+                },
+                {
+                  "word": "punitive",
+                  "start": 237.5769,
+                  "end": 238.0557,
+                  "confidence": 0.9999502
+                },
+                {
+                  "word": "are",
+                  "start": 238.0557,
+                  "end": 238.37491,
+                  "confidence": 0.99882656
+                },
+                {
+                  "word": "avoided",
+                  "start": 238.37491,
+                  "end": 238.6941,
+                  "confidence": 0.99894136
+                },
+                {
+                  "word": "however",
+                  "start": 239.1729,
+                  "end": 239.6517,
+                  "confidence": 0.99908614
+                },
+                {
+                  "word": "a",
+                  "start": 239.9709,
+                  "end": 240.2103,
+                  "confidence": 0.9990767
+                },
+                {
+                  "word": "small",
+                  "start": 240.2103,
+                  "end": 240.7103,
+                  "confidence": 0.9992539
+                },
+                {
+                  "word": "administrative",
+                  "start": 240.7689,
+                  "end": 241.0881,
+                  "confidence": 0.99050224
+                },
+                {
+                  "word": "fee",
+                  "start": 241.0881,
+                  "end": 241.3275,
+                  "confidence": 0.9983906
+                },
+                {
+                  "word": "may",
+                  "start": 241.3275,
+                  "end": 241.4871,
+                  "confidence": 0.98544085
+                },
+                {
+                  "word": "be",
+                  "start": 241.4871,
+                  "end": 241.7265,
+                  "confidence": 0.9836798
+                },
+                {
+                  "word": "charged",
+                  "start": 241.7265,
+                  "end": 242.1255,
+                  "confidence": 0.9917154
+                },
+                {
+                  "word": "to",
+                  "start": 242.1255,
+                  "end": 242.2851,
+                  "confidence": 0.9991497
+                },
+                {
+                  "word": "cover",
+                  "start": 242.2851,
+                  "end": 242.7639,
+                  "confidence": 0.99946994
+                },
+                {
+                  "word": "actual",
+                  "start": 242.7639,
+                  "end": 243.0033,
+                  "confidence": 0.9972887
+                },
+                {
+                  "word": "costs",
+                  "start": 243.0033,
+                  "end": 243.5033,
+                  "confidence": 0.9260021
+                },
+                {
+                  "word": "as",
+                  "start": 243.7215,
+                  "end": 244.1205,
+                  "confidence": 0.9989618
+                },
+                {
+                  "word": "permitted",
+                  "start": 244.1205,
+                  "end": 244.3599,
+                  "confidence": 0.9897719
+                },
+                {
+                  "word": "under",
+                  "start": 244.3599,
+                  "end": 244.5993,
+                  "confidence": 0.999826
+                },
+                {
+                  "word": "shi",
+                  "start": 244.67911,
+                  "end": 245.1579,
+                  "confidence": 0.40715656
+                },
+                {
+                  "word": "our",
+                  "start": 245.7165,
+                  "end": 245.9559,
+                  "confidence": 0.99827313
+                },
+                {
+                  "word": "aim",
+                  "start": 245.9559,
+                  "end": 246.1155,
+                  "confidence": 0.999931
+                },
+                {
+                  "word": "is",
+                  "start": 246.1155,
+                  "end": 246.2751,
+                  "confidence": 0.9954768
+                },
+                {
+                  "word": "to",
+                  "start": 246.2751,
+                  "end": 246.5943,
+                  "confidence": 0.99834204
+                },
+                {
+                  "word": "collaborate",
+                  "start": 246.5943,
+                  "end": 247.0731,
+                  "confidence": 0.99843293
+                },
+                {
+                  "word": "with",
+                  "start": 247.0731,
+                  "end": 247.3125,
+                  "confidence": 0.99807096
+                },
+                {
+                  "word": "you",
+                  "start": 247.3125,
+                  "end": 247.5519,
+                  "confidence": 0.99895036
+                },
+                {
+                  "word": "on",
+                  "start": 247.5519,
+                  "end": 247.7115,
+                  "confidence": 0.99933004
+                },
+                {
+                  "word": "a",
+                  "start": 247.7115,
+                  "end": 248.1105,
+                  "confidence": 0.996666
+                },
+                {
+                  "word": "solution",
+                  "start": 248.1105,
+                  "end": 248.3499,
+                  "confidence": 0.99917537
+                },
+                {
+                  "word": "that",
+                  "start": 248.3499,
+                  "end": 248.5095,
+                  "confidence": 0.99843925
+                },
+                {
+                  "word": "is",
+                  "start": 248.5095,
+                  "end": 248.7489,
+                  "confidence": 0.99858946
+                },
+                {
+                  "word": "fair",
+                  "start": 248.7489,
+                  "end": 249.1479,
+                  "confidence": 0.999064
+                },
+                {
+                  "word": "and",
+                  "start": 249.1479,
+                  "end": 249.3873,
+                  "confidence": 0.9996761
+                },
+                {
+                  "word": "manageable",
+                  "start": 249.3873,
+                  "end": 249.8873,
+                  "confidence": 0.99968255
+                },
+                {
+                  "word": "that's",
+                  "start": 250.6,
+                  "end": 251.1,
+                  "confidence": 0.9986506
+                },
+                {
+                  "word": "reassuring",
+                  "start": 251.16,
+                  "end": 251.48001,
+                  "confidence": 0.9993142
+                },
+                {
+                  "word": "are",
+                  "start": 251.88,
+                  "end": 252.04001,
+                  "confidence": 0.9933795
+                },
+                {
+                  "word": "there",
+                  "start": 252.04001,
+                  "end": 252.20001,
+                  "confidence": 0.8713113
+                },
+                {
+                  "word": "any",
+                  "start": 252.20001,
+                  "end": 252.68001,
+                  "confidence": 0.99966216
+                },
+                {
+                  "word": "additional",
+                  "start": 252.68001,
+                  "end": 252.92001,
+                  "confidence": 0.99932325
+                },
+                {
+                  "word": "fees",
+                  "start": 252.92001,
+                  "end": 253.42001,
+                  "confidence": 0.9995772
+                },
+                {
+                  "word": "or",
+                  "start": 253.48001,
+                  "end": 253.72,
+                  "confidence": 0.9993624
+                },
+                {
+                  "word": "charges",
+                  "start": 253.72,
+                  "end": 254.12001,
+                  "confidence": 0.99948585
+                },
+                {
+                  "word": "i",
+                  "start": 254.20001,
+                  "end": 254.28001,
+                  "confidence": 0.9998485
+                },
+                {
+                  "word": "should",
+                  "start": 254.28001,
+                  "end": 254.44,
+                  "confidence": 0.9995933
+                },
+                {
+                  "word": "be",
+                  "start": 254.44,
+                  "end": 254.68001,
+                  "confidence": 0.9992673
+                },
+                {
+                  "word": "aware",
+                  "start": 254.68001,
+                  "end": 254.76001,
+                  "confidence": 0.9999176
+                },
+                {
+                  "word": "of",
+                  "start": 254.76001,
+                  "end": 254.92001,
+                  "confidence": 0.99883586
+                },
+                {
+                  "word": "all",
+                  "start": 255.56001,
+                  "end": 256.04,
+                  "confidence": 0.999311
+                },
+                {
+                  "word": "applicable",
+                  "start": 256.04,
+                  "end": 256.44,
+                  "confidence": 0.9999217
+                },
+                {
+                  "word": "fees",
+                  "start": 256.44,
+                  "end": 256.94,
+                  "confidence": 0.99941516
+                },
+                {
+                  "word": "such",
+                  "start": 257.08002,
+                  "end": 257.24002,
+                  "confidence": 0.99984086
+                },
+                {
+                  "word": "as",
+                  "start": 257.24002,
+                  "end": 257.74002,
+                  "confidence": 0.9996258
+                },
+                {
+                  "word": "administrative",
+                  "start": 257.88,
+                  "end": 258.2,
+                  "confidence": 0.99905866
+                },
+                {
+                  "word": "or",
+                  "start": 258.2,
+                  "end": 258.44,
+                  "confidence": 0.9979089
+                },
+                {
+                  "word": "processing",
+                  "start": 258.44,
+                  "end": 258.94,
+                  "confidence": 0.9992786
+                },
+                {
+                  "word": "charges",
+                  "start": 259.0,
+                  "end": 259.5,
+                  "confidence": 0.99971586
+                },
+                {
+                  "word": "will",
+                  "start": 259.72,
+                  "end": 259.88,
+                  "confidence": 0.99812406
+                },
+                {
+                  "word": "be",
+                  "start": 259.88,
+                  "end": 260.2,
+                  "confidence": 0.99954
+                },
+                {
+                  "word": "disclosed",
+                  "start": 260.2,
+                  "end": 260.36002,
+                  "confidence": 0.9973114
+                },
+                {
+                  "word": "to",
+                  "start": 260.36002,
+                  "end": 260.52002,
+                  "confidence": 0.9989409
+                },
+                {
+                  "word": "you",
+                  "start": 260.52002,
+                  "end": 260.84,
+                  "confidence": 0.9989011
+                },
+                {
+                  "word": "upfront",
+                  "start": 260.84,
+                  "end": 261.16,
+                  "confidence": 0.95442873
+                },
+                {
+                  "word": "before",
+                  "start": 261.16,
+                  "end": 261.4,
+                  "confidence": 0.99988174
+                },
+                {
+                  "word": "you",
+                  "start": 261.4,
+                  "end": 261.80002,
+                  "confidence": 0.9993518
+                },
+                {
+                  "word": "proceed",
+                  "start": 261.80002,
+                  "end": 262.04,
+                  "confidence": 0.99967074
+                },
+                {
+                  "word": "transparency",
+                  "start": 262.85413,
+                  "end": 263.3333,
+                  "confidence": 0.99983275
+                },
+                {
+                  "word": "is",
+                  "start": 263.3333,
+                  "end": 263.41318,
+                  "confidence": 0.99945396
+                },
+                {
+                  "word": "a",
+                  "start": 263.41318,
+                  "end": 263.65277,
+                  "confidence": 0.993846
+                },
+                {
+                  "word": "core",
+                  "start": 263.65277,
+                  "end": 263.97223,
+                  "confidence": 0.99636215
+                },
+                {
+                  "word": "principle",
+                  "start": 263.97223,
+                  "end": 264.37155,
+                  "confidence": 0.75350595
+                },
+                {
+                  "word": "in",
+                  "start": 264.37155,
+                  "end": 264.53128,
+                  "confidence": 0.99878246
+                },
+                {
+                  "word": "islamic",
+                  "start": 264.691,
+                  "end": 265.01047,
+                  "confidence": 0.9991597
+                },
+                {
+                  "word": "banking",
+                  "start": 265.01047,
+                  "end": 265.4098,
+                  "confidence": 0.99844956
+                },
+                {
+                  "word": "and",
+                  "start": 265.72925,
+                  "end": 265.88898,
+                  "confidence": 0.9994848
+                },
+                {
+                  "word": "we",
+                  "start": 265.88898,
+                  "end": 266.20844,
+                  "confidence": 0.99834096
+                },
+                {
+                  "word": "ensure",
+                  "start": 266.20844,
+                  "end": 266.44803,
+                  "confidence": 0.9907345
+                },
+                {
+                  "word": "that",
+                  "start": 266.44803,
+                  "end": 266.60776,
+                  "confidence": 0.9921261
+                },
+                {
+                  "word": "there",
+                  "start": 266.60776,
+                  "end": 266.7675,
+                  "confidence": 0.99967
+                },
+                {
+                  "word": "are",
+                  "start": 266.7675,
+                  "end": 266.92722,
+                  "confidence": 0.99841666
+                },
+                {
+                  "word": "no",
+                  "start": 266.92722,
+                  "end": 267.08694,
+                  "confidence": 0.99940777
+                },
+                {
+                  "word": "hidden",
+                  "start": 267.08694,
+                  "end": 267.4064,
+                  "confidence": 0.999985
+                },
+                {
+                  "word": "charges",
+                  "start": 267.4064,
+                  "end": 267.8856,
+                  "confidence": 0.9977196
+                },
+                {
+                  "word": "i",
+                  "start": 268.537,
+                  "end": 268.93698,
+                  "confidence": 0.99951184
+                },
+                {
+                  "word": "appreciate",
+                  "start": 268.93698,
+                  "end": 269.33698,
+                  "confidence": 0.9996586
+                },
+                {
+                  "word": "that",
+                  "start": 269.33698,
+                  "end": 269.417,
+                  "confidence": 0.9990476
+                },
+                {
+                  "word": "how",
+                  "start": 269.977,
+                  "end": 270.297,
+                  "confidence": 0.9999256
+                },
+                {
+                  "word": "long",
+                  "start": 270.297,
+                  "end": 270.61697,
+                  "confidence": 0.9998863
+                },
+                {
+                  "word": "does",
+                  "start": 270.61697,
+                  "end": 270.77698,
+                  "confidence": 0.9998877
+                },
+                {
+                  "word": "the",
+                  "start": 270.77698,
+                  "end": 271.017,
+                  "confidence": 0.9951011
+                },
+                {
+                  "word": "entire",
+                  "start": 271.017,
+                  "end": 271.33698,
+                  "confidence": 0.9996331
+                },
+                {
+                  "word": "process",
+                  "start": 271.33698,
+                  "end": 271.83698,
+                  "confidence": 0.9983851
+                },
+                {
+                  "word": "usually",
+                  "start": 271.897,
+                  "end": 272.37698,
+                  "confidence": 0.9997863
+                },
+                {
+                  "word": "take",
+                  "start": 272.37698,
+                  "end": 272.857,
+                  "confidence": 0.99982303
+                },
+                {
+                  "word": "from",
+                  "start": 272.857,
+                  "end": 273.357,
+                  "confidence": 0.9984694
+                },
+                {
+                  "word": "application",
+                  "start": 273.49698,
+                  "end": 273.737,
+                  "confidence": 0.9972035
+                },
+                {
+                  "word": "to",
+                  "start": 273.737,
+                  "end": 273.977,
+                  "confidence": 0.9996007
+                },
+                {
+                  "word": "receiving",
+                  "start": 273.977,
+                  "end": 274.297,
+                  "confidence": 0.999456
+                },
+                {
+                  "word": "the",
+                  "start": 274.297,
+                  "end": 274.37698,
+                  "confidence": 0.99420834
+                },
+                {
+                  "word": "finance",
+                  "start": 274.37698,
+                  "end": 274.77698,
+                  "confidence": 0.89316106
+                },
+                {
+                  "word": "asset",
+                  "start": 274.77698,
+                  "end": 275.177,
+                  "confidence": 0.99064565
+                },
+                {
+                  "word": "once",
+                  "start": 275.737,
+                  "end": 275.977,
+                  "confidence": 0.99951565
+                },
+                {
+                  "word": "we",
+                  "start": 275.977,
+                  "end": 276.137,
+                  "confidence": 0.9936971
+                },
+                {
+                  "word": "have",
+                  "start": 276.137,
+                  "end": 276.457,
+                  "confidence": 0.9977362
+                },
+                {
+                  "word": "received",
+                  "start": 276.457,
+                  "end": 276.61697,
+                  "confidence": 0.9993961
+                },
+                {
+                  "word": "your",
+                  "start": 276.61697,
+                  "end": 277.11697,
+                  "confidence": 0.9744935
+                },
+                {
+                  "word": "application",
+                  "start": 277.257,
+                  "end": 277.65698,
+                  "confidence": 0.99956006
+                },
+                {
+                  "word": "and",
+                  "start": 277.65698,
+                  "end": 277.977,
+                  "confidence": 0.9609472
+                },
+                {
+                  "word": "all",
+                  "start": 277.977,
+                  "end": 278.457,
+                  "confidence": 0.99850816
+                },
+                {
+                  "word": "required",
+                  "start": 278.457,
+                  "end": 278.77698,
+                  "confidence": 0.98918366
+                },
+                {
+                  "word": "documents",
+                  "start": 278.77698,
+                  "end": 279.27698,
+                  "confidence": 0.99848974
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

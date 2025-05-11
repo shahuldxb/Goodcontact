@@ -1,0 +1,5 @@
+SAS URL for blob TFdDlPwNgXZSGi6jrFFwhFE%2BOva2oMsbFU%3D:
+
+https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(ca_46001).wav?se=2025-05-21T15%3A37%3A57Z&sp=r&sv=2025-05-05&sr=b&sig=fMH/LD5Z/TFdDlPwNgXZSGi6jrFFwhFE%2BOva2oMsbFU%3D
+
+You can paste this URL in a browser to verify access to the asset.
