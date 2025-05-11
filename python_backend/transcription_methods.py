@@ -229,6 +229,128 @@ async def main():
 # Memory store for test_direct_transcription results
 direct_transcription_results = {}
 
+def transcribe_audio_directly(audio_file_path):
+    """
+    Transcribe a local audio file directly using Deepgram API,
+    similar to the direct REST API implementation used for Azure blobs.
+    
+    Args:
+        audio_file_path (str): Path to the local audio file to transcribe.
+        
+    Returns:
+        dict: The complete Deepgram response including transcript and metadata.
+    """
+    try:
+        logger.info(f"Directly transcribing local file: {audio_file_path}")
+        
+        # Ensure file exists
+        if not os.path.exists(audio_file_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
+            
+        # Determine content type based on file extension
+        file_extension = os.path.splitext(audio_file_path)[1].lower()
+        content_type = "audio/wav"  # Default
+        if file_extension == ".mp3":
+            content_type = "audio/mp3"
+        elif file_extension == ".ogg":
+            content_type = "audio/ogg"
+        elif file_extension == ".flac":
+            content_type = "audio/flac"
+        
+        # Log file info
+        logger.info(f"File type: {content_type}")
+        file_size = os.path.getsize(audio_file_path)
+        logger.info(f"File size: {file_size} bytes")
+        
+        # Set up the request to Deepgram API
+        url = "https://api.deepgram.com/v1/listen"
+        
+        # Prepare headers with API key
+        headers = {
+            "Authorization": f"Token {DEEPGRAM_API_KEY}",
+            "Content-Type": content_type
+        }
+        
+        # Prepare query parameters for transcription options
+        params = {
+            "smart_format": "true",
+            "model": "nova-2",
+            "detect_language": "true",
+            "punctuate": "true",
+            "diarize": "true",
+            "utterances": "true",
+            "summarize": "true"
+        }
+        
+        # Open and read audio file
+        with open(audio_file_path, "rb") as audio:
+            # Track start time for performance monitoring
+            start_time = time.time()
+            
+            # Send POST request to Deepgram API
+            response = requests.post(
+                url, 
+                headers=headers,
+                params=params,
+                data=audio
+            )
+            
+            # Calculate elapsed time
+            elapsed_time = time.time() - start_time
+            logger.info(f"API request completed in {elapsed_time:.2f} seconds")
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Process result for easier transcript extraction
+                transcript_text = ""
+                detected_language = "unknown"
+                
+                try:
+                    # Extract language
+                    if ("results" in result and 
+                        "channels" in result["results"] and 
+                        len(result["results"]["channels"]) > 0 and
+                        "detected_language" in result["results"]["channels"][0]):
+                        detected_language = result["results"]["channels"][0]["detected_language"]
+                    
+                    logger.info(f"Detected language: {detected_language}")
+                    
+                    # Extract transcript
+                    if ("results" in result and 
+                        "channels" in result["results"] and 
+                        len(result["results"]["channels"]) > 0 and
+                        "alternatives" in result["results"]["channels"][0] and
+                        len(result["results"]["channels"][0]["alternatives"]) > 0 and
+                        "transcript" in result["results"]["channels"][0]["alternatives"][0]):
+                        transcript_text = result["results"]["channels"][0]["alternatives"][0]["transcript"]
+                    
+                    if transcript_text:
+                        logger.info(f"Transcript (first 100 chars): {transcript_text[:100]}...")
+                    else:
+                        logger.warning("No transcript text was extracted")
+                except Exception as extract_err:
+                    logger.error(f"Error extracting response data: {str(extract_err)}")
+                
+                # Format response similar to other transcription methods
+                formatted_response = {
+                    "result": result,
+                    "error": None,
+                    "transcript": transcript_text
+                }
+                
+                return formatted_response
+            else:
+                error = f"Deepgram API request failed: {response.status_code} - {response.text}"
+                logger.error(error)
+                return {"result": None, "error": {"name": "DeepgramApiError", "message": error, "status": response.status_code}}
+    except Exception as e:
+        logger.error(f"Error in direct local file transcription: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {"result": None, "error": {"name": "TranscriptionException", "message": str(e), "status": 500}}
+
 def transcribe_audio_shortcut(audio_file_path):
     """
     Transcribe audio using the shortcut method that directly calls test_direct_transcription.

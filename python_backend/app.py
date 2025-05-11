@@ -311,9 +311,9 @@ def configure_transcription_method():
         logger.error(f"Error configuring transcription method: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/debug/direct-transcriptions', methods=['GET'])
-def get_direct_transcriptions():
-    """Get the raw results from test_direct_transcription calls"""
+@app.route('/debug/direct-transcription', methods=['GET'])
+def get_direct_transcription():
+    """Get the raw results from test_direct_transcription calls for Azure blob files"""
     try:
         # Get test file parameter
         filename = request.args.get('test_file')
@@ -343,6 +343,109 @@ def get_direct_transcriptions():
         logger.error(f"Error retrieving direct transcription results: {str(e)}")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+        
+@app.route('/debug/direct-transcription-upload', methods=['POST'])
+def upload_and_transcribe():
+    """Upload a local file and run direct transcription on it"""
+    try:
+        # Check if the post request has the file part
+        if 'file' not in request.files:
+            return jsonify({
+                "status": "error", 
+                "message": "No file part in the request"
+            }), 400
+            
+        file = request.files['file']
+        
+        # If user submits empty form
+        if file.filename == '':
+            return jsonify({
+                "status": "error", 
+                "message": "No file selected"
+            }), 400
+            
+        if file:
+            # Create a temporary directory to save the uploaded file
+            temp_dir = tempfile.mkdtemp()
+            file_path = os.path.join(temp_dir, file.filename)
+            
+            # Save the file temporarily
+            file.save(file_path)
+            logger.info(f"Uploaded file saved to {file_path}")
+            
+            # Get file info for logging
+            file_size = os.path.getsize(file_path)
+            logger.info(f"Audio file size: {file_size} bytes")
+            
+            # Get the current transcription method
+            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+            logger.info(f"Using transcription method: {transcription_method}")
+            
+            # Process the file based on the current transcription method
+            try:
+                if transcription_method == "direct" or transcription_method == "shortcut":
+                    # For direct/shortcut transcription, we need to use the local file
+                    from transcription_methods import transcribe_audio_directly
+                    result = transcribe_audio_directly(file_path)
+                else:
+                    # For SDK and REST API methods, use the DeepgramService
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    fileid = f"local_{int(time.time())}"
+                    result = loop.run_until_complete(deepgram_service.process_audio_file(file_path, fileid))
+                
+                # Extract formatted transcript
+                from direct_test import extract_transcript
+                formatted_transcript = extract_transcript(result)
+                
+                # Save the result to file
+                from direct_test import OUTPUT_DIR
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_file = os.path.join(OUTPUT_DIR, f"local_{os.path.splitext(file.filename)[0]}_{timestamp}.json")
+                
+                # Create output directory if it doesn't exist
+                if not os.path.exists(OUTPUT_DIR):
+                    os.makedirs(OUTPUT_DIR)
+                
+                output_data = {
+                    "blob_name": file.filename,
+                    "timestamp": datetime.now().isoformat(),
+                    "execution_time_seconds": 0,  # We don't track this for local uploads
+                    "formatted_transcript": formatted_transcript,
+                    "result": result
+                }
+                
+                with open(output_file, "w") as f:
+                    json.dump(output_data, f, indent=2)
+                
+                # Clean up the temporary file
+                os.remove(file_path)
+                os.rmdir(temp_dir)
+                
+                # Return the result
+                return jsonify({
+                    "status": "success",
+                    "filename": file.filename,
+                    "timestamp": datetime.now().isoformat(),
+                    "formatted_transcript": formatted_transcript,
+                    "result": result
+                })
+            
+            except Exception as e:
+                logger.error(f"Error processing uploaded file: {str(e)}")
+                traceback.print_exc()
+                # Clean up the temporary file
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                if os.path.exists(temp_dir):
+                    os.rmdir(temp_dir)
+                return jsonify({"status": "error", "message": f"Processing error: {str(e)}"}), 500
+    
+    except Exception as e:
+        logger.error(f"Error handling file upload: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Upload error: {str(e)}"}), 500
         
 @app.route('/debug/direct-test-results', methods=['GET'])
 def list_direct_test_results():
