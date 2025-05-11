@@ -39,8 +39,8 @@ def test_direct_transcription(blob_name="call_center_sample.mp3", container_name
     # Get API key from environment
     api_key = os.environ.get('DEEPGRAM_API_KEY')
     if not api_key:
-        # Fallback to the one in the provided file if environment variable is not set
-        api_key = "d6290865c35bddd50928c5d26983769682fca987"  
+        # Fallback to the known working key if environment variable is not set
+        api_key = "ba94baf7840441c378c58ccd1d5202c38ddc42d8"  
         logger.warning("DEEPGRAM_API_KEY environment variable not set, using fallback value")
         os.environ['DEEPGRAM_API_KEY'] = api_key
     

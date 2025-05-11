@@ -16,8 +16,9 @@ DEEPGRAM RAW RESPONSE: {"result":null,"error":{"name":"DeepgramApiError","messag
 
 ## API Key Status
 - Environment variable shows: 1f6c8f9cc2378ba0c6c5dd0d60d3d8713f89bfff
-- Hardcoded key in files: ba94baf7840441c378c58ccd1d5202c38ddc42d8
-- All files now use the hardcoded key directly
+- Working hardcoded key in files: ba94baf7840441c378c58ccd1d5202c38ddc42d8
+- Found inconsistent key in test_direct_transcription.py: d6290865c35bddd50928c5d26983769682fca987
+- Fixed test_direct_transcription.py to use the consistent working key
 
 ## Audio Files Being Tested
 - Main container: "shahulin"
