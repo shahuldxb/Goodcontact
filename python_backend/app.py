@@ -334,7 +334,7 @@ def configure_transcription_method():
     """Get or set the transcription method (SDK, REST API or direct)"""
     try:
         # Check current setting
-        current_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+        current_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
         
         # Handle POST request to update the method
         if request.method == 'POST':
@@ -434,7 +434,7 @@ def upload_and_transcribe():
             logger.info(f"Audio file size: {file_size} bytes")
             
             # Get the current transcription method
-            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
             logger.info(f"Using transcription method: {transcription_method}")
             
             # Get additional parameters
