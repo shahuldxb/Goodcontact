@@ -3,10 +3,15 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createAzureTables } from "./create-azure-tables";
 import { pythonProxy } from "./services/python-proxy";
+import fileUpload from "express-fileupload";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload({
+  createParentPath: true, 
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

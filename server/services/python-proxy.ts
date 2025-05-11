@@ -213,17 +213,20 @@ export function createPythonProxyMiddleware(pythonEndpoint: string, method: 'GET
           return res.status(400).json({ error: 'No file provided' });
         }
         
-        // Create a FormData object to send the file
-        const formData = new FormData();
-        formData.append('file', file.buffer || file.data, {
-          filename: file.originalname || file.name,
+        // For file uploads to Python, we need to create a new form and pipe the file
+        const form = new FormData();
+        form.append('file', Buffer.from(file.data), {
+          filename: file.name,
           contentType: file.mimetype
         });
         
         // Send the file to Python backend
         const response = await fetch(`${PYTHON_SERVER_URL}${pythonEndpoint}`, {
           method: 'POST',
-          body: formData
+          body: form,
+          headers: {
+            // Don't set Content-Type header, it will be automatically set by FormData
+          }
         });
         
         if (!response.ok) {
