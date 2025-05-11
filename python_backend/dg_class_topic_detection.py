@@ -315,7 +315,7 @@ class DgClassTopicDetection:
         else:
             print(f"SQL Helper not available. Skipping SQL logging for fileid: {fileid}.")
 
-        print(f"Topic Detection processing completed for fileid: {fileid}. Final status: {results_payload.get("status")}")
+        print(f"Topic Detection processing completed for fileid: {fileid}. Final status: {results_payload.get('status')}")
         return results_payload
 
 # Example usage
@@ -359,9 +359,9 @@ async def example_run():
     })
     results1 = await topic_detector.main(dg_response_json_str=dummy_response_str, fileid=example_fileid, local_audio_path=None)
     if results1:
-        print(f"Status: {results1.get("status")}")
-        if results1.get("error"): print(f"Error: {results1.get("error")}")
-        print(f"Deepgram Summary: {results1.get("deepgram_summary")}")
+        print(f"Status: {results1.get('status')}")
+        if results1.get('error'): print(f"Error: {results1.get('error')}")
+        print(f"Deepgram Summary: {results1.get('deepgram_summary')}")
         print("LDA Topics:", json.dumps(results1.get("lda_detected_topics"), indent=2))
 
     # Test 2: Using local_audio_path (will make a live call if API key is valid)

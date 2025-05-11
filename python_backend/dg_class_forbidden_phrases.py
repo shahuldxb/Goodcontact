@@ -329,10 +329,10 @@ async def example_run():
     })
     results1 = await detector.main(dg_response_json_str=dummy_response_str, fileid=example_fileid)
     if results1:
-        print(f"Status: {results1.get("status")}")
-        if results1.get("error"): print(f"Error: {results1.get("error")}")
-        risk_details = results1.get("risk_score_details", {})
-        print(f"Risk Score: {risk_details.get("overall_risk_score", 0):.1f}, Level: {risk_details.get("risk_level", "N/A")}")
+        print(f"Status: {results1.get('status')}")
+        if results1.get('error'): print(f"Error: {results1.get('error')}")
+        risk_details = results1.get('risk_score_details', {})
+        print(f"Risk Score: {risk_details.get('overall_risk_score', 0):.1f}, Level: {risk_details.get('risk_level', 'N/A')}")
         # print("Detected Phrases:", json.dumps(results1.get("detected_forbidden_phrases_by_category"), indent=2))
 
     # Test 2: Using local_audio_path (will make a live call if API key is valid)
