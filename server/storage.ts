@@ -13,7 +13,7 @@ import {
 import { nanoid } from 'nanoid';
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { DgClassSpeakerDiarization } from "./services/deepgram";
-import { sqlConnect } from "./services/azure-sql";
+import { sqlConnect } from "./services/postgres-sql";
 
 export interface IStorage {
   // RDT Assets methods
@@ -110,7 +110,7 @@ export class MemStorage implements IStorage {
       this.assets.set(asset.fileid, newAsset);
       
       // Then, persist to SQL database
-      const { insertRecord } = await import('./services/azure-sql');
+      const { insertRecord } = await import('./services/postgres-sql');
       
       // Convert property names to SQL column names (camelCase to snake_case)
       const sqlData = {
@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
       this.assets.set(fileid, updatedAsset);
       
       // Then update in SQL database
-      const { executeQuery } = await import('./services/azure-sql');
+      const { executeQuery } = await import('./services/postgres-sql');
       
       // Convert camelCase to snake_case for SQL columns with safe values
       const sqlUpdates: Record<string, any> = {};
@@ -176,7 +176,7 @@ export class MemStorage implements IStorage {
       if (updates.fileSize) sqlUpdates.file_size = updates.fileSize;
       
       if (updates.languageDetected) {
-        sqlUpdates.language = typeof updates.languageDetected === 'string'
+        sqlUpdates.language_detected = typeof updates.languageDetected === 'string'
           ? updates.languageDetected.substring(0, 100)
           : 'Unknown';
       }
