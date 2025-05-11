@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BellIcon, ChevronDownIcon, HeadphonesIcon } from "lucide-react";
+import { ThemeSelector } from "@/components/theme-selector";
 
 export function Header() {
   const [notifications] = useState<number>(3);
@@ -30,6 +31,10 @@ export function Header() {
               )}
             </Button>
           </div>
+          
+          {/* Theme Selector */}
+          <ThemeSelector />
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center">
