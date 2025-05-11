@@ -109,7 +109,34 @@ def process_file():
             # Choose processing method based on configuration
             transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
             
-            if transcription_method == "direct":
+            if transcription_method == "enhanced":
+                # Use enhanced transcription with database storage
+                try:
+                    from transcription_with_storage import transcribe_and_store
+                    logger.info(f"Using enhanced transcription with database storage for {filename}")
+                    
+                    # Generate a SAS URL for the blob
+                    sas_url = azure_storage_service.get_sas_url(filename)
+                    
+                    # Process using enhanced transcription
+                    result = transcribe_and_store(
+                        file_url=sas_url,
+                        fileid=fileid,
+                        store_results=True
+                    )
+                    
+                    logger.info(f"Enhanced transcription completed for {filename}")
+                    
+                except Exception as e:
+                    logger.error(f"Error using enhanced transcription: {str(e)}")
+                    logger.error(f"Detailed error: {traceback.format_exc()}")
+                    # Fall back to regular implementation
+                    logger.info(f"Falling back to standard implementation")
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            elif transcription_method == "direct":
                 # Use the direct REST API implementation
                 try:
                     from azure_deepgram_transcribe import process_audio_file as direct_process_audio
@@ -315,8 +342,8 @@ def configure_transcription_method():
             new_method = data.get('method', '').lower()
             
             # Validate the method
-            if new_method not in ['sdk', 'rest_api', 'direct', 'shortcut']:
-                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', 'direct', or 'shortcut'"}), 400
+            if new_method not in ['sdk', 'rest_api', 'direct', 'shortcut', 'enhanced']:
+                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', 'direct', 'shortcut', or 'enhanced'"}), 400
             
             # Update the environment variable
             os.environ["DEEPGRAM_TRANSCRIPTION_METHOD"] = new_method
@@ -333,7 +360,7 @@ def configure_transcription_method():
         else:
             return jsonify({
                 "current_method": current_method,
-                "available_methods": ["sdk", "rest_api", "direct", "shortcut"]
+                "available_methods": ["sdk", "rest_api", "direct", "shortcut", "enhanced"]
             })
             
     except Exception as e:
@@ -410,23 +437,36 @@ def upload_and_transcribe():
             transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
             logger.info(f"Using transcription method: {transcription_method}")
             
+            # Get additional parameters
+            store_results = request.form.get('store_results', 'false').lower() == 'true'
+            fileid = request.form.get('fileid', f"local_{int(time.time())}")
+            
             # Process the file based on the current transcription method
             try:
-                if transcription_method == "direct" or transcription_method == "shortcut":
+                if transcription_method == "enhanced":
+                    # Use enhanced transcription with metadata extraction and optional database storage
+                    from transcription_with_storage import transcribe_and_store
+                    logger.info(f"Using enhanced transcription with storage = {store_results}")
+                    result = transcribe_and_store(
+                        file_path=file_path,
+                        fileid=fileid,
+                        store_results=store_results
+                    )
+                    formatted_transcript = result.get('transcript', '')
+                elif transcription_method == "direct" or transcription_method == "shortcut":
                     # For direct/shortcut transcription, we need to use the local file
                     from transcription_methods import transcribe_audio_directly
                     result = transcribe_audio_directly(file_path)
+                    from direct_test import extract_transcript
+                    formatted_transcript = extract_transcript(result)
                 else:
                     # For SDK and REST API methods, use the DeepgramService
                     import asyncio
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    fileid = f"local_{int(time.time())}"
                     result = loop.run_until_complete(deepgram_service.process_audio_file(file_path, fileid))
-                
-                # Extract formatted transcript
-                from direct_test import extract_transcript
-                formatted_transcript = extract_transcript(result)
+                    from direct_test import extract_transcript
+                    formatted_transcript = extract_transcript(result)
                 
                 # Save the result to file
                 from direct_test import OUTPUT_DIR
