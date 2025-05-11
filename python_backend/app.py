@@ -123,9 +123,32 @@ def process_file():
                 
             logger.info(f"Deepgram processing complete: {'ERROR: ' + error_message if has_error else 'SUCCESS'}")
             
-            # Move to destination container
-            azure_storage_service.copy_blob_to_destination(filename)
+            # Move to destination container and get the destination URL
+            destination_url = azure_storage_service.copy_blob_to_destination(filename)
             logger.info(f"Moved {filename} to destination container")
+            
+            # Update the destination path in the database
+            try:
+                from azure_sql_service import AzureSQLService
+                sql_service = AzureSQLService()
+                conn = sql_service._get_connection()
+                cursor = conn.cursor()
+                
+                cursor.execute("""
+                    UPDATE rdt_assets 
+                    SET destination_path = %s
+                    WHERE fileid = %s
+                """, (
+                    destination_url,
+                    fileid
+                ))
+                
+                conn.commit()
+                cursor.close()
+                conn.close()
+                logger.info(f"Updated destination path in database for file {fileid}")
+            except Exception as e:
+                logger.error(f"Error updating destination path: {str(e)}")
             
             return jsonify({"status": "success", "result": result})
             

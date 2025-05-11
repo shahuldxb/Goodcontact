@@ -123,7 +123,10 @@ class AzureStorageService:
             raise
     
     def copy_blob_to_destination(self, blob_name):
-        """Copy a blob from the source container to the destination container"""
+        """
+        Copy a blob from the source container to the destination container
+        Returns the URL of the destination blob
+        """
         try:
             # Get source blob client
             source_blob_client = self.blob_service_client.get_blob_client(
@@ -140,8 +143,11 @@ class AzureStorageService:
             # Copy blob
             dest_blob_client.start_copy_from_url(source_blob_client.url)
             
+            # Return the destination URL
+            destination_url = dest_blob_client.url
+            
             self.logger.info(f"Copied blob {blob_name} to destination container")
-            return True
+            return destination_url
         except Exception as e:
             self.logger.error(f"Error copying blob {blob_name} to destination: {str(e)}")
             raise
