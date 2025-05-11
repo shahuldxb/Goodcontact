@@ -203,7 +203,7 @@ class DgClassForbiddenPhrases:
             "category_risk_scores_normalized": category_scores_normalized
         }
 
-    async def main(self, dg_response_json_str, fileid, local_audio_path=None, forbidden_phrases_map=None, **kwargs):
+    async def main(self, dg_response_json_str_str, fileid, local_audio_path=None, forbidden_phrases_map=None, **kwargs):
         """
         Main function for detecting forbidden phrases.
         Args:
@@ -214,6 +214,16 @@ class DgClassForbiddenPhrases:
         Returns:
             dict: Results including detected forbidden phrases and risk score.
         """
+        # Parse JSON string into dictionary if needed
+        if dg_response_json_str_str and isinstance(dg_response_json_str_str, str):
+            try:
+                dg_response_json_str = json.loads(dg_response_json_str_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse dg_response_json_str_str as JSON: {str(e)}")
+                return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
+        else:
+            dg_response_json_str = dg_response_json_str_str
+
         print(f"Starting Forbidden Phrase Detection for fileid: {fileid}")
         _phrases_map = forbidden_phrases_map if forbidden_phrases_map is not None else DEFAULT_FORBIDDEN_PHRASES
         all_phrases_flat_list = list(set(phrase for sublist in _phrases_map.values() for phrase in sublist))

@@ -253,10 +253,20 @@ class DgClassTopicDetection:
             print(f"Error in dg_func_detect_topics_with_lda: {e}")
             return [], []
 
-    async def main(self, dg_response_json_str, fileid, local_audio_path=None, num_lda_topics=5, num_words_per_topic=7, enable_dg_summarize=True, **kwargs):
+    async def main(self, dg_response_json_str_str, fileid, local_audio_path=None, num_lda_topics=5, num_words_per_topic=7, enable_dg_summarize=True, **kwargs):
         """
         Main function for topic detection and summarization.
         """
+        # Parse JSON string into dictionary if needed
+        if dg_response_json_str_str and isinstance(dg_response_json_str_str, str):
+            try:
+                dg_response_json_str = json.loads(dg_response_json_str_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse dg_response_json_str_str as JSON: {str(e)}")
+                return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
+        else:
+            dg_response_json_str = dg_response_json_str_str
+
         print(f"Starting Topic Detection for fileid: {fileid}")
 
         results_payload = {

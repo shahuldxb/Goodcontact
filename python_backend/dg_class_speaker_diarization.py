@@ -205,7 +205,7 @@ class DgClassSpeakerDiarization:
             "speaker_talk_ratio": speaker_talk_ratio
         }
 
-    async def main(self, dg_response_json_str, fileid, local_audio_path=None): # Added dg_response_json_str and local_audio_path for orchestrator compatibility
+    async def main(self, dg_response_json_str_str, fileid, local_audio_path=None): # Added dg_response_json_str and local_audio_path for orchestrator compatibility
         """
         Main function for speaker diarization.
         Args:
@@ -215,6 +215,16 @@ class DgClassSpeakerDiarization:
         Returns:
             dict: Results including diarized transcript and speaker analysis.
         """
+        # Parse JSON string into dictionary if needed
+        if dg_response_json_str_str and isinstance(dg_response_json_str_str, str):
+            try:
+                dg_response_json_str = json.loads(dg_response_json_str_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse dg_response_json_str_str as JSON: {str(e)}")
+                return {"error": f"Invalid JSON: {str(e)}", "fileid": fileid, "status": "Error"}
+        else:
+            dg_response_json_str = dg_response_json_str_str
+
         print(f"Starting Speaker Diarization for fileid: {fileid}")
         results_payload = {}
         status = "Error"
