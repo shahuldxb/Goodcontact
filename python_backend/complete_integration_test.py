@@ -284,7 +284,11 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
             datetime.now(),    # Created date
             basic_transcript   # Transcription text
         ))
-        logger.info("Asset record with transcription inserted successfully")
+        
+        # Commit immediately after inserting the asset record to ensure it's saved
+        # even if subsequent processing fails
+        conn.commit()
+        logger.info("Asset record with transcription inserted and committed successfully")
         
         # Insert audio metadata
         logger.info("Inserting audio metadata")
@@ -423,10 +427,16 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
             logger.error(f"Error processing paragraphs/sentences: {str(e)}")
             # Continue with the rest of the function, don't throw exception
         
-        # Commit transaction and close connection
-        conn.commit()
-        cursor.close()
-        conn.close()
+        # Make sure any remaining changes are committed and connection is closed properly
+        try:
+            conn.commit()
+            logger.info("Final transaction commit successful")
+        except Exception as e:
+            logger.error(f"Error in final commit: {str(e)}")
+        finally:
+            cursor.close()
+            conn.close()
+            logger.info("Database connection closed")
         
         logger.info(f"Successfully stored transcription results in SQL database. Paragraphs: {para_count}, Sentences: {sent_count}")
         return True, {"paragraphs": para_count, "sentences": sent_count}
