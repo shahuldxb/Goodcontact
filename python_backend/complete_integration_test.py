@@ -244,8 +244,12 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
         conn = get_sql_connection()
         cursor = conn.cursor()
         
-        # First, insert a record into rdt_assets
-        logger.info("Inserting asset record")
+        # First, insert a record into rdt_assets including transcription
+        logger.info("Inserting asset record with transcription")
+        
+        # Log the transcription content we're about to store
+        logger.info(f"TRANSCRIPTION: {basic_transcript[:100]}..." if len(basic_transcript) > 100 else f"TRANSCRIPTION: {basic_transcript}")
+        
         cursor.execute("""
             INSERT INTO rdt_assets (
                 fileid, 
@@ -255,13 +259,15 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
                 file_size,
                 upload_date,
                 status,
-                created_dt
+                created_dt,
+                transcription
             )
             VALUES (
                 %s, 
                 %s, 
                 %s, 
                 %s, 
+                %s,
                 %s,
                 %s,
                 %s,
@@ -275,9 +281,10 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
             0,                 # File size (not available)
             datetime.now(),    # Upload date
             "completed",       # Status
-            datetime.now()     # Created date
+            datetime.now(),    # Created date
+            basic_transcript   # Transcription text
         ))
-        logger.info("Asset record inserted successfully")
+        logger.info("Asset record with transcription inserted successfully")
         
         # Insert audio metadata
         logger.info("Inserting audio metadata")
