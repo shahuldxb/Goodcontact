@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-This module provides two methods for transcribing audio using Deepgram:
+This module provides methods for transcribing audio using Deepgram:
 1. Using the official Deepgram SDK
 2. Using direct REST API calls with requests library
+3. Using a shortcut method that calls the test_direct_transcription script
 """
 import os
 import json
 import logging
 import requests
 import asyncio
+import time
 from deepgram import Deepgram
+from test_direct_transcription import test_direct_transcription
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -221,6 +224,52 @@ async def main():
     except Exception as rest_err:
         logger.error(f"REST API transcription failed: {str(rest_err)}")
 
+
+def transcribe_audio_shortcut(audio_file_path):
+    """
+    Transcribe audio using the shortcut method that directly calls test_direct_transcription.
+    This method is a fourth transcription option that bypasses all other methods and
+    uses the working test script directly.
+    
+    Args:
+        audio_file_path (str): Path to the local audio file to transcribe.
+        
+    Returns:
+        dict: The complete Deepgram response including transcript and metadata.
+    """
+    try:
+        # Validate file exists
+        if not os.path.exists(audio_file_path):
+            logger.error(f"File does not exist: {audio_file_path}")
+            return {"error": {"name": "FileNotFoundError", "message": f"File does not exist: {audio_file_path}", "status": 404}}
+            
+        # Extract the blob name from the file path
+        blob_name = os.path.basename(audio_file_path)
+        logger.info(f"Extracted blob name: {blob_name}")
+        
+        # Log start of transcription
+        logger.info(f"Transcribing file using SHORTCUT method: {blob_name}")
+        start_time = time.time()
+        
+        # Call the test function directly
+        result = test_direct_transcription(blob_name=blob_name)
+        
+        # Log completion
+        elapsed_time = time.time() - start_time
+        logger.info(f"SHORTCUT transcription completed in {elapsed_time:.2f} seconds")
+        
+        if 'error' in result:
+            logger.error(f"SHORTCUT method failed: {result['error']}")
+            return {"error": {"name": "ShortcutTranscriptionError", "message": result['error'], "status": 500}}
+        
+        # Format the result to match the expected structure
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in SHORTCUT transcription: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {"error": {"name": "ShortcutException", "message": str(e), "status": 500}}
 
 if __name__ == "__main__":
     # Run the main async function
