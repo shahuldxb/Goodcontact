@@ -282,7 +282,7 @@ class DgClassForbiddenPhrases:
         else:
             print(f"SQL Helper not available. Skipping SQL logging for fileid: {fileid}.")
 
-        print(f"Forbidden Phrase Detection processing completed for fileid: {fileid}. Final status: {results_payload.get("status")}")
+        print(f"Forbidden Phrase Detection processing completed for fileid: {fileid}. Final status: {results_payload.get('status')}")
         return results_payload
 
 # Example usage (for testing purposes)
