@@ -8,12 +8,7 @@ from datetime import datetime
 import traceback
 from deepgram import Deepgram
 
-# Import the modern Deepgram SDK 
-from deepgram import (
-    DeepgramClient,
-    PrerecordedOptions,
-    DeepgramClientOptions
-)
+# We'll use the old SDK approach as the new SDK format isn't available in our installation
 
 # Import the Deepgram classes from the attached assets
 from dg_class_sentiment_analysis import DgClassSentimentAnalysis
@@ -228,8 +223,8 @@ class DeepgramService:
 
     def transcribe_with_listen_rest(self, audio_file_path):
         """
-        Transcribe audio using Deepgram's modern listen.rest API.
-        This is the recommended method using the latest SDK with a Blob SAS URL.
+        Transcribe audio using Deepgram's REST API with a direct URL approach.
+        This method uses the standard REST API but with a SAS URL input.
         
         Args:
             audio_file_path (str): Path to the local audio file to transcribe.
@@ -238,7 +233,7 @@ class DeepgramService:
             dict: A result object with the structure {"result": response_json, "error": error_message}
         """
         try:
-            self.logger.info(f"Using listen.rest API for transcription: {audio_file_path}")
+            self.logger.info(f"Using listen.rest-like API for transcription: {audio_file_path}")
             
             # For testing with local files, we need to create a SAS URL from Azure Storage
             from azure_storage_service import AzureStorageService
@@ -252,34 +247,40 @@ class DeepgramService:
             audio_url = storage.generate_sas_url("shahulin", blob_name)
             self.logger.info(f"SAS URL generated: {audio_url[:60]}...")
             
-            # Initialize the Deepgram client with API key
-            client_options = DeepgramClientOptions(
-                verbose=True  # Enable verbose logging for debugging
-            )
-            deepgram = DeepgramClient(self.deepgram_api_key, options=client_options)
+            # Set up the Deepgram API endpoint
+            url = "https://api.deepgram.com/v1/listen"
             
-            # Set up transcription options
-            transcription_options = PrerecordedOptions(
-                model="nova-3",  # Using the latest model
-                smart_format=True,
-                diarize=True,
-                detect_language=True,
-                punctuate=True,
-                utterances=True,
-                summarize=True
-            )
-            
-            # Prepare the URL in the format expected by the API
-            url_data = {
-                "url": audio_url
+            # Set up headers with API key
+            headers = {
+                "Authorization": f"Token {self.deepgram_api_key}",
+                "Content-Type": "application/json"
             }
             
-            # Make the transcription request
-            self.logger.info("Sending request to Deepgram listen.rest API...")
-            response = deepgram.listen.rest.v("1").transcribe_url(url_data, transcription_options)
+            # Prepare the request body with URL and options
+            payload = {
+                "url": audio_url,
+                "model": "nova-2",  # Using a recent model
+                "smart_format": True,
+                "diarize": True,
+                "detect_language": True,
+                "punctuate": True,
+                "utterances": True,
+                "summarize": True
+            }
             
-            self.logger.info("Listen REST API transcription completed successfully")
-            return {"result": response, "error": None}
+            # Send the request
+            self.logger.info("Sending request to Deepgram API with URL input...")
+            response = requests.post(url, headers=headers, json=payload)
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                result = response.json()
+                self.logger.info("URL-based transcription completed successfully")
+                return {"result": result, "error": None}
+            else:
+                error_message = f"Deepgram API request failed: {response.status_code} - {response.text}"
+                self.logger.error(error_message)
+                return {"result": None, "error": {"name": "ListenRestError", "message": error_message, "status": response.status_code}}
             
         except Exception as e:
             error_message = f"Error in listen.rest transcription: {str(e)}"
@@ -311,14 +312,14 @@ class DeepgramService:
         # Defaults to 'rest_api' if not specified
         transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api").lower()
         
-        # New listen.rest API method (highest priority)
-        if transcription_method == "listen.rest":
-            self.logger.info("Using listen.rest API method for transcription")
+        # URL-based REST API method (highest priority)
+        if transcription_method == "listen.rest" or transcription_method == "url":
+            self.logger.info("Using URL-based REST API method for transcription")
             result = self.transcribe_with_listen_rest(audio_file_path)
             
             # If the method fails, fall back to SDK
             if result["error"] is not None:
-                self.logger.warning("listen.rest API method failed, falling back to SDK")
+                self.logger.warning("URL-based REST API method failed, falling back to SDK")
                 return await self.transcribe_audio_sdk(audio_file_path)
             return result
         
