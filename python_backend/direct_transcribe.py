@@ -138,7 +138,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     blob_sas_url = sys.argv[1]
-    api_key = sys.argv[2] if len(sys.argv) > 2 else os.environ.get('DEEPGRAM_API_KEY', 'your_default_api_key')
+    api_key = sys.argv[2] if len(sys.argv) > 2 else os.environ.get('DEEPGRAM_API_KEY', 'ba94baf7840441c378c58ccd1d5202c38ddc42d8')
     
     transcriber = DirectTranscribe()
     try:
