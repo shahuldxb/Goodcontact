@@ -333,8 +333,14 @@ class DeepgramService:
             # Log the structure of the response to help debug
             self.logger.info(f"RESPONSE KEYS: {transcription_response.keys()}")
             
+            # Method 0: Check for direct transcript field in shortcut method response
+            if 'transcript' in transcription_response:
+                transcript_text = transcription_response['transcript']
+                extraction_path = "transcript (root level)"
+                self.logger.info(f"Found transcript at root level: {transcript_text[:50]}...")
+            
             # Method 1: Standard path in Deepgram schema (results.channels[].alternatives[].transcript)
-            if 'results' in transcription_response and 'channels' in transcription_response['results']:
+            elif 'results' in transcription_response and 'channels' in transcription_response['results']:
                 self.logger.info("Found 'results.channels' path")
                 for channel in transcription_response['results']['channels']:
                     if 'alternatives' in channel and len(channel['alternatives']) > 0:
