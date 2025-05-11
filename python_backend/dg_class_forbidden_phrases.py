@@ -7,7 +7,7 @@ import os
 import re
 import json
 import asyncio
-from deepgram import Deepgram # Assuming DeepgramClient is imported as Deepgram
+import requests
 
 # Define default forbidden phrases if none are provided
 DEFAULT_FORBIDDEN_PHRASES = {
@@ -41,7 +41,7 @@ class DgClassForbiddenPhrases:
             deepgram_api_key (str): The Deepgram API key.
             sql_helper (SQLHelper): An instance of the SQLHelper class for database interactions.
         """
-        self.deepgram = Deepgram(deepgram_api_key)
+        self.deepgram_api_key = deepgram_api_key # Store API key for direct API calls
         self.sql_helper = sql_helper
 
     async def dg_func_transcribe_audio_for_phrases(self, audio_file_path, phrases_to_detect):
@@ -54,16 +54,48 @@ class DgClassForbiddenPhrases:
             dict: The Deepgram API response.
         """
         try:
-            with open(audio_file_path, "rb") as audio:
-                source = {"buffer": audio, "mimetype": "audio/wav"}
-                options = {
-                    "punctuate": True, "diarize": True, "detect_language": True,
-                    "model": "nova-2", "smart_format": True,
-                    "keywords": phrases_to_detect # Using keywords feature for phrase spotting
-                }
-                print(f"Sending audio file {audio_file_path} to Deepgram for phrase detection (Forbidden Phrases)...")
-                response = await self.deepgram.transcription.prerecorded(source, options)
-                return response
+            # Determine file type from extension
+            file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
+            file_type = file_extension if file_extension in ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a'] else 'wav'
+            
+            # Set up the API URL with query parameters
+            api_url = "https://api.deepgram.com/v1/listen"
+            params = {
+                "punctuate": "true", 
+                "diarize": "true", 
+                "detect_language": "true",
+                "model": "nova-2", 
+                "smart_format": "true",
+                "keywords": ",".join(phrases_to_detect) # Using keywords feature for phrase spotting
+            }
+            
+            # Set up headers with API key
+            headers = {
+                "Authorization": f"Token {self.deepgram_api_key}",
+                "Content-Type": f"audio/{file_type}"
+            }
+            
+            print(f"Sending audio file {audio_file_path} to Deepgram for phrase detection (Forbidden Phrases)...")
+            
+            # Read the audio file
+            with open(audio_file_path, 'rb') as audio_file:
+                audio_data = audio_file.read()
+                
+                # Make async request
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: requests.post(api_url, params=params, headers=headers, data=audio_data)
+                )
+                
+                # Check if the request was successful
+                if response.status_code != 200:
+                    print(f"Deepgram API error: {response.status_code}, {response.text}")
+                    return None
+                
+                # Parse JSON response
+                response_json = response.json()
+                return response_json
         except Exception as e:
             print(f"Error during transcription for phrase detection (Forbidden Phrases) for {audio_file_path}: {e}")
             return None

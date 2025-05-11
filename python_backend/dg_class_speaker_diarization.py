@@ -16,15 +16,8 @@ class DgClassSpeakerDiarization:
             deepgram_api_key (str): The Deepgram API key.
             sql_helper (SQLHelper): An instance of the SQLHelper class for database interactions.
         """
-        # In the original notebook, DeepgramClient was used. Assuming self.deepgram should be an instance of it.
-        # from deepgram import DeepgramClient, PrerecordedOptions, FileSource -> so Deepgram is not DeepgramClient
-        # This should be: from deepgram import DeepgramClient
-        # self.deepgram = DeepgramClient(deepgram_api_key)
-        # However, the provided file content uses `from deepgram import Deepgram` and `self.deepgram = Deepgram(deepgram_api_key)`
-        # and later `self.deepgram.transcription.prerecorded`. This implies the SDK structure might be different or aliased.
-        # For now, I will stick to the existing `from deepgram import Deepgram` and `self.deepgram = Deepgram(deepgram_api_key)`
-        # as per the provided file content. If it causes issues, it means DeepgramClient should be used.
-        self.deepgram = Deepgram(deepgram_api_key)
+        # Using direct API approach instead of SDK
+        self.deepgram_api_key = deepgram_api_key
         self.sql_helper = sql_helper
 
     async def dg_func_transcribe_audio_with_diarization(self, audio_file_path):
