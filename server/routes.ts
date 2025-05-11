@@ -121,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createAsset({
             fileid,
             filename,
-            sourcePath: `shahulin/${filename}`,
+            sourcePath: `demoout/${filename}`,
             destinationPath: `shahulout/${filename}`,
             fileSize: 0, // Will be updated after processing
             status: 'processing'

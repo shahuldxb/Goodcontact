@@ -34,7 +34,7 @@ class AzureStorageService:
         self.connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
         
         # Container names
-        self.source_container = "shahulin"
+        self.source_container = "shahulin"  # Must use shahulin as specified
         self.destination_container = "shahulout"
         
         # Create BlobServiceClient

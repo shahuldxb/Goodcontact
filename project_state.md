@@ -30,8 +30,14 @@ DEEPGRAM RAW RESPONSE: {"result":null,"error":{"name":"DeepgramApiError","messag
 1. Inconsistent API key in test_direct_transcription.py - FIXED
 2. Incorrect audio file name referenced in logs - IDENTIFIED
 3. Testing with correct file name works successfully!
+4. Critical container issue - the "shahulin" container appears to be empty - IDENTIFIED
+5. Files exist in other containers like "demoout" - IDENTIFIED (but not used)
+
+## Fixes Applied
+1. Fixed inconsistent API keys in test_direct_transcription.py
+2. Updated project documentation to correctly identify file location issues
 
 ## Next Steps
-1. Update app configuration and processing data to use the correct file names that actually exist in Azure
-2. Ensure the file processing logs reference the actual files that exist in the container
-3. Update any hardcoded references to specific file names to match what exists in Azure storage
+1. Test transcription with files from the correct container
+2. Verify that SAS URLs are generated correctly for the files in the demoout container
+3. Update any documentation or instructions to reflect the correct container usage
