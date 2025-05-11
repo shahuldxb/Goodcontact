@@ -458,110 +458,60 @@ export class DeepgramService {
   async transcribeAudio(audio_file_path: string) {
     try {
       const audioBuffer = await readFileAsBuffer(audio_file_path);
-      // Use OpenAI for transcription
-      try {
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-        if (!openai) {
-          console.error("Failed to initialize OpenAI client - missing API key");
-          throw new Error("Missing OpenAI API key");
-        }
-        console.log(`Using OpenAI Whisper for transcription of ${audio_file_path}`);
-        
-        // Create a FormData object with the audio file
-        const formData = new FormData();
-        formData.append('file', new Blob([audioBuffer]), 'audio.mp3');
-        formData.append('model', 'whisper-1');
-        
-        // Make a direct API call
-        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-          },
-          body: formData
-        });
-        
-        if (!response.ok) {
-          throw new Error(`OpenAI API error: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log(`OpenAI transcription result: ${JSON.stringify(data)}`);
-        
-        // Create a deepgram-like response with the transcript
-        return {
-          result: {
-            channels: [{
-              alternatives: [{
-                transcript: data.text
-              }]
-            }],
-            metadata: {
-              detected_language: 'en'
-            }
-          }
-        };
-      } catch (openAiError) {
-        console.error(`OpenAI transcription failed: ${openAiError}`);
-        console.log("Falling back to Deepgram transcription");
-        
-        // Get the file extension to determine the correct mimetype
-        const fileExtension = audio_file_path.split('.').pop()?.toLowerCase();
-        let mimetype = "audio/wav";
-        
-        // Set the correct mimetype based on file extension
-        if (fileExtension === 'mp3') {
-          mimetype = "audio/mpeg";
-        } else if (fileExtension === 'm4a') {
-          mimetype = "audio/mp4";
-        } else if (fileExtension === 'ogg') {
-          mimetype = "audio/ogg";
-        } else if (fileExtension === 'flac') {
-          mimetype = "audio/flac";
-        }
-        
-        const source = { buffer: audioBuffer, mimetype };
-        const options = {
-          punctuate: true,
-          diarize: true,
-          detect_language: true,
-          model: "nova-2",
-          smart_format: true,
-          summarize: "v2"
-        };
-        
-        console.log(`Sending audio file ${audio_file_path} with mimetype ${mimetype} to Deepgram for transcription...`);
-        
-        const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
-        
-        // Add detailed logging of the full response
-        console.log(`DEEPGRAM RAW RESPONSE: ${JSON.stringify(response)}`);
-        
-        // Check if we have the expected structure for the transcription
-        if (!response || typeof response !== 'object') {
-          console.error('Deepgram response is null, undefined or not an object');
-        } else {
-          console.log(`Response keys: ${Object.keys(response).join(', ')}`);
-          
-          if (response.result) {
-            console.log(`Result keys: ${Object.keys(response.result).join(', ')}`);
-            
-            if (response.result.channels && response.result.channels.length > 0) {
-              console.log(`First channel keys: ${Object.keys(response.result.channels[0]).join(', ')}`);
-              
-              if (response.result.channels[0].alternatives && response.result.channels[0].alternatives.length > 0) {
-                console.log(`First alternative keys: ${Object.keys(response.result.channels[0].alternatives[0]).join(', ')}`);
-                console.log(`Transcript preview: ${response.result.channels[0].alternatives[0].transcript?.substring(0, 100)}`);
-              }
-            }
-          }
-        }
-        
-        return response;
+      // Project requirements: Use Deepgram only for transcription
+      // Get the file extension to determine the correct mimetype
+      const fileExtension = audio_file_path.split('.').pop()?.toLowerCase();
+      let mimetype = "audio/wav";
+      
+      // Set the correct mimetype based on file extension
+      if (fileExtension === 'mp3') {
+        mimetype = "audio/mpeg";
+      } else if (fileExtension === 'm4a') {
+        mimetype = "audio/mp4";
+      } else if (fileExtension === 'ogg') {
+        mimetype = "audio/ogg";
+      } else if (fileExtension === 'flac') {
+        mimetype = "audio/flac";
       }
       
-      // This should never be reached due to the return in the if block, but adding as a fallback
-      throw new Error("Failed to determine audio file type");
+      console.log("Sending audio file " + audio_file_path + " with mimetype " + mimetype + " to Deepgram for transcription...");
+      
+      const source = { buffer: audioBuffer, mimetype };
+      const options = {
+        punctuate: true,
+        diarize: true,
+        detect_language: true,
+        model: "nova-2",
+        smart_format: true,
+        summarize: "v2"
+      };
+      
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      
+      // Add detailed logging of the full response
+      console.log(`DEEPGRAM RAW RESPONSE: ${JSON.stringify(response)}`);
+      
+      // Check if we have the expected structure for the transcription
+      if (!response || typeof response !== 'object') {
+        console.error('Deepgram response is null, undefined or not an object');
+      } else {
+        console.log(`Response keys: ${Object.keys(response).join(', ')}`);
+        
+        if (response.result) {
+          console.log(`Result keys: ${Object.keys(response.result).join(', ')}`);
+          
+          if (response.result.channels && response.result.channels.length > 0) {
+            console.log(`First channel keys: ${Object.keys(response.result.channels[0]).join(', ')}`);
+            
+            if (response.result.channels[0].alternatives && response.result.channels[0].alternatives.length > 0) {
+              console.log(`First alternative keys: ${Object.keys(response.result.channels[0].alternatives[0]).join(', ')}`);
+              console.log(`Transcript preview: ${response.result.channels[0].alternatives[0].transcript?.substring(0, 100)}`);
+            }
+          }
+        }
+      }
+      
+      return response;
     } catch (e) {
       console.error(`Error during transcription: ${e}`);
       throw e;
@@ -680,14 +630,32 @@ export class DeepgramService {
             jsonString = '{"error": "Serialization error"}'; 
           }
           
+          // Get the language from our robust language detection
+          let language = 'English'; // Default fallback
+          
+          // Try multiple paths where language might be found
+          if (transcriptionResponse?.result?.metadata?.detected_language) {
+            language = transcriptionResponse.result.metadata.detected_language;
+          } else if (transcriptionResponse?.metadata?.detected_language) {
+            language = transcriptionResponse.metadata.detected_language;
+          } else if (transcriptionResponse?.result?.language) {
+            language = transcriptionResponse.result.language;
+          } else if (transcriptionResponse?.language) {
+            language = transcriptionResponse.language;
+          } else if (transcriptionResponse?.deepgram_language?.name) {
+            language = transcriptionResponse.deepgram_language.name;
+          } else if (transcriptionResponse?.deepgram_language?.code) {
+            language = transcriptionResponse.deepgram_language.code;
+          }
+          
           // Now update the asset with proper values
           await storage.updateAsset(assetFileid, {
             transcription: transcript, 
             transcriptionJson: JSON.parse(jsonString),
-            language: detectedLanguage // Use our already extracted language
+            language: language // Use our extracted language
           });
           
-          console.log(`Successfully updated asset with transcription (${transcript.length} chars) and language (${detectedLanguage})`);
+          console.log(`Successfully updated asset with transcription (${transcript.length} chars) and language (${language})`);
         } catch (updateError) {
           console.error(`Error updating asset: ${updateError}`);
         }
@@ -845,6 +813,8 @@ export class DeepgramService {
   }
 }
 
+export const deepgramService = new DeepgramService();
+
 // Helper functions
 async function readFileAsBuffer(filePath: string): Promise<Buffer> {
   const fs = await import('fs/promises');
@@ -861,5 +831,3 @@ async function writeBufferToFile(buffer: Buffer, filePath: string): Promise<void
       .catch(reject);
   });
 }
-
-export const deepgramService = new DeepgramService();
