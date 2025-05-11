@@ -11,6 +11,7 @@ import logging
 import requests
 import asyncio
 import time
+from datetime import datetime
 from deepgram import Deepgram
 from test_direct_transcription import test_direct_transcription
 
@@ -225,6 +226,9 @@ async def main():
         logger.error(f"REST API transcription failed: {str(rest_err)}")
 
 
+# Memory store for test_direct_transcription results
+direct_transcription_results = {}
+
 def transcribe_audio_shortcut(audio_file_path):
     """
     Transcribe audio using the shortcut method that directly calls test_direct_transcription.
@@ -248,30 +252,36 @@ def transcribe_audio_shortcut(audio_file_path):
         # Just call the test function directly with the blob name
         result = test_direct_transcription(blob_name=blob_name)
         
+        # Store the raw result in memory for inspection
+        direct_transcription_results[blob_name] = {
+            'timestamp': datetime.now().isoformat(),
+            'result': result
+        }
+        
         # Log completion
         elapsed_time = time.time() - start_time
         logger.info(f"SHORTCUT transcription completed in {elapsed_time:.2f} seconds")
         
-        # Format the result to match the extraction logic expectations
-        # The service extracts from result.channels/alternatives/transcript
+        # Extract the transcript if possible
+        transcript_text = ""
         if "results" in result and "channels" in result["results"] and len(result["results"]["channels"]) > 0:
             # Extract transcript from first channel's first alternative
             if ("alternatives" in result["results"]["channels"][0] and
                 len(result["results"]["channels"][0]["alternatives"]) > 0 and
                 "transcript" in result["results"]["channels"][0]["alternatives"][0]):
-                # Add a reference at the root level for easier extraction
-                transcript = result["results"]["channels"][0]["alternatives"][0]["transcript"]
-                # This simplified format ensures the transcript is accessible
-                return {
-                    "result": result,
-                    "error": None
-                }
+                transcript_text = result["results"]["channels"][0]["alternatives"][0]["transcript"]
+                logger.info(f"Extracted transcript: {transcript_text[:50]}...")
         
-        # Return the raw result as is if we couldn't add the transcript reference
-        return {
+        # Format the result to match the extraction logic expectations
+        # Add transcript at the root level to match Method 0 in the extraction logic
+        response = {
             "result": result,
-            "error": None
+            "error": None,
+            "transcript": transcript_text  # This matches the first extraction path in the service
         }
+        
+        logger.info(f"Returning response with keys: {response.keys()}")
+        return response
         
     except Exception as e:
         logger.error(f"Error in SHORTCUT transcription: {str(e)}")

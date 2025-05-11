@@ -308,6 +308,23 @@ def configure_transcription_method():
         logger.error(f"Error configuring transcription method: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/debug/direct-transcriptions', methods=['GET'])
+def get_direct_transcriptions():
+    """Get the raw results from test_direct_transcription calls"""
+    try:
+        # Import the dictionary from the module
+        from transcription_methods import direct_transcription_results
+        
+        # Return all stored results
+        return jsonify({
+            "status": "success",
+            "count": len(direct_transcription_results),
+            "results": direct_transcription_results
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving direct transcription results: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port)
