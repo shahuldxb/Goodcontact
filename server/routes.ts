@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { pythonProxy } from "./services/python-proxy";
+import { deepgramService } from "./services/deepgram";
 import { 
   getSourceFiles, 
   getProcessedFiles, 
