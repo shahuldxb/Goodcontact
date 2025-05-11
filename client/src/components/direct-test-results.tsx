@@ -428,20 +428,89 @@ export function DirectTestResults() {
                   ) : (
                     <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
                       <h3 className="font-medium mb-2">Local Audio File</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="fileUpload">Select Audio File</Label>
-                        <Input
-                          id="fileUpload"
-                          type="file"
-                          accept="audio/*"
-                          onChange={(e) => setLocalFile(e.target.files ? e.target.files[0] : null)}
-                          className="bg-white"
-                        />
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-secondary rounded-md p-6 hover:border-primary transition-colors">
+                          <div className="flex flex-col items-center text-center space-y-2">
+                            <div className="mb-2">
+                              <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="36" 
+                                height="36" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                                className="text-muted-foreground"
+                              >
+                                <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                              </svg>
+                            </div>
+                            <div className="flex text-xl text-muted-foreground font-normal">
+                              <Label htmlFor="fileUpload" className="cursor-pointer text-primary">Click to upload</Label>
+                              <span className="ml-1">or drag and drop</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              MP3, WAV, or other audio files up to 50MB
+                            </p>
+                            <Input
+                              id="fileUpload"
+                              type="file"
+                              accept="audio/*"
+                              onChange={(e) => setLocalFile(e.target.files ? e.target.files[0] : null)}
+                              className="hidden"
+                            />
+                          </div>
+                        </div>
+                        
                         {localFile && (
-                          <div className="text-sm p-2 bg-secondary/30 rounded mt-2">
-                            <div className="font-medium">Selected file:</div>
-                            <div>{localFile.name}</div>
-                            <div className="text-xs text-muted-foreground">
+                          <div className="text-sm p-4 bg-secondary/20 rounded-md border">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="font-medium text-base">Selected file:</div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setLocalFile(null)}
+                                className="h-6 px-2"
+                              >
+                                <svg 
+                                  xmlns="http://www.w3.org/2000/svg" 
+                                  width="16" 
+                                  height="16" 
+                                  viewBox="0 0 24 24" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                  className="text-muted-foreground"
+                                >
+                                  <path d="M18 6 6 18M6 6l12 12"/>
+                                </svg>
+                              </Button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="18" 
+                                height="18" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                                className="text-primary"
+                              >
+                                <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/>
+                                <path d="M14 2v6h6"/>
+                                <path d="M2 15h10"/>
+                                <path d="m9 18 3-3-3-3"/>
+                              </svg>
+                              <div className="font-medium">{localFile.name}</div>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
                               Size: {(localFile.size / 1024 / 1024).toFixed(2)} MB • 
                               Type: {localFile.type || 'Unknown'}
                             </div>
@@ -517,15 +586,24 @@ export function DirectTestResults() {
                 onClick={runTest} 
                 disabled={running} 
                 size="lg"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 px-6"
               >
                 {running ? (
-                  <>
-                    <span className="animate-pulse mr-2">Processing</span>
-                    <span className="inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
-                  </>
+                  <div className="flex items-center space-x-2">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Processing...</span>
+                  </div>
                 ) : (
-                  'Run Transcription Test'
+                  <div className="flex items-center">
+                    <svg className="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polygon points="10 8 16 12 10 16 10 8" />
+                    </svg>
+                    Run Transcription Test
+                  </div>
                 )}
               </Button>
             </CardFooter>
@@ -606,15 +684,51 @@ export function DirectTestResults() {
                 ) : selectedResult ? (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="font-semibold mb-2">Formatted Transcript</h3>
-                      <div className="p-4 border rounded bg-slate-50 dark:bg-slate-900 max-h-[300px] overflow-y-auto font-mono whitespace-pre-line">
-                        {formattedTranscript || 'No formatted transcript available'}
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">Formatted Transcript</h3>
+                        <div className="text-xs px-2 py-1 bg-secondary rounded-full">
+                          Speaker Identification
+                        </div>
+                      </div>
+                      <div className="p-4 border rounded-md bg-white shadow-sm dark:bg-slate-900 max-h-[350px] overflow-y-auto font-sans text-base leading-relaxed">
+                        {formattedTranscript ? (
+                          <div className="space-y-4">
+                            {formattedTranscript.split('\n').filter(line => line.trim()).map((line, index) => {
+                              // Check if line starts with a speaker tag like [Customer] or [Agent]
+                              const speakerMatch = line.match(/^\[([^\]]+)\]/);
+                              const speaker = speakerMatch ? speakerMatch[1] : null;
+                              const message = speakerMatch ? line.substring(speakerMatch[0].length).trim() : line;
+                              
+                              return (
+                                <div key={index} className="flex">
+                                  {speaker && (
+                                    <div className={`min-w-24 font-medium mr-4 rounded-md px-2 py-1 text-center ${
+                                      speaker.toLowerCase().includes('customer') 
+                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' 
+                                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                    }`}>
+                                      {speaker}
+                                    </div>
+                                  )}
+                                  <div className="flex-1">{message}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground italic">No formatted transcript available</div>
+                        )}
                       </div>
                     </div>
                     
                     <div>
-                      <h3 className="font-semibold mb-2">Raw Transcript</h3>
-                      <div className="p-2 border rounded bg-slate-50 dark:bg-slate-900 max-h-[150px] overflow-y-auto">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">Raw Transcript</h3>
+                        <div className="text-xs text-muted-foreground">
+                          Deepgram Raw Output
+                        </div>
+                      </div>
+                      <div className="p-4 border rounded-md bg-slate-50 dark:bg-slate-900 max-h-[150px] overflow-y-auto font-mono text-sm">
                         {selectedResult.result?.transcript || 'No transcript found'}
                       </div>
                     </div>
