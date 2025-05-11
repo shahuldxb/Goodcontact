@@ -238,119 +238,21 @@ def transcribe_audio_shortcut(audio_file_path):
         dict: The complete Deepgram response including transcript and metadata.
     """
     try:
-        # Validate file exists
-        if not os.path.exists(audio_file_path):
-            logger.error(f"File does not exist: {audio_file_path}")
-            return {"error": {"name": "FileNotFoundError", "message": f"File does not exist: {audio_file_path}", "status": 404}}
-            
-        # Extract the blob name from the file path
+        # Simply extract the blob name from the file path
         blob_name = os.path.basename(audio_file_path)
-        logger.info(f"Extracted blob name: {blob_name}")
+        logger.info(f"SHORTCUT method: Processing blob: {blob_name}")
         
         # Log start of transcription
-        logger.info(f"Transcribing file using SHORTCUT method: {blob_name}")
         start_time = time.time()
         
-        # Call the test function directly
+        # Just call the test function directly with the blob name
         result = test_direct_transcription(blob_name=blob_name)
         
         # Log completion
         elapsed_time = time.time() - start_time
         logger.info(f"SHORTCUT transcription completed in {elapsed_time:.2f} seconds")
         
-        if 'error' in result and result['error']:
-            logger.error(f"SHORTCUT method failed: {result['error']}")
-            return {"error": {"name": "ShortcutTranscriptionError", "message": result['error'], "status": 500}}
-        
-        # Ensure all required fields are populated with non-null values
-        current_time = time.time()
-        formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(current_time))
-        
-        # Calculate file size or use a default if not available
-        file_size = 0
-        try:
-            file_size = os.path.getsize(audio_file_path) if os.path.exists(audio_file_path) else 1024  # Default to 1KB
-        except:
-            file_size = 1024  # Default to 1KB
-            
-        # Add missing fields if they aren't present
-        if not result.get('created_at'):
-            result['created_at'] = formatted_time
-            
-        if not result.get('duration'):
-            # Try to extract duration from the result, or default to a reasonable value
-            try:
-                if 'results' in result and 'duration' in result['results']:
-                    result['duration'] = result['results']['duration'] 
-                else:
-                    result['duration'] = 60.0  # Default to 60 seconds
-            except:
-                result['duration'] = 60.0  # Default to 60 seconds
-                
-        if not result.get('file_size'):
-            result['file_size'] = file_size
-            
-        if not result.get('processing_time'):
-            result['processing_time'] = elapsed_time
-            
-        if not result.get('language'):
-            # Try to extract language from the result, or default to English
-            try:
-                if ('results' in result and 'channels' in result['results'] and 
-                    len(result['results']['channels']) > 0 and 
-                    'detected_language' in result['results']['channels'][0]):
-                    result['language'] = result['results']['channels'][0]['detected_language']
-                else:
-                    result['language'] = 'en'  # Default to English
-            except:
-                result['language'] = 'en'  # Default to English
-                
-        if not result.get('original_filename') and blob_name:
-            result['original_filename'] = blob_name
-            
-        # Extract transcript text from various possible paths and add it to the root level
-        if not result.get('transcript'):
-            transcript_text = ""
-            try:
-                # Path 1: Standard Deepgram format
-                if ('results' in result and 'channels' in result['results'] and 
-                    len(result['results']['channels']) > 0 and
-                    'alternatives' in result['results']['channels'][0] and 
-                    len(result['results']['channels'][0]['alternatives']) > 0 and
-                    'transcript' in result['results']['channels'][0]['alternatives'][0]):
-                    transcript_text = result['results']['channels'][0]['alternatives'][0]['transcript']
-                    logger.info(f"Extracted transcript from standard path")
-                    
-                # Path 2: If there's an utterances array
-                elif ('results' in result and 'utterances' in result['results']):
-                    for utt in result['results']['utterances']:
-                        if 'transcript' in utt:
-                            transcript_text += utt['transcript'] + " "
-                    logger.info(f"Extracted transcript from utterances path")
-                    
-                # Path 3: If there's a paragraphs structure
-                elif ('results' in result and 'paragraphs' in result['results'] and 
-                      'paragraphs' in result['results']['paragraphs']):
-                    for para in result['results']['paragraphs']['paragraphs']:
-                        if 'text' in para:
-                            transcript_text += para['text'] + " "
-                    logger.info(f"Extracted transcript from paragraphs path")
-                    
-                # Set transcript if we found any text
-                if transcript_text:
-                    result['transcript'] = transcript_text.strip()
-                    logger.info(f"Added transcript to result: {transcript_text[:50]}...")
-                else:
-                    # Default to a placeholder if we couldn't extract a transcript
-                    result['transcript'] = "This is a placeholder transcript for the shortcut method."
-                    logger.warning("Could not extract transcript, using placeholder text")
-            except Exception as e:
-                logger.error(f"Error extracting transcript: {str(e)}")
-                result['transcript'] = "Error extracting transcript from response."
-        
-        logger.info(f"Ensured all fields have non-null values in result")
-        
-        # Format the result to match the expected structure
+        # Return the raw result as is - no additional processing
         return result
         
     except Exception as e:
