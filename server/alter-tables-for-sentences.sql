@@ -191,10 +191,10 @@ ELSE
     PRINT 'Stored procedure RDS_InsertParagraph already exists';
 
 -- Create stored procedure for inserting sentences
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'DG_InsertSentence')
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'RDS_InsertSentence')
 BEGIN
     EXEC('
-    CREATE PROCEDURE DG_InsertSentence
+    CREATE PROCEDURE RDS_InsertSentence
         @fileid NVARCHAR(255),
         @paragraph_id INT,
         @sentence_idx NVARCHAR(50),
@@ -226,7 +226,7 @@ BEGIN
         );
     END
     ');
-    PRINT 'Created stored procedure: DG_InsertSentence';
+    PRINT 'Created stored procedure: RDS_InsertSentence';
 END
 ELSE
-    PRINT 'Stored procedure DG_InsertSentence already exists';
+    PRINT 'Stored procedure RDS_InsertSentence already exists';
