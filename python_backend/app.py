@@ -60,8 +60,12 @@ def process_file():
         local_path = os.path.join(temp_dir, filename)
         
         try:
-            azure_storage_service.download_blob(filename, local_path)
-            logger.info(f"Downloaded {filename} to {local_path}")
+            try:
+                azure_storage_service.download_blob(filename, local_path)
+                logger.info(f"Downloaded {filename} to {local_path}")
+            except Exception as e:
+                logger.error(f"Failed to download file from Azure Blob Storage: {str(e)}")
+                return jsonify({"error": f"Azure storage error: {str(e)}"}), 500
             
             # Validate audio file
             file_size = os.path.getsize(local_path)
@@ -70,25 +74,34 @@ def process_file():
             if file_size == 0:
                 logger.error(f"Audio file is empty: {filename}")
                 return jsonify({"error": f"Audio file is empty: {filename}"}), 400
+            
+            if file_size < 100:  # Suspicious file size for audio
+                logger.warning(f"Suspiciously small audio file: {filename} ({file_size} bytes)")
                 
             # Log first few bytes to help with debugging
             with open(local_path, "rb") as f:
-                header = f.read(12)
+                header = f.read(24)  # Read more bytes for better format detection
                 logger.info(f"File header: {header.hex()}")
                 
                 # Check file format based on extension
                 file_extension = os.path.splitext(filename)[1].lower()
+                valid_format = True
                 
                 if file_extension == '.wav':
                     # Verify WAV header (should start with "RIFF" and contain "WAVE")
                     if header[:4] != b'RIFF' or header[8:12] != b'WAVE':
+                        valid_format = False
                         logger.warning(f"File {filename} does not appear to be a valid WAV file")
                 elif file_extension == '.mp3':
                     # Verify MP3 header (should start with ID3 or have a sync word)
                     if not (header[:3] == b'ID3' or header[0:2] == b'\xFF\xFB' or header[0:2] == b'\xFF\xF3' or header[0:2] == b'\xFF\xFA'):
+                        valid_format = False
                         logger.warning(f"File {filename} does not appear to be a valid MP3 file")
                     else:
                         logger.info(f"MP3 header verification passed")
+                
+                if not valid_format:
+                    logger.warning(f"Proceeding with potentially invalid file format for {filename}")
             
             # Process with Deepgram
             # process_audio_file is already async inside deepgram_service

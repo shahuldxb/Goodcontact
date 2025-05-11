@@ -71,12 +71,20 @@ class DeepgramService:
             }
             
             # Set up headers with API key
+            content_type = f"audio/{file_type}"
+            
+            # Special case for mp3 files - Deepgram expects audio/mpeg, not audio/mp3
+            if file_type == "mp3":
+                content_type = "audio/mpeg"
+                
+            self.logger.info(f"Using content type: {content_type}")
+            
             headers = {
                 "Authorization": f"Token {self.deepgram_api_key}",
-                "Content-Type": f"audio/{file_type}"
+                "Content-Type": content_type
             }
             
-            self.logger.info(f"Sending audio file {audio_file_path} with mimetype audio/{file_type} to Deepgram for transcription...")
+            self.logger.info(f"Sending audio file {audio_file_path} with mimetype {content_type} to Deepgram for transcription...")
             
             # Read the audio file and verify it contains data
             with open(audio_file_path, 'rb') as audio_file:
