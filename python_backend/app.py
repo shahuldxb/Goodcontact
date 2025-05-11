@@ -107,7 +107,7 @@ def process_file():
                     logger.warning(f"Proceeding with potentially invalid file format for {filename}")
             
             # Choose processing method based on configuration
-            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
             
             if transcription_method == "enhanced":
                 # Use enhanced transcription with database storage
