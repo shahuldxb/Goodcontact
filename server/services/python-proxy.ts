@@ -199,6 +199,42 @@ export async function getTopicStats() {
 export function createPythonProxyMiddleware(pythonEndpoint: string, method: 'GET' | 'POST' = 'GET') {
   return async (req: any, res: any) => {
     try {
+      // Handle file uploads differently than regular POST requests
+      const isFileUpload = req.is('multipart/form-data') || (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data'));
+      
+      if (method === 'POST' && isFileUpload && req.files) {
+        // For file uploads, we need to forward the file to Python backend
+        console.log('Handling file upload to Python backend');
+        
+        // Extract the file from the request (assuming using multer or express-fileupload)
+        const file = req.files.file;
+        
+        if (!file) {
+          return res.status(400).json({ error: 'No file provided' });
+        }
+        
+        // Create a FormData object to send the file
+        const formData = new FormData();
+        formData.append('file', file.buffer || file.data, {
+          filename: file.originalname || file.name,
+          contentType: file.mimetype
+        });
+        
+        // Send the file to Python backend
+        const response = await fetch(`${PYTHON_SERVER_URL}${pythonEndpoint}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Python server responded with status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return res.json(data);
+      }
+      
+      // For regular requests (non-file uploads)
       const url = `${PYTHON_SERVER_URL}${pythonEndpoint}`;
       
       const options: any = {
