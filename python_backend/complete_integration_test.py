@@ -378,29 +378,29 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
                 # Get the paragraph_id returned from the stored procedure
                 paragraph_id = cursor.fetchone()[0]
                 para_count += 1
-                    
-                    # Process sentences in this paragraph
-                    # Here we just split by period as a simple approach,
-                    # a real implementation would use the actual sentences from Deepgram
-                    sentences = para_text.split('.')
-                    for sent_idx, sentence in enumerate(sentences):
-                        if not sentence.strip():
-                            continue
-                            
-                        # For simplicity, distribute time evenly across sentences
-                        sent_duration = (para_end - para_start) / max(1, len(sentences))
-                        sent_start = para_start + (sent_idx * sent_duration)
-                        sent_end = sent_start + sent_duration
+                
+                # Process sentences in this paragraph
+                # Here we just split by period as a simple approach,
+                # a real implementation would use the actual sentences from Deepgram
+                sentences = para_text.split('.')
+                for sent_idx, sentence in enumerate(sentences):
+                    if not sentence.strip():
+                        continue
                         
-                        cursor.execute("""
-                        EXEC RDS_InsertSentence
-                        @fileid = %s,
-                        @paragraph_id = %s,
-                        @sentence_idx = %s,
-                        @text = %s,
-                        @start_time = %s,
-                        @end_time = %s
-                        """, (
+                    # For simplicity, distribute time evenly across sentences
+                    sent_duration = (para_end - para_start) / max(1, len(sentences))
+                    sent_start = para_start + (sent_idx * sent_duration)
+                    sent_end = sent_start + sent_duration
+                    
+                    cursor.execute("""
+                    EXEC RDS_InsertSentence
+                    @fileid = %s,
+                    @paragraph_id = %s,
+                    @sentence_idx = %s,
+                    @text = %s,
+                    @start_time = %s,
+                    @end_time = %s
+                    """, (
                             fileid,
                             paragraph_id,
                             sent_idx,
