@@ -487,20 +487,43 @@ class DeepgramService:
                     fileid
                 ))
             else:
-                # Create new asset
+                # Ensure all values are present and valid before inserting
+                filename = os.path.basename(audio_file_path)
+                source_path = audio_file_path
+                
+                # Get file size or use default if not accessible
+                try:
+                    file_size = os.path.getsize(audio_file_path) if os.path.exists(audio_file_path) else 1024
+                except:
+                    self.logger.warning(f"Could not get file size for {audio_file_path}, using default")
+                    file_size = 1024  # Default to 1KB if file size can't be determined
+                
+                # Ensure transcript text is not null
+                if not transcript_text:
+                    transcript_text = "Transcript unavailable"
+                    self.logger.warning("No transcript text extracted, using placeholder")
+                
+                # Ensure language is not null
+                if not detected_language:
+                    detected_language = "en"  # Default to English
+                    self.logger.warning("No language detected, using default (en)")
+                
+                # Create new asset with validated data
                 cursor.execute("""
                     INSERT INTO rdt_assets 
-                    (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status,
+                     create_date) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     fileid,
-                    os.path.basename(audio_file_path),
-                    audio_file_path,
-                    os.path.getsize(audio_file_path),
+                    filename,
+                    source_path,
+                    file_size,
                     transcript_text,
                     transcription_json_str,
                     detected_language,
-                    'processing'
+                    'processing',
+                    datetime.now()  # Add current timestamp for create_date
                 ))
             
             conn.commit()
