@@ -10,6 +10,7 @@ dependencies = [
     "flask>=3.1.0",
     "flask-cors>=5.0.1",
     "gensim>=4.3.3",
+    "googletrans==4.0.0rc1",
     "iso639-lang>=2.6.0",
     "langdetect>=1.0.9",
     "nltk>=3.9.1",
