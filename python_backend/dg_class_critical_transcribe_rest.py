@@ -510,10 +510,16 @@ class DgClassCriticalTranscribeRest:
                 'language': extracted['language'],
                 'speaker_count': extracted['speaker_count'],
                 'has_speakers': extracted['has_speakers'],
-                'request_id': result.get('request_id', None),
-                'duration': result.get('duration', None),
+                'request_id': extracted.get('request_id') or result.get('request_id', None),
+                'duration': extracted.get('audio_duration') or result.get('duration', None),
                 'blob_name': result.get('blob_name', None),
                 'utterances': extracted['utterances'],
+                'paragraphs': extracted.get('paragraphs', []),
+                'sentences': extracted.get('sentences', []),
+                'paragraph_count': extracted.get('paragraph_count', 0),
+                'sentence_count': extracted.get('sentence_count', 0),
+                'sha256': extracted.get('sha256', ''),
+                'created': extracted.get('created', ''),
                 'full_response': full_response  # Include this for debugging
             }
             
@@ -549,15 +555,33 @@ def main():
             print("\n" + "=" * 50)
             print("TRANSCRIPTION RESULT (SHORTCUT METHOD)")
             print("=" * 50)
-            print(f"\nTranscript: {result['transcript']}")
+            print(f"\nTranscript: {result['transcript'][:200]}...")
             print(f"Confidence: {result['confidence']:.2f}")
             print(f"Language: {result['language']}")
             print(f"Speaker Count: {result['speaker_count']}")
+            print(f"Request ID: {result['request_id']}")
+            print(f"SHA256 Hash: {result['sha256']}")
+            print(f"Created: {result['created']}")
+            print(f"Duration: {result['duration']} seconds")
+            print(f"Paragraph Count: {result['paragraph_count']}")
+            print(f"Sentence Count: {result['sentence_count']}")
             
             if result['has_speakers'] and result['utterances']:
-                print("\nSpeaker Segmentation:")
-                for utterance in result['utterances']:
+                print("\nSpeaker Segmentation (First 3 utterances):")
+                for i, utterance in enumerate(result['utterances'][:3]):
                     print(f"Speaker {utterance['speaker']}: {utterance['text']}")
+                    
+            if result['paragraph_count'] > 0:
+                print("\nParagraphs (First 2):")
+                for i, para in enumerate(result['paragraphs'][:2]):
+                    print(f"Paragraph {i+1}: {para['text'][:100]}...")
+                    print(f"  Start: {para['start']:.2f}s, End: {para['end']:.2f}s, Words: {para['num_words']}")
+                    
+            if result['sentence_count'] > 0:
+                print("\nSentences (First 5):")
+                for i, sent in enumerate(result['sentences'][:5]):
+                    print(f"Sentence {i+1} (Para {sent['paragraph_id']}): {sent['text']}")
+                    print(f"  Time: {sent['start']:.2f}s to {sent['end']:.2f}s")
         else:
             print(f"\nTranscription failed: {result['error']}")
     else:

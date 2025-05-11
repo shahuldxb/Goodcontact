@@ -272,6 +272,35 @@ def setup_stored_procedures():
     except Exception as e:
         logger.error(f"Error creating stored procedures: {str(e)}")
         return jsonify({"error": str(e)}), 500
+        
+@app.route('/setup/sentence-tables', methods=['GET'])
+def setup_sentence_tables():
+    """Set up new tables for paragraphs and sentences"""
+    try:
+        from update_sentence_tables import update_sentence_tables
+        result = update_sentence_tables()
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error creating sentence tables: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
+@app.route('/store/transcription-details', methods=['POST'])
+def store_transcription_details():
+    """Store detailed transcription data including paragraphs and sentences"""
+    try:
+        data = request.json
+        fileid = data.get('fileid')
+        transcription_response = data.get('transcription')
+        
+        if not fileid or not transcription_response:
+            return jsonify({"status": "error", "message": "Missing required fields: fileid or transcription"}), 400
+            
+        from update_sentence_tables import store_transcription_details
+        result = store_transcription_details(fileid, transcription_response)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error storing transcription details: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/config/transcription-method', methods=['GET', 'POST'])
 def configure_transcription_method():
