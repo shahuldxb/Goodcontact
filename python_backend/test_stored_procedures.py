@@ -25,6 +25,41 @@ def main():
         fileid = f'test_{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
         print(f"Using test file ID: {fileid}")
         
+        # Insert asset
+        print("Inserting asset record...")
+        cursor.execute("""
+            INSERT INTO rdt_assets (
+                fileid, 
+                filename, 
+                source_path, 
+                destination_path, 
+                file_size,
+                upload_date,
+                status,
+                created_dt
+            )
+            VALUES (
+                %s, 
+                %s, 
+                %s, 
+                %s, 
+                %s,
+                %s,
+                %s,
+                %s
+            )
+        """, (
+            fileid,
+            f"test_file_{fileid}.mp3",
+            "shahulin",
+            None,
+            1024,
+            datetime.datetime.now(),
+            "completed",
+            datetime.datetime.now()
+        ))
+        print("Asset record inserted successfully")
+        
         # Insert metadata
         print("Testing RDS_InsertAudioMetadata...")
         cursor.execute("""
