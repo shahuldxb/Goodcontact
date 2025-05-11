@@ -196,7 +196,7 @@ export class MemStorage implements IStorage {
       // Build SQL update query
       if (Object.keys(sqlUpdates).length > 0) {
         const setClause = Object.entries(sqlUpdates)
-          .map(([key, _], index) => `${key} = @param${index}`)
+          .map(([key, _], index) => `${key} = $${index + 1}`)
           .join(', ');
         
         const values = [...Object.values(sqlUpdates), fileid];
@@ -204,7 +204,7 @@ export class MemStorage implements IStorage {
         const query = `
           UPDATE rdt_assets
           SET ${setClause}
-          WHERE fileid = @param${Object.values(sqlUpdates).length};
+          WHERE fileid = $${Object.values(sqlUpdates).length + 1};
         `;
         
         await executeQuery(query, values);
