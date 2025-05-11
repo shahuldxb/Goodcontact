@@ -458,18 +458,85 @@ export class DeepgramService {
   async transcribeAudio(audio_file_path: string) {
     try {
       const audioBuffer = await readFileAsBuffer(audio_file_path);
-      const source = { buffer: audioBuffer, mimetype: "audio/wav" };
-      const options = {
-        punctuate: true,
-        diarize: true,
-        detect_language: true,
-        model: "nova-2",
-        smart_format: true,
-        summarize: "v2"
-      };
+      // Use OpenAI for transcription
+      try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        if (!openai) {
+          console.error("Failed to initialize OpenAI client - missing API key");
+          throw new Error("Missing OpenAI API key");
+        }
+        console.log(`Using OpenAI Whisper for transcription of ${audio_file_path}`);
+        
+        // Create a FormData object with the audio file
+        const formData = new FormData();
+        formData.append('file', new Blob([audioBuffer]), 'audio.mp3');
+        formData.append('model', 'whisper-1');
+        
+        // Make a direct API call
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`OpenAI API error: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log(`OpenAI transcription result: ${JSON.stringify(data)}`);
+        
+        // Create a deepgram-like response with the transcript
+        return {
+          result: {
+            channels: [{
+              alternatives: [{
+                transcript: data.text
+              }]
+            }],
+            metadata: {
+              detected_language: 'en'
+            }
+          }
+        };
+      } catch (openAiError) {
+        console.error(`OpenAI transcription failed: ${openAiError}`);
+        console.log("Falling back to Deepgram transcription");
+        
+        // Get the file extension to determine the correct mimetype
+        const fileExtension = audio_file_path.split('.').pop()?.toLowerCase();
+        let mimetype = "audio/wav";
+        
+        // Set the correct mimetype based on file extension
+        if (fileExtension === 'mp3') {
+          mimetype = "audio/mpeg";
+        } else if (fileExtension === 'm4a') {
+          mimetype = "audio/mp4";
+        } else if (fileExtension === 'ogg') {
+          mimetype = "audio/ogg";
+        } else if (fileExtension === 'flac') {
+          mimetype = "audio/flac";
+        }
+        
+        const source = { buffer: audioBuffer, mimetype };
+        const options = {
+          punctuate: true,
+          diarize: true,
+          detect_language: true,
+          model: "nova-2",
+          smart_format: true,
+          summarize: "v2"
+        };
+      }
       
-      console.log(`Sending audio file ${audio_file_path} to Deepgram for transcription...`);
+      console.log(`Sending audio file ${audio_file_path} with mimetype ${mimetype} to Deepgram for transcription...`);
       const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      
+      // Print the full response structure for debugging
+      console.log(`Deepgram raw response: ${JSON.stringify(response)}`);
+      
       return response;
     } catch (e) {
       console.error(`Error during transcription: ${e}`);
