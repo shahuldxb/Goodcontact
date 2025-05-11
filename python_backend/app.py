@@ -226,6 +226,17 @@ def get_topic_stats():
     except Exception as e:
         logger.error(f"Error getting topic stats: {str(e)}")
         return jsonify({"error": str(e)}), 500
+        
+@app.route('/setup/stored-procedures', methods=['GET'])
+def setup_stored_procedures():
+    """Set up missing stored procedures"""
+    try:
+        from create_missing_sp import main as create_sp_main
+        create_sp_main()
+        return jsonify({"status": "success", "message": "Stored procedures created successfully"})
+    except Exception as e:
+        logger.error(f"Error creating stored procedures: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
