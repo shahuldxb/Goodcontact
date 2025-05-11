@@ -515,7 +515,7 @@ class DeepgramService:
                 cursor.execute("""
                     INSERT INTO rdt_assets 
                     (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status,
-                     create_date) 
+                     created_dt) 
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     fileid,
@@ -526,7 +526,7 @@ class DeepgramService:
                     transcription_json_str,
                     detected_language,
                     'processing',
-                    datetime.now()  # Add current timestamp for create_date
+                    datetime.now()  # Add current timestamp for created_dt
                 ))
             
             conn.commit()
