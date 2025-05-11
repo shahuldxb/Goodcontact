@@ -38,13 +38,50 @@ export function DirectTestResults() {
   const [formattedTranscript, setFormattedTranscript] = useState("");
   const [fileSource, setFileSource] = useState<'azure' | 'local'>('azure');
   const [localFile, setLocalFile] = useState<File | null>(null);
+  const [sourceFiles, setSourceFiles] = useState<Array<{name: string, size: number, url: string, lastModified: string}>>([]);
+  const [loadingSourceFiles, setLoadingSourceFiles] = useState(false);
   const { toast } = useToast();
 
   // Load test result files and get current transcription method on component mount
   useEffect(() => {
     fetchResultFiles();
     fetchCurrentMethod();
+    fetchSourceFiles();
   }, []);
+  
+  // Fetch source files from Azure Storage
+  const fetchSourceFiles = async () => {
+    if (fileSource !== 'azure') return;
+    
+    setLoadingSourceFiles(true);
+    try {
+      const response = await fetch('/api/files/source');
+      const data = await response.json();
+      
+      if (data.files && Array.isArray(data.files)) {
+        setSourceFiles(data.files);
+      } else {
+        setSourceFiles([]);
+      }
+    } catch (error) {
+      console.error("Error fetching source files:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load Azure Storage files',
+        variant: 'destructive',
+      });
+      setSourceFiles([]);
+    } finally {
+      setLoadingSourceFiles(false);
+    }
+  };
+  
+  // Refetch source files when file source changes to Azure
+  useEffect(() => {
+    if (fileSource === 'azure') {
+      fetchSourceFiles();
+    }
+  }, [fileSource]);
   
   // Fetch the current transcription method
   const fetchCurrentMethod = async () => {
@@ -311,19 +348,67 @@ export function DirectTestResults() {
                   
                   {fileSource === 'azure' ? (
                     <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                      <h3 className="font-medium mb-2">Azure Blob File</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="filename">Blob File Name</Label>
-                        <Input
-                          id="filename"
-                          placeholder="Enter blob file name (e.g., audio_sample.mp3)"
-                          value={testFileName}
-                          onChange={(e) => setTestFileName(e.target.value)}
-                          className="bg-white"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Enter the name of an audio file from the Azure Storage 'shahulin' container.
-                        </p>
+                      <h3 className="font-medium mb-2">Azure Blob File (shahulin container)</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="filename" className="mb-2 block">Blob File Name</Label>
+                          <div className="flex space-x-2">
+                            <Input
+                              id="filename"
+                              placeholder="Enter blob file name (e.g., audio_sample.mp3)"
+                              value={testFileName}
+                              onChange={(e) => setTestFileName(e.target.value)}
+                              className="bg-white flex-1"
+                            />
+                            <Button 
+                              variant="outline" 
+                              type="button"
+                              onClick={fetchSourceFiles}
+                              className="whitespace-nowrap"
+                              disabled={loadingSourceFiles}
+                            >
+                              {loadingSourceFiles ? 'Loading...' : 'Refresh Files'}
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label className="mb-1 block">Available Files</Label>
+                          {loadingSourceFiles ? (
+                            <div className="py-2">
+                              <div className="flex items-center space-x-2">
+                                <span className="inline-block w-4 h-4 border-2 border-t-transparent border-primary rounded-full animate-spin"></span>
+                                <span>Loading files from Azure Storage...</span>
+                              </div>
+                            </div>
+                          ) : sourceFiles.length > 0 ? (
+                            <div className="border rounded-md h-48 overflow-y-auto bg-white">
+                              <div className="p-1">
+                                {sourceFiles.map((file, index) => (
+                                  <button
+                                    key={index}
+                                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${testFileName === file ? 'bg-primary text-white' : 'hover:bg-secondary'}`}
+                                    onClick={() => setTestFileName(file)}
+                                  >
+                                    {file}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center p-4 border rounded bg-secondary/20">
+                              <p>No files found in the 'shahulin' container</p>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={fetchSourceFiles} 
+                                className="mt-2"
+                              >
+                                Retry
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ) : (
