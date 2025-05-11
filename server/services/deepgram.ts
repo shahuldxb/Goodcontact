@@ -667,8 +667,13 @@ export class DeepgramService {
       // 2. Save language detection results
       await storage.saveLanguageDetection({
         fileid,
-        language: languageDetectionResults?.language || 'English',
-        confidence: languageDetectionResults?.confidence || 95
+        language: languageDetectionResults?.deepgram_language?.name || 
+                  languageDetectionResults?.deepgram_language?.code || 
+                  languageDetectionResults?.language || 
+                  'English',
+        confidence: languageDetectionResults?.deepgram_language?.confidence || 
+                    languageDetectionResults?.confidence || 
+                    95
       });
       
       // 3. Save call summarization results
