@@ -71,6 +71,19 @@ export function Sidebar() {
                 </a>
               </Link>
             </li>
+            
+            <li className="px-4 py-2 text-sm font-medium text-gray-600 mt-4">DEVELOPER</li>
+            <li>
+              <Link href="/debug">
+                <a className={cn(
+                  "flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100",
+                  { "bg-primary bg-opacity-10 text-primary border-l-3 border-primary": location === "/debug" }
+                )}>
+                  <i className={cn("bi bi-bug mr-3 text-gray-600", { "text-primary": location === "/debug" })}></i>
+                  Debug Tools
+                </a>
+              </Link>
+            </li>
           </ul>
         </div>
       </aside>
@@ -136,6 +149,19 @@ export function Sidebar() {
                     )} onClick={toggleMobileSidebar}>
                       <i className={cn("bi bi-gear mr-3 text-gray-600", { "text-primary": location === "/settings" })}></i>
                       Configuration
+                    </a>
+                  </Link>
+                </li>
+                
+                <li className="px-4 py-2 text-sm font-medium text-gray-600 mt-4">DEVELOPER</li>
+                <li>
+                  <Link href="/debug">
+                    <a className={cn(
+                      "flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100",
+                      { "bg-primary bg-opacity-10 text-primary border-l-3 border-primary": location === "/debug" }
+                    )} onClick={toggleMobileSidebar}>
+                      <i className={cn("bi bi-bug mr-3 text-gray-600", { "text-primary": location === "/debug" })}></i>
+                      Debug Tools
                     </a>
                   </Link>
                 </li>

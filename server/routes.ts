@@ -282,6 +282,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update transcription method configuration
   app.post("/api/config/transcription-method", createPythonProxyMiddleware('/config/transcription-method', 'POST'));
 
+  // Debug endpoints
+  app.get("/api/debug/direct-transcriptions", createPythonProxyMiddleware('/debug/direct-transcriptions'));
+  app.get("/api/debug/direct-test-results", createPythonProxyMiddleware('/debug/direct-test-results'));
+  app.get("/api/debug/direct-test-results/:filename", createPythonProxyMiddleware('/debug/direct-test-results/:filename'));
+
   const httpServer = createServer(app);
   return httpServer;
 }
