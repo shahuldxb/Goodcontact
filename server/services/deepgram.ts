@@ -509,7 +509,7 @@ export class DeepgramService {
           transcription: transcriptionResponse?.result?.utterances?.[0]?.transcript || 
                          transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript || '',
           transcriptionJson: JSON.parse(JSON.stringify(transcriptionResponse || {})),
-          languageDetected: transcriptionResponse?.result?.metadata?.detected_language || 'English'
+          language: transcriptionResponse?.result?.metadata?.detected_language || 'English'
         });
       }
       

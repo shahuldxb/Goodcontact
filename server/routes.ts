@@ -148,7 +148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               || '',
             // Save the entire JSON response (stringify + parse to ensure proper serialization)
             transcriptionJson: JSON.parse(JSON.stringify(result.transcription || {})),
-            languageDetected: result.transcription?.result?.metadata?.detected_language || 'English'
+            // Use 'language' field name to match database column
+            language: result.transcription?.result?.metadata?.detected_language || 'English'
           });
           
           results.push({ fileid, filename, status: 'success' });

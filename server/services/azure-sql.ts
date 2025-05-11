@@ -36,9 +36,43 @@ export async function executeQuery(query: string, params: any[] = []) {
     const pool = await sqlConnect();
     const request = pool.request();
     
-    // Add parameters to the request
+    // Add parameters to the request with proper SQL types
     params.forEach((param, index) => {
-      request.input(`param${index}`, param);
+      if (param === null || param === undefined) {
+        request.input(`param${index}`, sql.VarChar, null);
+      } 
+      else if (typeof param === 'string') {
+        // Sanitize string values - limit length to prevent overflow
+        const safeValue = param.toString().substring(0, 4000);
+        request.input(`param${index}`, sql.NVarChar(sql.MAX), safeValue);
+      }
+      else if (typeof param === 'number') {
+        if (Number.isInteger(param)) {
+          request.input(`param${index}`, sql.Int, param);
+        } else {
+          request.input(`param${index}`, sql.Float, param);
+        }
+      }
+      else if (param instanceof Date) {
+        request.input(`param${index}`, sql.DateTime, param);
+      }
+      else if (typeof param === 'boolean') {
+        request.input(`param${index}`, sql.Bit, param);
+      }
+      else if (typeof param === 'object') {
+        try {
+          // For objects, convert to JSON string
+          const jsonStr = JSON.stringify(param).substring(0, 4000);
+          request.input(`param${index}`, sql.NVarChar(sql.MAX), jsonStr);
+        } catch (e) {
+          console.warn(`Failed to stringify object param${index}:`, e);
+          request.input(`param${index}`, sql.NVarChar(sql.MAX), '{}');
+        }
+      }
+      else {
+        // Default fallback - convert to string
+        request.input(`param${index}`, sql.NVarChar(1000), String(param).substring(0, 1000));
+      }
     });
     
     const result = await request.query(query);

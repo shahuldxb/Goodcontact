@@ -145,16 +145,49 @@ export class MemStorage implements IStorage {
       // Then update in SQL database
       const { executeQuery } = await import('./services/azure-sql');
       
-      // Convert camelCase to snake_case for SQL columns
+      // Convert camelCase to snake_case for SQL columns with safe values
       const sqlUpdates: Record<string, any> = {};
       if (updates.status) sqlUpdates.status = updates.status;
       if (updates.processedDate) sqlUpdates.processed_date = updates.processedDate;
-      if (updates.transcription) sqlUpdates.transcription = updates.transcription;
-      if (updates.transcriptionJson) sqlUpdates.transcription_json = updates.transcriptionJson;
+      
+      // Handle text fields safely - limit long strings and ensure they're properly escaped
+      if (updates.transcription) {
+        // Limit transcription to 4000 chars to prevent SQL errors
+        sqlUpdates.transcription = typeof updates.transcription === 'string' 
+          ? updates.transcription.substring(0, 4000) 
+          : '';
+      }
+      
+      if (updates.transcriptionJson) {
+        // Convert transcription JSON to string safely
+        try {
+          const jsonStr = JSON.stringify(updates.transcriptionJson);
+          sqlUpdates.transcription_json = jsonStr.substring(0, 4000);
+        } catch (e) {
+          console.warn('Error stringifying transcriptionJson:', e);
+          sqlUpdates.transcription_json = '{}';
+        }
+      }
+      
       if (updates.fileSize) sqlUpdates.file_size = updates.fileSize;
-      if (updates.languageDetected) sqlUpdates.language_detected = updates.languageDetected;
-      if (updates.errorMessage) sqlUpdates.error_message = updates.errorMessage;
-      if (updates.processingDuration) sqlUpdates.processing_duration = updates.processingDuration;
+      
+      if (updates.languageDetected) {
+        sqlUpdates.language = typeof updates.languageDetected === 'string'
+          ? updates.languageDetected.substring(0, 100)
+          : 'Unknown';
+      }
+      
+      if (updates.errorMessage) {
+        sqlUpdates.error_message = typeof updates.errorMessage === 'string'
+          ? updates.errorMessage.substring(0, 1000)
+          : '';
+      }
+      
+      if (updates.processingDuration) {
+        sqlUpdates.processing_duration = typeof updates.processingDuration === 'number'
+          ? updates.processingDuration
+          : 0;
+      }
       
       // Build SQL update query
       if (Object.keys(sqlUpdates).length > 0) {
