@@ -166,29 +166,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const processingDuration = Date.now() - processingStartTime;
           
           try {
-            // Update the asset record FIRST, before moving the file
-            await storage.updateAsset(fileid, {
-              status: 'completed',
-              processedDate: new Date(),
-              processingDuration: Math.round(processingDuration / 1000), // Convert to seconds
-              // Use the direct transcript from our DirectTranscribe class
-              transcription: transcript,
-              // Store the full response JSON
-              transcriptionJson: result.transcription,
-              // Use language from metadata if available
-              languageDetected: 
-                result.transcription?.results?.metadata?.detected_language || 
-                'English'
-            });
+            // Import our direct database methods
+            const { updateTranscriptionRecord, createAssetRecord, checkRecordExists } = await import('./services/direct-postgres');
             
-            console.log(`Successfully updated asset record in database for ${fileid}`);
+            // Check if record exists, if not, create it
+            const exists = await checkRecordExists(fileid);
+            if (!exists) {
+              console.log(`Creating new asset record for ${fileid}`);
+              await createAssetRecord(
+                fileid,
+                filename,
+                `shahulin/${filename}`,
+                0 // We don't have the file size, but it's not critical
+              );
+            }
             
-            // Move the file from source to processed container AFTER database update
-            await moveFileToProcessed(filename);
-            console.log(`Successfully moved file ${filename} to processed container`);
+            // Update the record with transcription data
+            const updated = await updateTranscriptionRecord(
+              fileid,
+              transcript,
+              result.transcription,
+              result.transcription?.results?.metadata?.detected_language || 'English',
+              Math.round(processingDuration / 1000) // Convert to seconds
+            );
+            
+            if (updated) {
+              console.log(`Successfully updated asset record in PostgreSQL database for ${fileid}`);
+              
+              // Also update in-memory storage
+              await storage.updateAsset(fileid, {
+                status: 'completed',
+                processedDate: new Date(),
+                processingDuration: Math.round(processingDuration / 1000),
+                transcription: transcript,
+                transcriptionJson: result.transcription,
+                languageDetected: result.transcription?.results?.metadata?.detected_language || 'English'
+              });
+              
+              // Move the file from source to processed container AFTER database update
+              await moveFileToProcessed(filename);
+              console.log(`Successfully moved file ${filename} to processed container`);
+            } else {
+              console.error(`Failed to update asset record in PostgreSQL database for ${fileid}`);
+              throw new Error('Failed to update record in PostgreSQL database');
+            }
           } catch (dbError) {
             console.error(`Database error updating asset record: ${dbError}`);
-            throw new Error(`Failed to update database: ${dbError.message}`);
+            throw new Error(`Failed to update database: ${dbError.message || 'Unknown error'}`);
           }
           
           results.push({ fileid, filename, status: 'success' });
