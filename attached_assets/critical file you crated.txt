@@ -1,0 +1,591 @@
+"""
+Critical Deepgram Transcription using REST API
+
+A simple implementation that transcribes audio files using Deepgram's REST API directly.
+This implementation follows the basic pattern from the provided example,
+with additional error handling and debugging capabilities.
+"""
+
+import os
+import sys
+import requests
+import logging
+import json
+import traceback
+from typing import Dict, Any, Optional
+from datetime import datetime
+
+# Configure logging with more detailed format
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
+# Add file handler for persistent logging
+try:
+    os.makedirs('logs', exist_ok=True)
+    file_handler = logging.FileHandler('logs/deepgram_transcription.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s - %(message)s'))
+    logger.addHandler(file_handler)
+except Exception as e:
+    print(f"Warning: Could not set up file logging: {e}")
+    # Continue without file logging
+
+class DgClassCriticalTranscribeRest:
+    def __init__(self, deepgram_api_key=None):
+        """
+        Initialize with Deepgram API key.
+        
+        Args:
+            deepgram_api_key (str, optional): The Deepgram API key. If None, it will be fetched from environment.
+        """
+        self.api_key = deepgram_api_key or os.environ.get("DEEPGRAM_API_KEY")
+        if not self.api_key:
+            raise ValueError("Deepgram API key is required")
+
+    def transcribe_audio_file(self, file_path, model="nova-2", diarize=True):
+        """
+        Transcribe an audio file using Deepgram API.
+        
+        Args:
+            file_path (str): Path to the audio file
+            model (str): Deepgram model to use
+            diarize (bool): Whether to enable speaker diarization
+            
+        Returns:
+            dict: Result of the transcription
+        """
+        # Determine file type from extension
+        file_type = file_path.split('.')[-1].lower()
+        
+        # Configure API parameters
+        api_url = "https://api.deepgram.com/v1/listen"
+        params = {
+            "model": model,
+            "smart_format": "true",
+            "punctuate": "true"
+        }
+        
+        # Add diarization if requested
+        if diarize:
+            params["diarize"] = "true"
+        
+        # Set up headers with API key
+        headers = {
+            "Authorization": f"Token {self.api_key}",
+            "Content-Type": f"audio/{file_type}"
+        }
+        
+        logger.info(f"Transcribing {file_path} using Deepgram API...")
+        logger.info(f"Model: {model}, Speaker Diarization: {'Enabled' if diarize else 'Disabled'}")
+        
+        try:
+            # Read the audio file
+            with open(file_path, 'rb') as audio_file:
+                audio_data = audio_file.read()
+            
+            # Send the request to Deepgram
+            logger.info("Sending audio to Deepgram, please wait...")
+            response = requests.post(api_url, params=params, headers=headers, data=audio_data)
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                logger.info("Transcription successful!")
+                response_data = response.json()
+                
+                # Extract basic transcript
+                basic_transcript = ""
+                if 'results' in response_data and 'channels' in response_data['results']:
+                    basic_transcript = response_data['results']['channels'][0]['alternatives'][0]['transcript']
+                
+                # Process speaker information
+                has_speakers = False
+                speaker_transcript = ""
+                
+                # Try to extract utterances with speaker info first
+                if diarize and 'results' in response_data and 'utterances' in response_data['results']:
+                    has_speakers = True
+                    utterances = response_data['results']['utterances']
+                    
+                    for utterance in utterances:
+                        if 'speaker' in utterance and 'text' in utterance:
+                            speaker = utterance['speaker']
+                            text = utterance['text']
+                            speaker_transcript += f"Speaker {speaker}: {text}\n\n"
+                
+                # If no utterances but paragraphs with speaker info are available
+                elif diarize and 'results' in response_data and 'paragraphs' in response_data['results'] and 'paragraphs' in response_data['results']['paragraphs']:
+                    has_speakers = True
+                    paragraphs = response_data['results']['paragraphs']['paragraphs']
+                    
+                    current_speaker = None
+                    for paragraph in paragraphs:
+                        if 'speaker' in paragraph:
+                            speaker_num = paragraph.get('speaker', 0)
+                            
+                            # Add speaker change
+                            if current_speaker != speaker_num:
+                                current_speaker = speaker_num
+                                if speaker_transcript:
+                                    speaker_transcript += "\n\n"
+                                speaker_transcript += f"Speaker {speaker_num}: "
+                            
+                            # Add paragraph text
+                            if 'text' in paragraph:
+                                speaker_transcript += paragraph['text'] + " "
+                
+                return {
+                    'success': True,
+                    'has_speakers': has_speakers,
+                    'basic_transcript': basic_transcript,
+                    'speaker_transcript': speaker_transcript.strip() if has_speakers else None,
+                    'full_response': response_data
+                }
+            else:
+                error_message = f"Error: Deepgram API returned status code {response.status_code}"
+                logger.error(error_message)
+                logger.error(f"Error details: {response.text}")
+                return {
+                    'success': False,
+                    'error': f"API Error: {response.status_code} - {response.text}"
+                }
+        
+        except FileNotFoundError:
+            error_message = f"File not found: {file_path}"
+            logger.error(error_message)
+            return {
+                'success': False,
+                'error': error_message
+            }
+        except Exception as e:
+            error_message = f"Error: {str(e)}"
+            logger.error(error_message)
+            return {
+                'success': False,
+                'error': error_message
+            }
+
+    def transcribe_with_url(self, audio_url, model="nova-2", diarize=True, debug_mode=False):
+        """
+        Transcribe audio using a URL (like a SAS URL from Azure Blob Storage).
+        
+        Args:
+            audio_url (str): URL to the audio file
+            model (str): Deepgram model to use
+            diarize (bool): Whether to enable speaker diarization
+            debug_mode (bool): If True, logs the complete URL for debugging
+            
+        Returns:
+            dict: Result of the transcription
+        """
+        # Configure API parameters
+        api_url = "https://api.deepgram.com/v1/listen"
+        
+        # Prepare the request payload
+        payload = {
+            "url": audio_url,
+            "model": model,
+            "smart_format": True,
+            "punctuate": True
+        }
+        
+        # Add diarization if requested
+        if diarize:
+            payload["diarize"] = True
+        
+        # Set up headers with API key
+        headers = {
+            "Authorization": f"Token {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        # Log the request details
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        request_id = f"req-{timestamp}-{hash(audio_url) % 10000:04d}"
+        
+        # Determine blob name from URL for logging
+        try:
+            blob_name = audio_url.split('/')[-1].split('?')[0]
+        except:
+            blob_name = "unknown_blob"
+            
+        # Log the SAS URL for debugging
+        if debug_mode:
+            # For security, don't log the SAS token in production code, but we're doing it for debugging
+            logger.debug(f"FULL SAS URL: {audio_url}")
+            
+            # Create a file with the URL for manual testing
+            debug_dir = "debug_sas_urls"
+            os.makedirs(debug_dir, exist_ok=True)
+            with open(f"{debug_dir}/sas_url_{request_id}.txt", "w") as f:
+                f.write(f"SAS URL for blob {blob_name}:\n\n{audio_url}\n\n")
+                f.write(f"You can paste this URL in a browser to verify access to the asset.")
+        
+        # Always log the blob name and timestamp (without the sensitive SAS token)
+        logger.info(f"Request {request_id}: Transcribing blob: {blob_name}")
+        logger.info(f"Model: {model}, Speaker Diarization: {'Enabled' if diarize else 'Disabled'}")
+        
+        # Create a detailed request log
+        request_log = {
+            "request_id": request_id,
+            "timestamp": timestamp,
+            "blob_name": blob_name,
+            "model": model,
+            "diarize": diarize,
+            "api_endpoint": api_url
+        }
+        
+        # Save request details to a log file
+        try:
+            os.makedirs("logs/requests", exist_ok=True)
+            with open(f"logs/requests/request_{request_id}.json", "w") as f:
+                json.dump(request_log, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Could not save request log: {e}")
+        
+        try:
+            # Begin request timing
+            start_time = datetime.now()
+            
+            # Send the request to Deepgram
+            logger.info(f"Sending request {request_id} to Deepgram, please wait...")
+            response = requests.post(api_url, json=payload, headers=headers, timeout=300)  # 5-minute timeout
+            
+            # Calculate request duration
+            duration = (datetime.now() - start_time).total_seconds()
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                logger.info(f"Transcription successful for request {request_id}! Duration: {duration:.2f} seconds")
+                result = {
+                    'success': True,
+                    'request_id': request_id,
+                    'duration': duration,
+                    'blob_name': blob_name,
+                    'full_response': response.json()
+                }
+                
+                # Save successful response for debugging/reference
+                try:
+                    os.makedirs("logs/responses", exist_ok=True)
+                    with open(f"logs/responses/response_{request_id}.json", "w") as f:
+                        json.dump(result, f, indent=2)
+                except Exception as e:
+                    logger.warning(f"Could not save response log: {e}")
+                    
+                return result
+            else:
+                error_message = f"Error: Deepgram API returned status code {response.status_code}"
+                logger.error(f"Request {request_id} failed: {error_message}")
+                logger.error(f"Error details: {response.text}")
+                
+                # Save error details
+                try:
+                    os.makedirs("logs/errors", exist_ok=True)
+                    with open(f"logs/errors/error_{request_id}.txt", "w") as f:
+                        f.write(f"Request {request_id} failed\n")
+                        f.write(f"Status code: {response.status_code}\n")
+                        f.write(f"Error details: {response.text}\n")
+                        f.write(f"Blob name: {blob_name}\n")
+                except Exception as e:
+                    logger.warning(f"Could not save error log: {e}")
+                
+                return {
+                    'success': False,
+                    'request_id': request_id,
+                    'duration': duration,
+                    'blob_name': blob_name,
+                    'error': f"API Error: {response.status_code} - {response.text}"
+                }
+        
+        except requests.exceptions.Timeout:
+            error_message = f"Request {request_id} timed out after 300 seconds"
+            logger.error(error_message)
+            return {
+                'success': False,
+                'request_id': request_id,
+                'blob_name': blob_name,
+                'error': error_message
+            }
+        except requests.exceptions.ConnectionError:
+            error_message = f"Request {request_id} failed: Connection error"
+            logger.error(error_message)
+            return {
+                'success': False,
+                'request_id': request_id,
+                'blob_name': blob_name,
+                'error': error_message
+            }
+        except Exception as e:
+            error_message = f"Request {request_id} failed with unexpected error: {str(e)}"
+            logger.error(error_message)
+            logger.error(traceback.format_exc())
+            
+            # Save detailed error for debugging
+            try:
+                os.makedirs("logs/errors", exist_ok=True)
+                with open(f"logs/errors/error_{request_id}_detailed.txt", "w") as f:
+                    f.write(f"Request {request_id} failed\n")
+                    f.write(f"Error: {str(e)}\n")
+                    f.write(f"Blob name: {blob_name}\n\n")
+                    f.write("Traceback:\n")
+                    f.write(traceback.format_exc())
+            except Exception as log_error:
+                logger.warning(f"Could not save detailed error log: {log_error}")
+                
+            return {
+                'success': False,
+                'request_id': request_id,
+                'blob_name': blob_name,
+                'error': error_message
+            }
+
+    def extract_transcript_from_response(self, response_data):
+        """
+        Extract transcript from the Deepgram response using the standard path.
+        
+        Args:
+            response_data (dict): The Deepgram API response
+            
+        Returns:
+            dict: Dictionary containing extracted transcript and metadata
+        """
+        try:
+            transcript = ""
+            confidence = 0.0
+            
+            # Extract using the standard path: results.channels[0].alternatives[0].transcript
+            if 'results' in response_data and 'channels' in response_data['results']:
+                channels = response_data['results']['channels']
+                if channels and len(channels) > 0:
+                    alternatives = channels[0].get('alternatives', [])
+                    if alternatives and len(alternatives) > 0:
+                        transcript = alternatives[0].get('transcript', '')
+                        confidence = alternatives[0].get('confidence', 0.0)
+            
+            # Extract metadata fields
+            request_id = response_data.get('request_id', '')
+            sha256 = response_data.get('sha256', '')
+            audio_duration = response_data.get('duration', 0)
+            created = response_data.get('created', '')
+            
+            # Extract language if available
+            language = None
+            if 'results' in response_data and 'language' in response_data['results']:
+                language = response_data['results'].get('language', None)
+                
+            # Extract speakers from utterances if available
+            speakers = []
+            utterances = []
+            if 'results' in response_data and 'utterances' in response_data['results']:
+                utterances_data = response_data['results']['utterances']
+                for utterance in utterances_data:
+                    if 'speaker' in utterance and utterance['speaker'] not in speakers:
+                        speakers.append(utterance['speaker'])
+                    utterances.append({
+                        'speaker': utterance.get('speaker', 'unknown'),
+                        'text': utterance.get('text', ''),
+                        'start': utterance.get('start', 0),
+                        'end': utterance.get('end', 0)
+                    })
+            
+            # Extract paragraphs and sentences if available
+            paragraphs = []
+            sentences = []
+            
+            if 'results' in response_data and 'paragraphs' in response_data['results']:
+                paragraphs_data = response_data['results'].get('paragraphs', {}).get('paragraphs', [])
+                
+                for para_idx, paragraph in enumerate(paragraphs_data):
+                    para_obj = {
+                        'id': para_idx,
+                        'text': paragraph.get('text', ''),
+                        'start': paragraph.get('start', 0),
+                        'end': paragraph.get('end', 0),
+                        'speaker': paragraph.get('speaker', 'unknown'),
+                        'num_words': paragraph.get('num_words', 0)
+                    }
+                    
+                    # Extract sentences within this paragraph
+                    para_sentences = []
+                    if 'sentences' in paragraph:
+                        for sent_idx, sentence in enumerate(paragraph['sentences']):
+                            sent_obj = {
+                                'id': f"{para_idx}_{sent_idx}",
+                                'paragraph_id': para_idx,
+                                'text': sentence.get('text', ''),
+                                'start': sentence.get('start', 0),
+                                'end': sentence.get('end', 0)
+                            }
+                            para_sentences.append(sent_obj)
+                            sentences.append(sent_obj)  # Add to global sentences list
+                    
+                    para_obj['sentences'] = para_sentences
+                    paragraphs.append(para_obj)
+            
+            return {
+                'transcript': transcript,
+                'confidence': confidence,
+                'language': language,
+                'speakers': speakers,
+                'speaker_count': len(speakers),
+                'utterances': utterances,
+                'has_speakers': len(speakers) > 0,
+                'request_id': request_id,
+                'sha256': sha256,
+                'created': created,
+                'audio_duration': audio_duration,
+                'paragraphs': paragraphs,
+                'sentences': sentences,
+                'paragraph_count': len(paragraphs),
+                'sentence_count': len(sentences)
+            }
+        except Exception as e:
+            logger.error(f"Error extracting transcript from response: {str(e)}")
+            logger.error(traceback.format_exc())
+            return {
+                'transcript': '',
+                'confidence': 0.0,
+                'language': None,
+                'speakers': [],
+                'speaker_count': 0,
+                'utterances': [],
+                'has_speakers': False,
+                'paragraphs': [],
+                'sentences': [],
+                'paragraph_count': 0,
+                'sentence_count': 0,
+                'error': str(e)
+            }
+    
+    def transcribe_shortcut(self, audio_url=None, file_path=None, model="nova-2", diarize=True):
+        """
+        Quick shortcut method to transcribe audio and return simplified structure.
+        
+        Args:
+            audio_url (str, optional): URL to the audio file (e.g., SAS URL)
+            file_path (str, optional): Path to a local audio file
+            model (str): Deepgram model to use
+            diarize (bool): Whether to enable speaker diarization
+            
+        Returns:
+            dict: Simplified result with transcript and metadata
+        """
+        if not audio_url and not file_path:
+            return {
+                'success': False,
+                'error': 'Either audio_url or file_path must be provided'
+            }
+            
+        try:
+            # Determine which method to use
+            if audio_url:
+                logger.info(f"Using URL method for transcription shortcut")
+                # Set debug_mode to True to save the SAS URL for debugging
+                result = self.transcribe_with_url(audio_url, model, diarize, debug_mode=True)
+            else:
+                logger.info(f"Using file method for transcription shortcut")
+                result = self.transcribe_audio_file(file_path, model, diarize)
+                
+            # Check if successful
+            if not result.get('success', False):
+                return {
+                    'success': False,
+                    'error': result.get('error', 'Unknown error'),
+                    'request_id': result.get('request_id', None)
+                }
+                
+            # Extract transcript using the standard path
+            full_response = result.get('full_response', {})
+            extracted = self.extract_transcript_from_response(full_response)
+            
+            # Combine results
+            return {
+                'success': True,
+                'transcript': extracted['transcript'],
+                'confidence': extracted['confidence'],
+                'language': extracted['language'],
+                'speaker_count': extracted['speaker_count'],
+                'has_speakers': extracted['has_speakers'],
+                'request_id': extracted.get('request_id') or result.get('request_id', None),
+                'duration': extracted.get('audio_duration') or result.get('duration', None),
+                'blob_name': result.get('blob_name', None),
+                'utterances': extracted['utterances'],
+                'paragraphs': extracted.get('paragraphs', []),
+                'sentences': extracted.get('sentences', []),
+                'paragraph_count': extracted.get('paragraph_count', 0),
+                'sentence_count': extracted.get('sentence_count', 0),
+                'sha256': extracted.get('sha256', ''),
+                'created': extracted.get('created', ''),
+                'full_response': full_response  # Include this for debugging
+            }
+            
+        except Exception as e:
+            error_message = f"Transcription shortcut failed: {str(e)}"
+            logger.error(error_message)
+            logger.error(traceback.format_exc())
+            return {
+                'success': False,
+                'error': error_message
+            }
+
+
+# Example usage
+def main():
+    # Get API key from environment
+    api_key = os.environ.get('DEEPGRAM_API_KEY')
+    if not api_key:
+        print("Error: DEEPGRAM_API_KEY environment variable not set.")
+        return
+    
+    # Create an instance of the class
+    transcriber = DgClassCriticalTranscribeRest(api_key)
+    
+    # Example file path - replace with an actual file path
+    file_path = "path/to/your/audio_file.wav"
+    
+    # Using the shortcut method (recommended)
+    if os.path.exists(file_path):
+        result = transcriber.transcribe_shortcut(file_path=file_path)
+        
+        if result['success']:
+            print("\n" + "=" * 50)
+            print("TRANSCRIPTION RESULT (SHORTCUT METHOD)")
+            print("=" * 50)
+            print(f"\nTranscript: {result['transcript'][:200]}...")
+            print(f"Confidence: {result['confidence']:.2f}")
+            print(f"Language: {result['language']}")
+            print(f"Speaker Count: {result['speaker_count']}")
+            print(f"Request ID: {result['request_id']}")
+            print(f"SHA256 Hash: {result['sha256']}")
+            print(f"Created: {result['created']}")
+            print(f"Duration: {result['duration']} seconds")
+            print(f"Paragraph Count: {result['paragraph_count']}")
+            print(f"Sentence Count: {result['sentence_count']}")
+            
+            if result['has_speakers'] and result['utterances']:
+                print("\nSpeaker Segmentation (First 3 utterances):")
+                for i, utterance in enumerate(result['utterances'][:3]):
+                    print(f"Speaker {utterance['speaker']}: {utterance['text']}")
+                    
+            if result['paragraph_count'] > 0:
+                print("\nParagraphs (First 2):")
+                for i, para in enumerate(result['paragraphs'][:2]):
+                    print(f"Paragraph {i+1}: {para['text'][:100]}...")
+                    print(f"  Start: {para['start']:.2f}s, End: {para['end']:.2f}s, Words: {para['num_words']}")
+                    
+            if result['sentence_count'] > 0:
+                print("\nSentences (First 5):")
+                for i, sent in enumerate(result['sentences'][:5]):
+                    print(f"Sentence {i+1} (Para {sent['paragraph_id']}): {sent['text']}")
+                    print(f"  Time: {sent['start']:.2f}s to {sent['end']:.2f}s")
+        else:
+            print(f"\nTranscription failed: {result['error']}")
+    else:
+        print(f"File not found: {file_path}")
+
+if __name__ == "__main__":
+    main()

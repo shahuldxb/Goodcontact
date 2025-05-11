@@ -1,0 +1,39 @@
+# main.py (python example)
+
+
+
+import os
+import logging
+from deepgram.utils import verboselogs
+
+DEEPGRAM_API_KEY = "ba94baf7840441c378c58ccd1d5202c38ddc42d8"
+
+from deepgram import (
+    DeepgramClient,
+    PrerecordedOptions
+)
+
+AUDIO_URL = {
+    "url": "https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(murabaha)_angry.mp3?sp=r&st=2025-05-11T14:30:26Z&se=2025-11-12T22:30:26Z&spr=https&sv=2024-11-04&sr=b&sig=q2gumh51pXiVFgidPda5JQJXvGWwF4z%2BhE2tI9Ahkm0%3D"
+}
+
+def main():
+    try:
+        # STEP 1 Create a Deepgram client using the DEEPGRAM_API_KEY from your environment variables
+        deepgram: DeepgramClient = DeepgramClient(DEEPGRAM_API_KEY)
+
+        # STEP 2 Call the transcribe_url method on the rest class
+        options: PrerecordedOptions = PrerecordedOptions(
+            model="nova-3",
+            smart_format=True,
+            diarize=True  # Enables speaker separation
+        
+        )
+        response = deepgram.listen.rest.v("1").transcribe_url(AUDIO_URL, options)
+        print(f"response: {response}\n\n")
+
+    except Exception as e:
+        print(f"Exception: {e}")
+
+if __name__ == "__main__":
+    main()
