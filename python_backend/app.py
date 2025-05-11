@@ -76,9 +76,19 @@ def process_file():
                 header = f.read(12)
                 logger.info(f"File header: {header.hex()}")
                 
-                # Check WAV header
-                if header[:4] != b'RIFF' or header[8:12] != b'WAVE':
-                    logger.warning(f"File {filename} does not appear to be a valid WAV file")
+                # Check file format based on extension
+                file_extension = os.path.splitext(filename)[1].lower()
+                
+                if file_extension == '.wav':
+                    # Verify WAV header (should start with "RIFF" and contain "WAVE")
+                    if header[:4] != b'RIFF' or header[8:12] != b'WAVE':
+                        logger.warning(f"File {filename} does not appear to be a valid WAV file")
+                elif file_extension == '.mp3':
+                    # Verify MP3 header (should start with ID3 or have a sync word)
+                    if not (header[:3] == b'ID3' or header[0:2] == b'\xFF\xFB' or header[0:2] == b'\xFF\xF3' or header[0:2] == b'\xFF\xFA'):
+                        logger.warning(f"File {filename} does not appear to be a valid MP3 file")
+                    else:
+                        logger.info(f"MP3 header verification passed")
             
             # Process with Deepgram
             # process_audio_file is already async inside deepgram_service
