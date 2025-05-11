@@ -177,22 +177,30 @@ export function DirectTestResults() {
   const viewResult = async (filename: string) => {
     setLoading(true);
     try {
-      const response = await apiRequest(`/api/debug/direct-test-results/${filename}`);
-      if (response.status === 'success') {
-        setSelectedResult(response.result);
+      const response = await fetch(`/debug/direct-test-result?filename=${encodeURIComponent(filename)}`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setSelectedResult({
+          blob_name: data.filename,
+          timestamp: data.timestamp,
+          execution_time_seconds: data.result.execution_time || 0,
+          result: data.result,
+          formatted_transcript: data.formatted_transcript
+        });
         
         // Set formatted transcript if available
-        if (response.result?.formatted_transcript) {
-          setFormattedTranscript(response.result.formatted_transcript);
-        } else if (response.result?.transcript) {
-          setFormattedTranscript(response.result.transcript);
+        if (data.formatted_transcript) {
+          setFormattedTranscript(data.formatted_transcript);
+        } else if (data.result?.transcript) {
+          setFormattedTranscript(data.result.transcript);
         } else {
           setFormattedTranscript('No transcript available');
         }
       } else {
         toast({
           title: 'Error',
-          description: response.message || 'Failed to load test result',
+          description: data.message || 'Failed to load test result',
           variant: 'destructive',
         });
       }
