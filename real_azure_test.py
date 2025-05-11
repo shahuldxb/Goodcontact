@@ -356,9 +356,42 @@ async def real_azure_file_test():
         conn.commit()
         print("Transcription update committed to database")
         
-        # STEP 4: Verify the record
-        print("\n===== STEP 4: VERIFY RECORD =====")
-        verify_sql = "SELECT id, fileid, status, processed_date, LEFT(transcription, 100) AS transcription_sample FROM rdt_assets WHERE fileid = %(fileid)s"
+        # STEP 4: Store paragraphs and sentences
+        print("\n===== STEP 4: STORING PARAGRAPHS AND SENTENCES =====")
+        
+        if structured_response and structured_response.get('paragraphs'):
+            try:
+                # Import the module for handling transcription details
+                from update_sentence_tables import store_transcription_details
+                
+                # Store the transcription details
+                result = store_transcription_details(test_fileid, structured_response)
+                print(f"Stored transcription details: {result}")
+                
+                paragraphs_count = len(structured_response.get('paragraphs', []))
+                sentences_count = sum(len(p.get('sentences', [])) for p in structured_response.get('paragraphs', []))
+                print(f"Stored {paragraphs_count} paragraphs and {sentences_count} sentences")
+                
+            except Exception as e:
+                print(f"Error storing paragraphs and sentences: {str(e)}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("No paragraphs found in transcription response - skipping paragraph/sentence storage")
+        
+        # STEP 5: Verify the record
+        print("\n===== STEP 5: VERIFY RECORD =====")
+        verify_sql = """
+        SELECT 
+            a.id, a.fileid, a.status, a.processed_date, a.destination_path, a.processing_duration,
+            LEFT(a.transcription, 100) AS transcription_sample,
+            (SELECT COUNT(*) FROM rdt_paragraphs p WHERE p.fileid = a.fileid) AS paragraph_count,
+            (SELECT COUNT(*) FROM rdt_sentences s 
+             JOIN rdt_paragraphs p ON s.paragraph_id = p.id 
+             WHERE p.fileid = a.fileid) AS sentence_count
+        FROM rdt_assets a
+        WHERE a.fileid = %(fileid)s
+        """
         verify_params = {"fileid": test_fileid}
         
         # Execute the verification query
@@ -368,6 +401,10 @@ async def real_azure_file_test():
         if result:
             print(f"Verified record: ID={result['id']}, FileID={result['fileid']}, Status={result['status']}")
             print(f"Transcription sample: {result['transcription_sample']}...")
+            print(f"Destination path: {result['destination_path']}")
+            print(f"Processing duration: {result['processing_duration']} seconds")
+            print(f"Paragraphs stored: {result['paragraph_count']}")
+            print(f"Sentences stored: {result['sentence_count']}")
         else:
             print("Record not found - verification failed")
         
