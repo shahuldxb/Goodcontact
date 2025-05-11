@@ -36,7 +36,7 @@ class DgClassSentimentAnalysis:
             deepgram_api_key (str): The Deepgram API key.
             sql_helper (SQLServerConnector): An instance of the SQLServerConnector class for database interactions.
         """
-        self.deepgram_client = DeepgramClient(deepgram_api_key) # Use DeepgramClient
+        self.deepgram_api_key = deepgram_api_key # Store API key for direct API calls
         self.sql_helper = sql_helper
         self.sid = SentimentIntensityAnalyzer()
         self.class_name = self.__class__.__name__

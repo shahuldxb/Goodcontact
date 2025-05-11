@@ -48,7 +48,7 @@ class DgClassTopicDetection:
             deepgram_api_key (str): The Deepgram API key.
             sql_helper (SQLHelper): An instance of the SQLHelper class for database interactions.
         """
-        self.deepgram = Deepgram(deepgram_api_key)
+        self.deepgram_api_key = deepgram_api_key # Store API key for direct API calls
         self.sql_helper = sql_helper
         self._ensure_nltk_resources()
 

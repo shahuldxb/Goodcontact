@@ -45,7 +45,7 @@ except ImportError:
 
 class DgClassLanguageDetection:
     def __init__(self, deepgram_api_key, sql_helper=None):
-        self.deepgram_client = DeepgramClient(deepgram_api_key)
+        self.deepgram_api_key = deepgram_api_key # Store API key for direct API calls
         self.sql_helper = sql_helper
         self._ensure_nltk_punkt()
 
