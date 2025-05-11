@@ -263,22 +263,20 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
         cursor.execute("""
             EXEC RDS_InsertAudioMetadata
             @fileid = %s,
-            @filename = %s,
-            @file_size = %s,
-            @upload_date = %s,
-            @language_detected = %s,
-            @transcription = %s,
-            @status = %s,
-            @processing_duration = %s
+            @request_id = %s,
+            @sha256 = %s,
+            @created_timestamp = %s,
+            @audio_duration = %s,
+            @confidence = %s,
+            @status = %s
         """, (
             fileid,
-            blob_name,
-            0,  # File size
-            datetime.now(),
-            "English",  # Default language
-            basic_transcript[:4000] if basic_transcript else "",
-            "completed",
-            0  # Processing duration
+            f"request_{uuid.uuid4().hex[:8]}",  # Generate a request ID
+            "0000000000000000000000000000000000000000000000000000000000000000",  # Placeholder for SHA256
+            datetime.now().isoformat(),
+            0.0,  # Audio duration (not available)
+            0.9,  # Default confidence
+            "completed"
         ))
         
         # Extract and insert paragraphs/utterances
@@ -295,43 +293,53 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
                 for i, utterance in enumerate(utterances):
                     if 'speaker' in utterance and 'text' in utterance:
                         para_count += 1
+                        # Execute the paragraph insertion and get the paragraph_id
                         cursor.execute("""
+                            DECLARE @paragraph_id INT;
                             EXEC RDS_InsertParagraph
-                            @fileid = %s,
-                            @para_num = %s,
-                            @para_text = %s,
-                            @start_time = %s,
-                            @end_time = %s,
-                            @speaker = %s
+                                @fileid = %s,
+                                @paragraph_idx = %s,
+                                @text = %s,
+                                @start_time = %s,
+                                @end_time = %s,
+                                @speaker = %s,
+                                @num_words = %s,
+                                @paragraph_id = @paragraph_id OUTPUT;
+                            SELECT @paragraph_id AS paragraph_id;
                         """, (
                             fileid,
-                            i + 1,
+                            i + 1,  # paragraph_idx
                             utterance['text'][:4000],
-                            int(utterance.get('start', 0) * 1000),  # Convert to milliseconds
-                            int(utterance.get('end', 0) * 1000),    # Convert to milliseconds
-                            utterance.get('speaker', 0)
+                            float(utterance.get('start', 0)),  # Start time in seconds
+                            float(utterance.get('end', 0)),    # End time in seconds
+                            str(utterance.get('speaker', 0)),  # Speaker as string
+                            len(utterance['text'].split())     # Word count
                         ))
+                        
+                        # Get the paragraph ID from the result
+                        result = cursor.fetchone()
+                        paragraph_id = result['paragraph_id'] if result else None
                         
                         # Insert same text as a sentence (one per utterance)
                         sent_count += 1
-                        cursor.execute("""
-                            EXEC RDS_InsertSentence
-                            @fileid = %s,
-                            @para_num = %s,
-                            @sent_num = %s,
-                            @sent_text = %s,
-                            @start_time = %s,
-                            @end_time = %s,
-                            @speaker = %s
-                        """, (
-                            fileid,
-                            i + 1,  # Paragraph number
-                            1,      # Sentence number (one per utterance)
-                            utterance['text'][:4000],
-                            int(utterance.get('start', 0) * 1000),
-                            int(utterance.get('end', 0) * 1000),
-                            utterance.get('speaker', 0)
-                        ))
+                        # Only insert sentence if we have paragraph_id
+                        if paragraph_id:
+                            cursor.execute("""
+                                EXEC RDS_InsertSentence
+                                @fileid = %s,
+                                @paragraph_id = %s,
+                                @sentence_idx = %s,
+                                @text = %s,
+                                @start_time = %s,
+                                @end_time = %s
+                            """, (
+                                fileid,
+                                paragraph_id,  # Paragraph ID from previous insert
+                                "1",          # Sentence index as string
+                                utterance['text'][:4000],
+                                float(utterance.get('start', 0)),
+                                float(utterance.get('end', 0))
+                            ))
             
             # If no utterances, try paragraphs
             elif 'paragraphs' in response_data['results'] and 'paragraphs' in response_data['results']['paragraphs']:
@@ -341,22 +349,32 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
                 for i, paragraph in enumerate(paragraphs):
                     if 'speaker' in paragraph and 'text' in paragraph:
                         para_count += 1
+                        # Execute the paragraph insertion and get the paragraph_id
                         cursor.execute("""
+                            DECLARE @paragraph_id INT;
                             EXEC RDS_InsertParagraph
-                            @fileid = %s,
-                            @para_num = %s,
-                            @para_text = %s,
-                            @start_time = %s,
-                            @end_time = %s,
-                            @speaker = %s
+                                @fileid = %s,
+                                @paragraph_idx = %s,
+                                @text = %s,
+                                @start_time = %s,
+                                @end_time = %s,
+                                @speaker = %s,
+                                @num_words = %s,
+                                @paragraph_id = @paragraph_id OUTPUT;
+                            SELECT @paragraph_id AS paragraph_id;
                         """, (
                             fileid,
-                            i + 1,
+                            i + 1,  # paragraph_idx
                             paragraph['text'][:4000],
-                            int(paragraph.get('start', 0) * 1000),
-                            int(paragraph.get('end', 0) * 1000),
-                            paragraph.get('speaker', 0)
+                            float(paragraph.get('start', 0)),  # Start time in seconds
+                            float(paragraph.get('end', 0)),    # End time in seconds
+                            str(paragraph.get('speaker', 0)),  # Speaker as string
+                            len(paragraph['text'].split())     # Word count
                         ))
+                        
+                        # Get the paragraph ID from the result
+                        result = cursor.fetchone()
+                        paragraph_id = result['paragraph_id'] if result else None
                         
                         # Insert same text as a sentence (one per paragraph)
                         sent_count += 1
