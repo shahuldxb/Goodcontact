@@ -1,0 +1,82 @@
+Call Center Project
+
+
+Use case
+
+I need a connection to azure storage.
+
+AZURE_STORAGE_ACCOUNT_URL = "https://infolder.blob.core.windows.net"
+AZURE_STORAGE_ACCOUNT_KEY = "NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw=="
+AZURE_SOURCE_CONTAINER_NAME = "shahulin"
+AZURE_DESTINATION_CONTAINER_NAME = "shahulout"
+
+I need a connection to azure sql server.
+conn = pymssql.connect(
+        server='callcenter1.database.windows.net',
+        port=1433,
+        database='call',
+        user='shahul',
+        password='apple123!@#',
+        tds_version='7.4',
+        as_dict=True
+    )
+
+
+I need a deepgram connection
+deepgram_key = "d6290865c35bddd50928c5d26983769682fca987"
+
+
+
+I need two grids. One populated from "shahulin" as source  and other populated by "shahulout" source
+
+populate the blobs from azure storage
+
+
+I need a single command buttons, which will do deepgram transcription.
+After transcrioption is done move the blob to shahulout
+
+
+Also another menu option. 
+there will be file uploader which uploads a blob file selective from the grid 
+transcribe using downloaded file from azure file into a temporary file.
+and move the file output
+
+
+All deepgram, azure storage, azure server should be in python.
+use node.js and react for front end. bootstrap is fallback option.
+
+
+------------------------------------------------------------
+Please update your state.md file
+Please remember this is a deepgram project.
+only azure storage for blobs. azure sql server is the server.
+our containers are shahulin (soruce) and shahulout (destination)
+our database is call.
+all tables should start with rdt_ and sp will rds_
+all back end code to deepgram, azure storage should be in python
+we want to be asynchronous in all code for performance.
+all speech and voice analytics should use only deepgram
+No mock solutions. No fall back. fix the core. I want production code.
+
+After every action, check the logs after a job is completed.
+Before action, submit a plan for agreement.
+Do not start any task until agreed
+You can override me if the system design will be compromised.
+
+stored procedures and classes are a good practice
+hard coded keys are dangerous.
+all keys should be kept and retrieved from your vault
+Any fall back option should be agreed multilaterally
+
+transcription should use the minimal logic what i provided with deepgram key and azure blob sas url and a rest api call 
+
+Claiming success without checking the logs and tables is a sin. You should not do it.
+you should check your logs and tables for nulls and missing values
+-------------------------------------------------------------
+ 
+
+
+
+
+
+
