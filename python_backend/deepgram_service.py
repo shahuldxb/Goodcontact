@@ -227,7 +227,12 @@ class DeepgramService:
             language_path = 'default'
             
             # Try various paths where the language might be found
-            if ('results' in transcription_response and 'metadata' in transcription_response['results'] and 
+            if ('results' in transcription_response and 'channels' in transcription_response['results'] and 
+                transcription_response['results']['channels'] and len(transcription_response['results']['channels']) > 0 and
+                'detected_language' in transcription_response['results']['channels'][0]):
+                detected_language = transcription_response['results']['channels'][0]['detected_language']
+                language_path = 'results.channels[0].detected_language'
+            elif ('results' in transcription_response and 'metadata' in transcription_response['results'] and 
                 'detected_language' in transcription_response['results']['metadata']):
                 detected_language = transcription_response['results']['metadata']['detected_language']
                 language_path = 'results.metadata.detected_language'
