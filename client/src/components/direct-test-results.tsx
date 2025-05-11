@@ -38,7 +38,16 @@ export function DirectTestResults() {
   const [formattedTranscript, setFormattedTranscript] = useState("");
   const [fileSource, setFileSource] = useState<'azure' | 'local'>('azure');
   const [localFile, setLocalFile] = useState<File | null>(null);
-  const [sourceFiles, setSourceFiles] = useState<Array<{name: string, size: number, url: string, lastModified: string}>>([]);
+  
+  interface AzureFile {
+    name: string;
+    size: number;
+    url: string;
+    lastModified: string;
+    contentType: string;
+  }
+  
+  const [sourceFiles, setSourceFiles] = useState<AzureFile[]>([]);
   const [loadingSourceFiles, setLoadingSourceFiles] = useState(false);
   const { toast } = useToast();
 
@@ -384,7 +393,7 @@ export function DirectTestResults() {
                           ) : sourceFiles.length > 0 ? (
                             <div className="border rounded-md h-48 overflow-y-auto bg-white">
                               <div className="p-1">
-                                {sourceFiles.map((file, index) => (
+                                {sourceFiles.map((file: AzureFile, index) => (
                                   <button
                                     key={index}
                                     className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${testFileName === file.name ? 'bg-primary text-white' : 'hover:bg-secondary'}`}
