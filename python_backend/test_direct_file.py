@@ -6,6 +6,7 @@ Test direct transcription with a specific file from shahulin container
 import os
 import sys
 import json
+import time
 import logging
 
 # Configure logging
@@ -27,7 +28,7 @@ def main():
     
     # Use a specific audio file name from the shahulin container
     # This file is known to exist in the container based on previous logs
-    file_name = "agricultural_finance_(murabaha)_frustrated.mp3"
+    file_name = "agricultural_finance_(murabaha)_impatient.mp3"
     
     logger.info(f"Testing direct transcription of file: {file_name}")
     
@@ -37,8 +38,13 @@ def main():
         logger.error("DEEPGRAM_API_KEY environment variable is not set")
         sys.exit(1)
     
-    # Call the direct transcription function
+    # First test just the transcription function
     result = transcribe_azure_audio(file_name, api_key=api_key)
+    
+    # Also test the full processing function that includes file movement
+    from azure_deepgram_transcribe import process_audio_file
+    logger.info("Now testing the full process_audio_file function...")
+    process_result = process_audio_file(file_name, fileid="direct_test_" + str(int(time.time())))
     
     # Log the result
     logger.info(f"Transcription result type: {type(result)}")
@@ -64,9 +70,13 @@ def main():
             else:
                 logger.warning(f"Unexpected result structure: {json.dumps(result, indent=2)}")
     
-    # Print full result for inspection
+    # Print full results for inspection
     print("\nFull transcription result:")
     print(json.dumps(result, indent=2))
+    
+    # Print process result
+    print("\nFull process result (including file move):")
+    print(json.dumps(process_result, indent=2))
 
 if __name__ == "__main__":
     main()
