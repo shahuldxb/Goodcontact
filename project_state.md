@@ -22,15 +22,16 @@ DEEPGRAM RAW RESPONSE: {"result":null,"error":{"name":"DeepgramApiError","messag
 
 ## Audio Files Being Tested
 - Main container: "shahulin"
-- Test file: "agricultural_finance_(murabaha)_kind.mp3"
-- Local temp path: "/tmp/deepgram-processing/agricultural_finance_(murabaha)_kind.mp3"
+- Test file originally tried: "agricultural_finance_(murabaha)_kind.mp3" - DOES NOT EXIST in Azure
+- Correct test file that exists: "agricultural_finance_(murabaha)_neutral.mp3"
+- Local temp path: "/tmp/deepgram-processing/agricultural_finance_(murabaha)_neutral.mp3"
 
-## Hypothesis
-1. The issue could be with the audio file format itself - we need to verify the file can be processed
-2. The SAS URL might not be correctly generated or have proper permissions
-3. The audio content might not be properly accessible via HTTP
+## Issues Found
+1. Inconsistent API key in test_direct_transcription.py - FIXED
+2. Incorrect audio file name referenced in logs - IDENTIFIED
+3. Testing with correct file name works successfully!
 
-## To Be Investigated
-- Check functionality of test files (real_azure_test.py) vs. production flow
-- Look at SAS URL generation differences
-- Examine audio file access methods
+## Next Steps
+1. Update app configuration and processing data to use the correct file names that actually exist in Azure
+2. Ensure the file processing logs reference the actual files that exist in the container
+3. Update any hardcoded references to specific file names to match what exists in Azure storage
