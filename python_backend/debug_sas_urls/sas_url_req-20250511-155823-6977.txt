@@ -1,0 +1,5 @@
+SAS URL for blob agricultural_finance_(murabaha)_angry.mp3:
+
+https://infolder.blob.core.windows.net/shahulin/agricultural_finance_(murabaha)_angry.mp3?sp=r&st=2025-05-11T14:30:26Z&se=2025-11-12T22:30:26Z&spr=https&sv=2024-11-04&sr=b&sig=q2gumh51pXiVFgidPda5JQJXvGWwF4z%2BhE2tI9Ahkm0%3D
+
+You can paste this URL in a browser to verify access to the asset.
