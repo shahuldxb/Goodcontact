@@ -106,34 +106,111 @@ class DgClassLanguageDetection:
         language_confidence = 0.0
         speaker_segments_text = []
         try:
-            response = json.loads(dg_response_json_str)
-            if not response or "results" not in response:
-                return full_transcript, detected_language_code, language_confidence, speaker_segments_text
+            # Parse JSON string to Python dict
+            print(f"Extracting language and transcript from response (first 100 chars): {dg_response_json_str[:100]}...")
             
-            results = response.get("results", {})
-            channel = results.get("channels", [{}])[0]
-            detected_language_code = channel.get("detected_language", "Unknown")
-            language_confidence = channel.get("language_confidence", 0.0)
-            full_transcript = channel.get("alternatives", [{}])[0].get("transcript", "")
-
-            utterances = results.get("utterances")
-            if utterances:
-                for utt in utterances:
-                    speaker_segments_text.append({
-                        "speaker": utt.get("speaker", 0),
-                        "text": utt.get("transcript", "")
-                    })
-            elif channel.get("alternatives", [{}])[0].get("paragraphs", {}).get("paragraphs"):
-                paragraphs_data = channel.get("alternatives", [{}])[0].get("paragraphs", {})
-                for para in paragraphs_data.get("paragraphs", []):
-                    speaker = para.get("speaker", "Unknown")
-                    text_parts = [sentence.get("text", "") for sentence in para.get("sentences", [])]
-                    speaker_segments_text.append({"speaker": speaker, "text": " ".join(text_parts)})
+            # Handle case where dg_response_json_str might already be a dict
+            if isinstance(dg_response_json_str, dict):
+                response = dg_response_json_str
             else:
-                 speaker_segments_text.append({"speaker": "Unknown", "text": full_transcript})
+                try:
+                    response = json.loads(dg_response_json_str)
+                except json.JSONDecodeError as e:
+                    print(f"Error decoding JSON: {e}")
+                    return full_transcript, detected_language_code, language_confidence, speaker_segments_text
+            
+            if not response:
+                print("Empty response after JSON parsing")
+                return full_transcript, detected_language_code, language_confidence, speaker_segments_text
+                
+            # Print response keys for debugging
+            print(f"Response keys: {response.keys() if isinstance(response, dict) else 'Not a dict'}")
+            
+            # Enhanced extraction - Try multiple possible paths
+            
+            # Path 1: Standard Deepgram structure (results.channels)
+            if "results" in response and "channels" in response["results"] and response["results"]["channels"]:
+                print("Using results.channels extraction path")
+                results = response["results"]
+                channel = results["channels"][0] if results["channels"] else {}
+                
+                # Extract language info
+                if "detected_language" in channel:
+                    detected_language_code = channel["detected_language"]
+                if "language_confidence" in channel:
+                    language_confidence = channel["language_confidence"]
+                
+                # Extract transcript
+                if "alternatives" in channel and channel["alternatives"] and "transcript" in channel["alternatives"][0]:
+                    full_transcript = channel["alternatives"][0]["transcript"]
+                
+                # Extract speaker segments from utterances
+                if "utterances" in results and results["utterances"]:
+                    for utt in results["utterances"]:
+                        speaker_segments_text.append({
+                            "speaker": utt.get("speaker", 0),
+                            "text": utt.get("transcript", "")
+                        })
+                # Or from paragraphs
+                elif ("alternatives" in channel and channel["alternatives"] and 
+                      "paragraphs" in channel["alternatives"][0] and 
+                      "paragraphs" in channel["alternatives"][0]["paragraphs"]):
+                    
+                    paragraphs_data = channel["alternatives"][0]["paragraphs"]
+                    for para in paragraphs_data["paragraphs"]:
+                        speaker = para.get("speaker", "Unknown")
+                        text_parts = [sentence.get("text", "") for sentence in para.get("sentences", [])]
+                        speaker_segments_text.append({"speaker": speaker, "text": " ".join(text_parts)})
+            
+            # Path 2: Alternative structure with direct results.metadata
+            elif "results" in response and "metadata" in response["results"] and "detected_language" in response["results"]["metadata"]:
+                print("Using results.metadata extraction path")
+                detected_language_code = response["results"]["metadata"]["detected_language"]
+                
+                # Try to find transcript in alternative locations
+                if "alternatives" in response["results"] and response["results"]["alternatives"]:
+                    full_transcript = response["results"]["alternatives"][0].get("transcript", "")
+                elif "transcript" in response["results"]:
+                    full_transcript = response["results"]["transcript"]
+            
+            # Path 3: Flattened structure with metadata at top level
+            elif "metadata" in response and "detected_language" in response["metadata"]:
+                print("Using top-level metadata extraction path")
+                detected_language_code = response["metadata"]["detected_language"]
+                
+                # Try to find transcript in alternative locations
+                if "transcript" in response:
+                    full_transcript = response["transcript"]
+                elif "alternatives" in response and response["alternatives"]:
+                    full_transcript = response["alternatives"][0].get("transcript", "")
+            
+            # Path 4: Direct language field
+            elif "language" in response:
+                print("Using direct language field extraction path")
+                detected_language_code = response["language"]
+                
+                # Try to find transcript
+                if "transcript" in response:
+                    full_transcript = response["transcript"]
+            
+            # Path 5: Last resort - just look for any transcript field
+            if not full_transcript and "transcript" in response:
+                print("Using direct transcript field extraction path")
+                full_transcript = response["transcript"]
+            
+            # If we have transcript but no speaker segments, create a default one
+            if full_transcript and not speaker_segments_text:
+                speaker_segments_text.append({"speaker": "Unknown", "text": full_transcript})
+                
+            print(f"Extracted language: {detected_language_code} (confidence: {language_confidence})")
+            print(f"Transcript length: {len(full_transcript)} chars")
+            print(f"Speaker segments: {len(speaker_segments_text)}")
 
         except Exception as e:
             print(f"Error extracting transcript and language: {e}")
+            import traceback
+            traceback.print_exc()
+            
         return full_transcript, detected_language_code, language_confidence, speaker_segments_text
 
     def _detect_language_in_text_segments(self, text, min_segment_length=50):
@@ -196,15 +273,22 @@ class DgClassLanguageDetection:
             except Exception as e_sql_err:
                 print(f"Further SQL error while logging initial Language Detection error for FileID {fileid}: {e_sql_err}")
 
-    async def main(self, audio_source_info, fileid, target_translation_lang="en"):
+    async def main(self, dg_response_json_str=None, fileid=None, audio_source_info=None, target_translation_lang="en"):
         print(f"Starting Language Detection & Translation for FileID: {fileid}")
-        dg_response_json_str = await self._transcribe_audio(audio_source_info)
+        
+        # Support either direct JSON response or audio file path
+        if not dg_response_json_str and audio_source_info:
+            print(f"No JSON response provided. Attempting to transcribe from audio source.")
+            dg_response_json_str = await self._transcribe_audio(audio_source_info)
+        
         dg_detected_lang_code = None # Initialize for broader scope
 
         if not dg_response_json_str:
+            error_msg = "No transcription data available: both dg_response_json_str and audio_source_info are invalid"
+            print(error_msg)
             # MODIFIED call to _log_sql_error
-            if self.sql_helper: self._log_sql_error(fileid, "Transcription failed", None, target_translation_lang)
-            return {"status": "Error", "fileid": fileid, "error": "Transcription failed"}
+            if self.sql_helper: self._log_sql_error(fileid, error_msg, None, target_translation_lang)
+            return {"status": "Error", "fileid": fileid, "error": error_msg}
 
         full_transcript, dg_detected_lang_code, dg_lang_confidence, speaker_segments_text = self._extract_main_language_and_transcript(dg_response_json_str)
         dg_detected_lang_name = self._get_language_name_from_code(dg_detected_lang_code)

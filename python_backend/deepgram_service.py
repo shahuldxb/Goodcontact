@@ -109,20 +109,105 @@ class DeepgramService:
             transcription_response = await self.transcribe_audio(audio_file_path)
             transcription_json_str = json.dumps(transcription_response)
             
-            # Extract the transcript text
+            # Extract the transcript text using a robust approach
             transcript_text = ""
+            extraction_path = "None"
+            
+            # Log the structure of the response to help debug
+            self.logger.info(f"RESPONSE KEYS: {transcription_response.keys()}")
+            
+            # Method 1: Standard path in Deepgram schema (results.channels[].alternatives[].transcript)
             if 'results' in transcription_response and 'channels' in transcription_response['results']:
+                self.logger.info("Found 'results.channels' path")
                 for channel in transcription_response['results']['channels']:
                     if 'alternatives' in channel and len(channel['alternatives']) > 0:
-                        transcript_text += channel['alternatives'][0]['transcript']
+                        if 'transcript' in channel['alternatives'][0]:
+                            transcript_text += channel['alternatives'][0]['transcript']
+                            extraction_path = "results.channels[].alternatives[].transcript"
             
-            self.logger.info(f"Extracted transcript: {transcript_text[:100]}...")
+            # Method 2: Alternative path in some Deepgram responses (results.alternatives[].transcript)
+            if not transcript_text and 'results' in transcription_response and 'alternatives' in transcription_response['results']:
+                self.logger.info("Found 'results.alternatives' path")
+                for alt in transcription_response['results']['alternatives']:
+                    if 'transcript' in alt:
+                        transcript_text += alt['transcript']
+                        extraction_path = "results.alternatives[].transcript"
+            
+            # Method 3: Alternative path in some Deepgram responses (results.utterances[].transcript)
+            if not transcript_text and 'results' in transcription_response and 'utterances' in transcription_response['results']:
+                self.logger.info("Found 'results.utterances' path")
+                for utt in transcription_response['results']['utterances']:
+                    if 'transcript' in utt:
+                        transcript_text += utt['transcript'] + " "
+                        extraction_path = "results.utterances[].transcript"
+            
+            # Method 4: Alternative path in some Deepgram responses (results.paragraphs.paragraphs[].text)
+            if not transcript_text and 'results' in transcription_response and 'paragraphs' in transcription_response['results']:
+                self.logger.info("Found 'results.paragraphs' path")
+                if 'paragraphs' in transcription_response['results']['paragraphs']:
+                    for para in transcription_response['results']['paragraphs']['paragraphs']:
+                        if 'text' in para:
+                            transcript_text += para['text'] + " "
+                            extraction_path = "results.paragraphs.paragraphs[].text"
+            
+            # Method 5: Direct flattened structure (channels[].alternatives[].transcript)
+            if not transcript_text and 'channels' in transcription_response:
+                self.logger.info("Found 'channels' path")
+                for channel in transcription_response['channels']:
+                    if 'alternatives' in channel and len(channel['alternatives']) > 0:
+                        if 'transcript' in channel['alternatives'][0]:
+                            transcript_text += channel['alternatives'][0]['transcript']
+                            extraction_path = "channels[].alternatives[].transcript"
+            
+            # Method 6: Direct flattened structure (alternatives[].transcript)
+            if not transcript_text and 'alternatives' in transcription_response:
+                self.logger.info("Found 'alternatives' path")
+                for alt in transcription_response['alternatives']:
+                    if 'transcript' in alt:
+                        transcript_text += alt['transcript']
+                        extraction_path = "alternatives[].transcript"
+            
+            # Method 7: Sometimes the summary may contain useful text if transcript fails
+            if not transcript_text and 'results' in transcription_response and 'summary' in transcription_response['results']:
+                self.logger.info("Found 'results.summary' path")
+                if 'short' in transcription_response['results']['summary']:
+                    transcript_text = transcription_response['results']['summary']['short']
+                    extraction_path = "results.summary.short"
+                elif 'long' in transcription_response['results']['summary']:
+                    transcript_text = transcription_response['results']['summary']['long']
+                    extraction_path = "results.summary.long"
+            
+            self.logger.info(f"Extraction path used: {extraction_path}")
+            self.logger.info(f"Extracted transcript ({len(transcript_text)} chars): {transcript_text[:100]}...")
             
             # Save transcription to database
             from azure_sql_service import AzureSQLService
             sql_service = AzureSQLService()
             conn = sql_service._get_connection()
             cursor = conn.cursor()
+            
+            # Extract the detected language using various paths
+            detected_language = 'en'  # Default fallback to English
+            language_path = 'default'
+            
+            # Try various paths where the language might be found
+            if ('results' in transcription_response and 'metadata' in transcription_response['results'] and 
+                'detected_language' in transcription_response['results']['metadata']):
+                detected_language = transcription_response['results']['metadata']['detected_language']
+                language_path = 'results.metadata.detected_language'
+            elif ('metadata' in transcription_response and 
+                  'detected_language' in transcription_response['metadata']):
+                detected_language = transcription_response['metadata']['detected_language']
+                language_path = 'metadata.detected_language'
+            elif ('results' in transcription_response and 
+                  'language' in transcription_response['results']):
+                detected_language = transcription_response['results']['language']
+                language_path = 'results.language'
+            elif 'language' in transcription_response:
+                detected_language = transcription_response['language']
+                language_path = 'language'
+            
+            self.logger.info(f"Extracted language: {detected_language} via path: {language_path}")
             
             # Check if asset already exists
             cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
@@ -140,7 +225,7 @@ class DeepgramService:
                 """, (
                     transcript_text,
                     transcription_json_str,
-                    transcription_response.results.metadata.detected_language if transcription_response.results.metadata.detected_language else 'en',
+                    detected_language,
                     fileid
                 ))
             else:
@@ -156,7 +241,7 @@ class DeepgramService:
                     os.path.getsize(audio_file_path),
                     transcript_text,
                     transcription_json_str,
-                    transcription_response.results.metadata.detected_language if transcription_response.results.metadata.detected_language else 'en',
+                    detected_language,
                     'processing'
                 ))
             
