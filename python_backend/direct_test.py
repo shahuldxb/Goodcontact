@@ -12,8 +12,8 @@ from datetime import datetime
 # Import the test function
 from test_direct_transcription import test_direct_transcription
 
-# Specify the output directory
-OUTPUT_DIR = "direct_test_results"
+# Specify the output directory with absolute path
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "direct_test_results")
 
 def run_test(blob_name):
     """
