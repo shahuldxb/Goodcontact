@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createAzureTables } from "./create-azure-tables";
+import { pythonProxy } from "./services/python-proxy";
 
 const app = express();
 app.use(express.json());
@@ -46,6 +47,16 @@ app.use((req, res, next) => {
   } catch (error) {
     log('Error initializing Azure SQL tables:', String(error));
     // Continue execution even if table creation fails
+  }
+  
+  // Start Python backend
+  try {
+    log('Starting Python backend...');
+    await pythonProxy.startPythonBackend();
+    log('Python backend started successfully');
+  } catch (error) {
+    log('Error starting Python backend:', String(error));
+    // Continue execution even if Python backend fails to start
   }
 
   const server = await registerRoutes(app);
