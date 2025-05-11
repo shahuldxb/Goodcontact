@@ -529,15 +529,14 @@ export class DeepgramService {
           smart_format: true,
           summarize: "v2"
         };
+        
+        console.log(`Sending audio file ${audio_file_path} with mimetype ${mimetype} to Deepgram for transcription...`);
+        const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+        return response;
       }
       
-      console.log(`Sending audio file ${audio_file_path} with mimetype ${mimetype} to Deepgram for transcription...`);
-      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
-      
-      // Print the full response structure for debugging
-      console.log(`Deepgram raw response: ${JSON.stringify(response)}`);
-      
-      return response;
+      // This should never be reached due to the return in the if block, but adding as a fallback
+      throw new Error("Failed to determine audio file type");
     } catch (e) {
       console.error(`Error during transcription: ${e}`);
       throw e;

@@ -143,14 +143,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
             status: 'completed',
             processedDate: new Date(),
             processingDuration: Math.round(processingDuration / 1000), // Convert to seconds
-            // Extract the transcript from the correct structure
-            transcription: result.transcription?.result?.utterances?.[0]?.transcript 
-              || result.transcription?.result?.channels?.[0]?.alternatives?.[0]?.transcript 
-              || '',
+            // Extract the transcript from the correct structure with more fallback options
+            transcription: 
+              // First try the most common paths based on structure
+              result.transcription?.result?.utterances?.[0]?.transcript ||
+              result.transcription?.result?.channels?.[0]?.alternatives?.[0]?.transcript ||
+              // Try other possible paths (from direct API)
+              result.transcription?.results?.channels?.[0]?.alternatives?.[0]?.transcript ||
+              result.transcription?.results?.utterances?.[0]?.transcript ||
+              // Look at paragraphs if available
+              (result.transcription?.result?.paragraphs?.paragraphs && 
+                result.transcription.result.paragraphs.paragraphs
+                  .map(p => p.text || p.paragraph || "")
+                  .join(' ')) ||
+              // Check if transcription is directly a string
+              (typeof result.transcription === 'string' ? result.transcription : ''),
             // Save the entire JSON response (stringify + parse to ensure proper serialization)
             transcriptionJson: JSON.parse(JSON.stringify(result.transcription || {})),
             // Use 'language' field name to match database column
-            language: result.transcription?.result?.metadata?.detected_language || 'English'
+            language: 
+              result.transcription?.result?.metadata?.detected_language || 
+              result.transcription?.results?.metadata?.detected_language || 
+              result.languageDetection?.language || 
+              'English'
           });
           
           results.push({ fileid, filename, status: 'success' });
