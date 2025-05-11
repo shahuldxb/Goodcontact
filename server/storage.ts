@@ -40,6 +40,7 @@ export interface IStorage {
   saveForbiddenPhrases(data: InsertRdtForbiddenPhrases, details?: InsertRdtForbiddenPhrasesDetails[]): Promise<RdtForbiddenPhrases>;
   saveTopicModeling(data: InsertRdtTopicModeling): Promise<RdtTopicModeling>;
   saveSpeakerDiarization(data: InsertRdtSpeakerDiarization, segments?: InsertRdtSpeakerSegments[]): Promise<RdtSpeakerDiarization>;
+  insertOrUpdateSpeakerDiarization(data: InsertRdtSpeakerDiarization): Promise<RdtSpeakerDiarization>;
   
   // Getting analysis results
   getSentimentAnalysisByFileid(fileid: string): Promise<RdtSentiment | undefined>;
@@ -450,6 +451,35 @@ export class MemStorage implements IStorage {
     }
     
     return speakerDiarization;
+  }
+  
+  async insertOrUpdateSpeakerDiarization(data: InsertRdtSpeakerDiarization): Promise<RdtSpeakerDiarization> {
+    // Check if speaker diarization already exists for this fileid
+    const existing = this.speakerDiarization.get(data.fileid);
+    
+    if (existing) {
+      // Update existing record
+      const updated: RdtSpeakerDiarization = {
+        ...existing,
+        speakerCount: data.speakerCount,
+        speakerMetrics: data.speakerMetrics,
+        status: data.status || existing.status
+      };
+      this.speakerDiarization.set(data.fileid, updated);
+      return updated;
+    } else {
+      // Create new record
+      const id = this.currentSpeakerDiarizationId++;
+      const speakerDiarization: RdtSpeakerDiarization = {
+        ...data,
+        id,
+        created_dt: data.created_dt || new Date(),
+        created_by: data.created_by || 1,
+        status: data.status || 'completed'
+      };
+      this.speakerDiarization.set(data.fileid, speakerDiarization);
+      return speakerDiarization;
+    }
   }
 
   async getSentimentAnalysisByFileid(fileid: string): Promise<RdtSentiment | undefined> {

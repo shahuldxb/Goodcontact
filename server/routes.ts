@@ -332,6 +332,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Speaker diarization endpoint
+  app.post('/api/speaker-diarization', async (req: Request, res: Response) => {
+    try {
+      const { fileid } = req.body;
+      
+      if (!fileid) {
+        return res.status(400).json({ error: 'Missing required field: fileid' });
+      }
+      
+      // Get the file details from storage
+      const fileAsset = await storage.getAsset(fileid);
+      
+      if (!fileAsset) {
+        return res.status(404).json({ error: `File with ID ${fileid} not found` });
+      }
+      
+      console.log(`Processing speaker diarization for file ${fileAsset.filename} (${fileid})`);
+      
+      try {
+        // Call the Python backend for direct diarization
+        const response = await pythonProxy.post('/direct/speaker-diarization', {
+          filename: fileAsset.filename,
+          fileid: fileid
+        });
+        
+        // Extract the diarization result
+        const diarizationResult = response.diarization;
+        
+        if (!diarizationResult || !diarizationResult.success) {
+          const errorMessage = diarizationResult?.error || 'Unknown error in speaker diarization';
+          console.error(`Speaker diarization failed for ${fileid}: ${errorMessage}`);
+          return res.status(400).json({ 
+            error: `Speaker diarization failed: ${errorMessage}`,
+            fileid: fileid
+          });
+        }
+        
+        // Extract speaker data
+        const { speaker_count, speakers, speaker_segments, speaker_stats } = diarizationResult;
+        
+        // Update speaker diarization record in database
+        try {
+          // Prepare the speaker metrics JSON
+          const speakerMetrics = {
+            speakers,
+            speakerStats: speaker_stats,
+            segments: speaker_segments.map(segment => ({
+              speaker: segment.speaker,
+              text: segment.text,
+              startTime: segment.start_time,
+              endTime: segment.end_time,
+              duration: segment.duration
+            }))
+          };
+          
+          // Insert or update speaker diarization data
+          await storage.insertOrUpdateSpeakerDiarization({
+            fileid,
+            status: 'completed',
+            created_dt: new Date(),
+            created_by: 1, // System user
+            speakerCount: speaker_count,
+            speakerMetrics: speakerMetrics
+          });
+          
+          console.log(`Successfully stored speaker diarization data for ${fileid}`);
+          
+          // Return success response
+          res.json({
+            success: true,
+            fileid,
+            speakerCount: speaker_count,
+            speakers,
+            speakerStats: speaker_stats,
+            formattedTranscript: diarizationResult.formatted_transcript,
+            segmentsCount: speaker_segments.length
+          });
+          
+        } catch (dbError) {
+          console.error(`Database error storing speaker diarization: ${dbError}`);
+          res.status(500).json({ 
+            error: `Failed to store speaker diarization in database: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`,
+            fileid
+          });
+        }
+        
+      } catch (error) {
+        console.error(`Error during speaker diarization processing: ${error}`);
+        res.status(500).json({ 
+          error: `Speaker diarization processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          fileid
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error in speaker diarization endpoint:", error);
+      res.status(500).json({ error: "Internal server error during speaker diarization" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
