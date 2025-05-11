@@ -6,6 +6,51 @@ import fs from 'fs';
 
 const PYTHON_SERVER_URL = 'http://localhost:5001';
 
+// Add the direct transcription function
+export async function directTranscribe(filename: string, fileid: string) {
+  try {
+    console.log(`Sending file ${filename} with ID ${fileid} to direct-transcribe API`);
+    
+    const response = await fetch(`${PYTHON_SERVER_URL}/direct/transcribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        filename,
+        fileid
+      }),
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      console.error(`Error from direct-transcribe API: ${result.error}`);
+      return {
+        success: false,
+        error: result.error || 'Unknown error from Python backend',
+        fileid
+      };
+    }
+    
+    console.log(`Direct transcription successful for ${filename} (length: ${result.transcript_length} characters)`);
+    
+    return {
+      success: true,
+      transcription: result.result,
+      transcript: result.transcript,
+      fileid
+    };
+  } catch (error) {
+    console.error(`Error calling direct-transcribe API: ${error.message}`);
+    return {
+      success: false,
+      error: error.message,
+      fileid
+    };
+  }
+}
+
 // Initialize Python server
 let pythonProcess: any = null;
 

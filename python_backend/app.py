@@ -1,755 +1,122 @@
+#!/usr/bin/env python3
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
-import json
 import logging
-import tempfile
-import sys
-import time
+import json
+import asyncio
+from direct_transcribe import DirectTranscribe
 from datetime import datetime
-import traceback
-
-# Add the current directory to the path so we can import the deepgram classes
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Import the Deepgram classes
-from deepgram_service import DeepgramService
-from azure_storage_service import AzureStorageService
-from azure_sql_service import AzureSQLService
-
-app = Flask(__name__)
-CORS(app)
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO,
+                   format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Global variable to store direct transcription results
-direct_transcription_results = {}
+app = Flask(__name__)
 
-# Import the DirectTranscribe classes after logger is defined
-try:
-    from direct_transcribe import DirectTranscribe
-    from direct_transcribe_db import DirectTranscribeDB
-    logger.info("DirectTranscribe classes imported successfully")
-except ImportError as e:
-    logger.warning(f"DirectTranscribe classes not found, direct transcription will not be available: {str(e)}")
+# Constants
+DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
+AZURE_STORAGE_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", 
+                                              "DefaultEndpointsProtocol=https;AccountName=infolder;AccountKey=NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw==;EndpointSuffix=core.windows.net")
+SOURCE_CONTAINER = "shahulin"
 
-# Initialize services
-try:
-    deepgram_service = DeepgramService()
-    azure_storage_service = AzureStorageService()
-    azure_sql_service = AzureSQLService()
-    
-    # Initialize DirectTranscribe if available
-    direct_transcribe = None
-    direct_transcribe_db = None
-    try:
-        direct_transcribe = DirectTranscribe()
-        direct_transcribe_db = DirectTranscribeDB()
-        logger.info("DirectTranscribe services initialized successfully")
-    except Exception as e:
-        logger.warning(f"DirectTranscribe services could not be initialized: {str(e)}")
-        direct_transcribe = None
-        direct_transcribe_db = None
-    
-    logger.info("All services initialized successfully")
-except Exception as e:
-    logger.error(f"Error initializing services: {str(e)}")
-    traceback.print_exc()
+# Initialize DirectTranscribe
+transcriber = DirectTranscribe(DEEPGRAM_API_KEY)
 
 @app.route('/health', methods=['GET'])
-def health():
-    """Health check endpoint"""
+def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
-@app.route('/process-direct', methods=['POST'])
-def process_file_direct():
-    """Process a file from Azure Blob Storage using Deepgram with SAS URL direct approach"""
+@app.route('/direct/transcribe', methods=['POST'])
+async def direct_transcribe():
     try:
         data = request.json
+        
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+        
+        # Get filename and fileid from request
         filename = data.get('filename')
         fileid = data.get('fileid')
         
         if not filename:
-            return jsonify({"error": "No filename provided"}), 400
+            return jsonify({"success": False, "error": "No filename provided"}), 400
         
-        # Check if DirectTranscribe is available
-        if not direct_transcribe or not direct_transcribe_db:
-            return jsonify({"error": "DirectTranscribe service not available"}), 500
-            
-        logger.info(f"Processing file directly: {filename} with ID: {fileid}")
+        if not fileid:
+            return jsonify({"success": False, "error": "No fileid provided"}), 400
         
-        # Step 1: Start timing
-        start_time = time.time()
+        logger.info(f"Processing file {filename} with ID {fileid} using direct REST API approach")
         
-        # Step 2: Process the file with DirectTranscribe
-        processing_result = direct_transcribe.process_file(filename)
+        # Generate SAS URL for the blob
+        from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
+        from datetime import timedelta
         
-        # Step 3: Store the result in the database
-        db_result = direct_transcribe_db.store_transcription_result(processing_result)
+        # Extract account info from connection string
+        conn_parts = {p.split('=')[0]: p.split('=', 1)[1] for p in AZURE_STORAGE_CONNECTION_STRING.split(';') if '=' in p}
+        account_name = conn_parts.get('AccountName')
+        account_key = conn_parts.get('AccountKey')
         
-        # Step 4: Calculate total processing time
-        total_time = time.time() - start_time
+        # Check if blob exists first
+        blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+        container_client = blob_service_client.get_container_client(SOURCE_CONTAINER)
+        blob_client = container_client.get_blob_client(filename)
         
-        # Create a simplified result for the response
-        result = {
-            "status": "success" if db_result["status"] == "success" else "error",
-            "fileid": db_result.get("fileid", fileid),
-            "blob_name": filename,
-            "processing_time": total_time,
-            "transcription_success": processing_result["transcription"]["error"] is None,
-            "file_movement_success": processing_result["file_movement"]["status"] == "success",
-            "database_success": db_result["status"] == "success",
-            "paragraphs_processed": db_result.get("paragraphs_processed", 0)
+        if not blob_client.exists():
+            logger.error(f"File {filename} does not exist in container {SOURCE_CONTAINER}")
+            return jsonify({
+                "success": False, 
+                "error": f"File {filename} does not exist in container {SOURCE_CONTAINER}",
+                "fileid": fileid
+            }), 404
+        
+        # Calculate expiry time (240 hours)
+        expiry = datetime.now() + timedelta(hours=240)
+        
+        # Generate SAS token
+        sas_token = generate_blob_sas(
+            account_name=account_name,
+            container_name=SOURCE_CONTAINER,
+            blob_name=filename,
+            account_key=account_key,
+            permission=BlobSasPermissions(read=True),
+            expiry=expiry
+        )
+        
+        # Construct full URL
+        sas_url = f"https://{account_name}.blob.core.windows.net/{SOURCE_CONTAINER}/{filename}?{sas_token}"
+        logger.info(f"Generated SAS URL for {filename} with 240 hour expiry")
+        
+        # Transcribe the audio using our DirectTranscribe class
+        result = await transcriber.transcribe_audio(sas_url)
+        
+        if not result["success"]:
+            logger.error(f"Transcription failed: {result['error']['message']}")
+            return jsonify({
+                "success": False, 
+                "error": result['error']['message'],
+                "fileid": fileid
+            }), 400
+        
+        # Extract useful information for response
+        response = {
+            "success": True,
+            "fileid": fileid,
+            "filename": filename,
+            "transcript_length": len(result["transcript"]),
+            "result": result["result"],
+            "transcript": result["transcript"]
         }
         
-        logger.info(f"Direct processing complete for {filename} in {total_time:.2f} seconds")
-        return jsonify(result)
+        logger.info(f"Successfully transcribed {filename} (length: {len(result['transcript'])} characters)")
+        return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"Error in direct processing: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/process', methods=['POST'])
-def process_file():
-    """Process a file from Azure Blob Storage using Deepgram"""
-    try:
-        data = request.json
-        filename = data.get('filename')
-        fileid = data.get('fileid')
-        
-        if not filename:
-            return jsonify({"error": "No filename provided"}), 400
-        
-        logger.info(f"Processing file: {filename} with ID: {fileid}")
-        
-        # Download file from Azure Blob Storage
-        temp_dir = tempfile.mkdtemp()
-        local_path = os.path.join(temp_dir, filename)
-        
-        try:
-            try:
-                azure_storage_service.download_blob(filename, local_path)
-                logger.info(f"Downloaded {filename} to {local_path}")
-            except Exception as e:
-                logger.error(f"Failed to download file from Azure Blob Storage: {str(e)}")
-                return jsonify({"error": f"Azure storage error: {str(e)}"}), 500
-            
-            # Validate audio file
-            file_size = os.path.getsize(local_path)
-            logger.info(f"Audio file size: {file_size} bytes")
-            
-            if file_size == 0:
-                logger.error(f"Audio file is empty: {filename}")
-                return jsonify({"error": f"Audio file is empty: {filename}"}), 400
-            
-            if file_size < 100:  # Suspicious file size for audio
-                logger.warning(f"Suspiciously small audio file: {filename} ({file_size} bytes)")
-                
-            # Log first few bytes to help with debugging
-            with open(local_path, "rb") as f:
-                header = f.read(24)  # Read more bytes for better format detection
-                logger.info(f"File header: {header.hex()}")
-                
-                # Check file format based on extension
-                file_extension = os.path.splitext(filename)[1].lower()
-                valid_format = True
-                
-                if file_extension == '.wav':
-                    # Verify WAV header (should start with "RIFF" and contain "WAVE")
-                    if header[:4] != b'RIFF' or header[8:12] != b'WAVE':
-                        valid_format = False
-                        logger.warning(f"File {filename} does not appear to be a valid WAV file")
-                elif file_extension == '.mp3':
-                    # Verify MP3 header (should start with ID3 or have a sync word)
-                    if not (header[:3] == b'ID3' or header[0:2] == b'\xFF\xFB' or header[0:2] == b'\xFF\xF3' or header[0:2] == b'\xFF\xFA'):
-                        valid_format = False
-                        logger.warning(f"File {filename} does not appear to be a valid MP3 file")
-                    else:
-                        logger.info(f"MP3 header verification passed")
-                
-                if not valid_format:
-                    logger.warning(f"Proceeding with potentially invalid file format for {filename}")
-            
-            # Choose processing method based on configuration
-            current_method = getattr(app, 'transcription_method', 'shortcut')
-            logger.info(f"Selected transcription method: {current_method}")
-            
-            # SHORTCUT METHOD: Use our new DirectTranscribe class with SAS URLs - this should work reliably
-            if current_method == "shortcut" and direct_transcribe and direct_transcribe_db:
-                try:
-                    logger.info(f"Using SHORTCUT method with DirectTranscribe for {filename}")
-                    
-                    # Step 1: Start timing
-                    start_time = time.time()
-                    
-                    # Step 2: Process the file with DirectTranscribe - no need to download locally
-                    processing_result = direct_transcribe.process_file(filename)
-                    
-                    # Step 3: Store the result in the database with transaction
-                    db_result = direct_transcribe_db.store_transcription_result(processing_result)
-                    
-                    # Step 4: Calculate total processing time
-                    total_time = time.time() - start_time
-                    
-                    # Create result object in expected format
-                    result = {
-                        "fileid": fileid,
-                        "status": "success" if db_result["status"] == "success" else "error",
-                        "method_used": "shortcut",
-                        "processing_time": total_time,
-                        "transcription": processing_result["transcription"],
-                        "file_movement": processing_result["file_movement"]
-                    }
-                    
-                    logger.info(f"SHORTCUT processing complete for {filename} in {total_time:.2f} seconds")
-                    
-                except Exception as e:
-                    logger.error(f"Error using SHORTCUT method: {str(e)}")
-                    logger.error(f"Detailed error: {traceback.format_exc()}")
-                    # Fall back to regular implementation
-                    logger.info(f"Falling back to standard implementation")
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
-            
-            # ENHANCED METHOD: Use enhanced transcription with database storage
-            elif current_method == "enhanced":
-                try:
-                    from transcription_with_storage import transcribe_and_store
-                    logger.info(f"Using enhanced transcription with database storage for {filename}")
-                    
-                    # Generate a SAS URL for the blob
-                    sas_url = azure_storage_service.get_sas_url(filename)
-                    
-                    # Process using enhanced transcription
-                    result = transcribe_and_store(
-                        file_url=sas_url,
-                        fileid=fileid,
-                        store_results=True
-                    )
-                    
-                    logger.info(f"Enhanced transcription completed for {filename}")
-                    
-                except Exception as e:
-                    logger.error(f"Error using enhanced transcription: {str(e)}")
-                    logger.error(f"Detailed error: {traceback.format_exc()}")
-                    # Fall back to regular implementation
-                    logger.info(f"Falling back to standard implementation")
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
-            
-            # DIRECT METHOD: Use the direct REST API implementation
-            elif current_method == "direct":
-                try:
-                    from azure_deepgram_transcribe import process_audio_file as direct_process_audio
-                    logger.info(f"Using direct Deepgram REST API implementation for {filename}")
-                    
-                    # Send the file name directly to the direct processor - it will handle the Azure Storage interaction
-                    # This is a key change - we're not using the locally downloaded file for direct processing
-                    logger.info(f"Passing blob name {filename} directly to the Azure Deepgram transcribe module")
-                    result = direct_process_audio(filename, fileid)
-                    
-                    # Log the result structure for debugging
-                    if isinstance(result, dict):
-                        logger.info(f"Direct process result keys: {', '.join(result.keys())}")
-                        if "transcription" in result and isinstance(result["transcription"], dict):
-                            logger.info(f"Transcription data type: {type(result['transcription'])}")
-                            if isinstance(result["transcription"], dict):
-                                logger.info(f"Transcription object keys: {', '.join(result['transcription'].keys())}")
-                    
-                except Exception as e:
-                    logger.error(f"Error using direct API implementation: {str(e)}")
-                    logger.error(f"Detailed error: {traceback.format_exc()}")
-                    # Fall back to regular implementation
-                    logger.info(f"Falling back to standard implementation")
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
-            
-            # STANDARD METHOD: Use the standard implementation (SDK or REST API)
-            else:
-                logger.info(f"Using standard implementation ({current_method}) for {filename}")
-                import asyncio
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
-            
-            # Extract important details for logging
-            transcript_length = 0
-            has_error = False
-            error_message = None
-            
-            if isinstance(result, dict):
-                if "transcription" in result and isinstance(result["transcription"], dict):
-                    if "error" in result["transcription"] and result["transcription"]["error"]:
-                        has_error = True
-                        error_message = result["transcription"]["error"].get("message", "Unknown error")
-                
-            logger.info(f"Deepgram processing complete: {'ERROR: ' + error_message if has_error else 'SUCCESS'}")
-            
-            # Move to destination container and get the destination URL
-            destination_url = azure_storage_service.copy_blob_to_destination(filename)
-            logger.info(f"Moved {filename} to destination container")
-            
-            # Update the destination path in the database
-            try:
-                from azure_sql_service import AzureSQLService
-                sql_service = AzureSQLService()
-                conn = sql_service._get_connection()
-                cursor = conn.cursor()
-                
-                cursor.execute("""
-                    UPDATE rdt_assets 
-                    SET destination_path = %s
-                    WHERE fileid = %s
-                """, (
-                    destination_url,
-                    fileid
-                ))
-                
-                conn.commit()
-                cursor.close()
-                conn.close()
-                logger.info(f"Updated destination path in database for file {fileid}")
-            except Exception as e:
-                logger.error(f"Error updating destination path: {str(e)}")
-            
-            return jsonify({"status": "success", "result": result})
-            
-        except Exception as e:
-            logger.error(f"Error processing file {filename}: {str(e)}")
-            return jsonify({"error": str(e)}), 500
-            
-        finally:
-            # Clean up temporary file
-            if os.path.exists(local_path):
-                os.remove(local_path)
-                logger.info(f"Cleaned up temporary file: {local_path}")
-    
-    except Exception as e:
-        logger.error(f"Error processing file: {str(e)}")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/files/source', methods=['GET'])
-def get_source_files():
-    """Get files from source container"""
-    try:
-        files = azure_storage_service.list_source_blobs()
-        return jsonify({"files": files})
-    except Exception as e:
-        logger.error(f"Error listing source files: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/files/processed', methods=['GET'])
-def get_processed_files():
-    """Get files from destination container"""
-    try:
-        files = azure_storage_service.list_destination_blobs()
-        return jsonify({"files": files})
-    except Exception as e:
-        logger.error(f"Error listing processed files: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/analysis/<fileid>', methods=['GET'])
-def get_analysis(fileid):
-    """Get analysis results for a file"""
-    try:
-        results = azure_sql_service.get_analysis_results(fileid)
-        return jsonify(results)
-    except Exception as e:
-        logger.error(f"Error getting analysis results: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/stats', methods=['GET'])
-def get_stats():
-    """Get statistics"""
-    try:
-        stats = azure_sql_service.get_stats()
-        return jsonify(stats)
-    except Exception as e:
-        logger.error(f"Error getting stats: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/stats/sentiment', methods=['GET'])
-def get_sentiment_stats():
-    """Get sentiment statistics"""
-    try:
-        stats = azure_sql_service.get_sentiment_stats()
-        return jsonify(stats)
-    except Exception as e:
-        logger.error(f"Error getting sentiment stats: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/stats/topics', methods=['GET'])
-def get_topic_stats():
-    """Get topic statistics"""
-    try:
-        stats = azure_sql_service.get_topic_stats()
-        return jsonify(stats)
-    except Exception as e:
-        logger.error(f"Error getting topic stats: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-        
-@app.route('/setup/stored-procedures', methods=['GET'])
-def setup_stored_procedures():
-    """Set up missing stored procedures"""
-    try:
-        from create_missing_sp import main as create_sp_main
-        create_sp_main()
-        return jsonify({"status": "success", "message": "Stored procedures created successfully"})
-    except Exception as e:
-        logger.error(f"Error creating stored procedures: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-        
-@app.route('/setup/sentence-tables', methods=['GET'])
-def setup_sentence_tables():
-    """Set up new tables for paragraphs and sentences"""
-    try:
-        from update_sentence_tables import update_sentence_tables
-        result = update_sentence_tables()
-        return jsonify(result)
-    except Exception as e:
-        logger.error(f"Error creating sentence tables: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-        
-@app.route('/store/transcription-details', methods=['POST'])
-def store_transcription_details():
-    """Store detailed transcription data including paragraphs and sentences"""
-    try:
-        data = request.json
-        fileid = data.get('fileid')
-        transcription_response = data.get('transcription')
-        
-        if not fileid or not transcription_response:
-            return jsonify({"status": "error", "message": "Missing required fields: fileid or transcription"}), 400
-            
-        from update_sentence_tables import store_transcription_details
-        result = store_transcription_details(fileid, transcription_response)
-        return jsonify(result)
-    except Exception as e:
-        logger.error(f"Error storing transcription details: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/config/transcription-method', methods=['GET', 'POST'])
-def configure_transcription_method():
-    """Get or set the transcription method (SDK, REST API, direct, or shortcut)"""
-    try:
-        # Initialize if not already defined
-        if not hasattr(app, 'transcription_method'):
-            app.transcription_method = "shortcut" if direct_transcribe else "sdk"
-            logger.info(f"Initialized transcription method to: {app.transcription_method}")
-        
-        if request.method == 'GET':
-            return jsonify({
-                "status": "success",
-                "method": app.transcription_method,
-                "available_methods": [
-                    {"id": "sdk", "name": "Deepgram SDK", "description": "Uses the Deepgram Python SDK"},
-                    {"id": "rest", "name": "REST API", "description": "Uses direct REST API calls to Deepgram"},
-                    {"id": "direct", "name": "Direct SAS URL", "description": "Uses the DirectTranscribe class with SAS URLs"},
-                    {"id": "shortcut", "name": "Shortcut", "description": "Uses the DirectTranscribe class with the newest direct method"}
-                ],
-                "recommended": "shortcut",
-                "direct_available": direct_transcribe is not None
-            })
-        
-        if request.method == 'POST':
-            data = request.json
-            new_method = data.get('method')
-            
-            if not new_method:
-                return jsonify({"error": "No method provided"}), 400
-                
-            if new_method not in ['sdk', 'rest', 'direct', 'shortcut']:
-                return jsonify({"error": f"Invalid transcription method: {new_method}"}), 400
-                
-            # Check if direct method is available when selected
-            if new_method in ['direct', 'shortcut'] and not direct_transcribe:
-                return jsonify({"error": "Direct transcription method is not available"}), 400
-            
-            # Save previous method for response
-            previous_method = app.transcription_method
-            
-            # Update the application's transcription method
-            app.transcription_method = new_method
-            logger.info(f"Transcription method changed from '{previous_method}' to '{new_method}'")
-            
-            return jsonify({
-                "status": "success", 
-                "message": f"Transcription method set to {new_method}",
-                "previous_method": previous_method,
-                "current_method": new_method
-            })
-            
-    except Exception as e:
-        logger.error(f"Error configuring transcription method: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/debug/direct-transcription', methods=['GET'])
-def get_direct_transcription():
-    """Get the raw results from test_direct_transcription calls for Azure blob files"""
-    try:
-        # Get test file parameter
-        filename = request.args.get('test_file')
-        
-        if not filename:
-            return jsonify({
-                "status": "error",
-                "message": "Please provide a test_file parameter"
-            }), 400
-            
-        # Import the run_test function and the extract_transcript function
-        from direct_test import run_test, extract_transcript
-        result = run_test(filename)
-        
-        # Also get the formatted transcript directly
-        formatted_transcript = extract_transcript(result)
-        
-        # Return formatted results
-        return jsonify({
-            "status": "success",
-            "filename": filename,
-            "timestamp": datetime.now().isoformat(),
-            "formatted_transcript": formatted_transcript,
-            "result": result
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving direct transcription results: {str(e)}")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-        
-@app.route('/debug/direct-transcription-upload', methods=['POST'])
-def upload_and_transcribe():
-    """Upload a local file and run direct transcription on it"""
-    try:
-        # Check if the post request has the file part
-        if 'file' not in request.files:
-            return jsonify({
-                "status": "error", 
-                "message": "No file part in the request"
-            }), 400
-            
-        file = request.files['file']
-        
-        # If user submits empty form
-        if file.filename == '':
-            return jsonify({
-                "status": "error", 
-                "message": "No file selected"
-            }), 400
-            
-        if file:
-            # Create a temporary directory to save the uploaded file
-            temp_dir = tempfile.mkdtemp()
-            file_path = os.path.join(temp_dir, file.filename)
-            
-            # Save the file temporarily
-            file.save(file_path)
-            logger.info(f"Uploaded file saved to {file_path}")
-            
-            # Get file info for logging
-            file_size = os.path.getsize(file_path)
-            logger.info(f"Audio file size: {file_size} bytes")
-            
-            # Get the current transcription method
-            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "shortcut")
-            logger.info(f"Using transcription method: {transcription_method}")
-            
-            # Get additional parameters
-            store_results = request.form.get('store_results', 'false').lower() == 'true'
-            fileid = request.form.get('fileid', f"local_{int(time.time())}")
-            
-            # Process the file based on the current transcription method
-            try:
-                if transcription_method == "enhanced":
-                    # Use enhanced transcription with metadata extraction and optional database storage
-                    from transcription_with_storage import transcribe_and_store
-                    logger.info(f"Using enhanced transcription with storage = {store_results}")
-                    result = transcribe_and_store(
-                        file_path=file_path,
-                        fileid=fileid,
-                        store_results=store_results
-                    )
-                    formatted_transcript = result.get('transcript', '')
-                elif transcription_method == "direct" or transcription_method == "shortcut":
-                    # For direct/shortcut transcription, we need to use the local file
-                    from transcription_methods import transcribe_audio_directly
-                    result = transcribe_audio_directly(file_path)
-                    from direct_test import extract_transcript
-                    formatted_transcript = extract_transcript(result)
-                else:
-                    # For SDK and REST API methods, use the DeepgramService
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    result = loop.run_until_complete(deepgram_service.process_audio_file(file_path, fileid))
-                    from direct_test import extract_transcript
-                    formatted_transcript = extract_transcript(result)
-                
-                # Save the result to file
-                from direct_test import OUTPUT_DIR
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_file = os.path.join(OUTPUT_DIR, f"local_{os.path.splitext(file.filename)[0]}_{timestamp}.json")
-                
-                # Create output directory if it doesn't exist
-                if not os.path.exists(OUTPUT_DIR):
-                    os.makedirs(OUTPUT_DIR)
-                
-                output_data = {
-                    "blob_name": file.filename,
-                    "timestamp": datetime.now().isoformat(),
-                    "execution_time_seconds": 0,  # We don't track this for local uploads
-                    "formatted_transcript": formatted_transcript,
-                    "result": result
-                }
-                
-                with open(output_file, "w") as f:
-                    json.dump(output_data, f, indent=2)
-                
-                # Clean up the temporary file
-                os.remove(file_path)
-                os.rmdir(temp_dir)
-                
-                # Return the result
-                return jsonify({
-                    "status": "success",
-                    "filename": file.filename,
-                    "timestamp": datetime.now().isoformat(),
-                    "formatted_transcript": formatted_transcript,
-                    "result": result
-                })
-            
-            except Exception as e:
-                logger.error(f"Error processing uploaded file: {str(e)}")
-                traceback.print_exc()
-                # Clean up the temporary file
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                if os.path.exists(temp_dir):
-                    os.rmdir(temp_dir)
-                return jsonify({"status": "error", "message": f"Processing error: {str(e)}"}), 500
-    
-    except Exception as e:
-        logger.error(f"Error handling file upload: {str(e)}")
-        traceback.print_exc()
-        return jsonify({"status": "error", "message": f"Upload error: {str(e)}"}), 500
-        
-@app.route('/debug/direct-test-results', methods=['GET'])
-def list_direct_test_results():
-    """List files containing direct transcription test results"""
-    try:
-        # Look for results in the direct_test_results directory
-        from direct_test import OUTPUT_DIR
-        
-        # Create directory if it doesn't exist
-        if not os.path.exists(OUTPUT_DIR):
-            os.makedirs(OUTPUT_DIR)
-            
-        # List all JSON files in the directory
-        result_files = []
-        for filename in os.listdir(OUTPUT_DIR):
-            if filename.endswith('.json'):
-                file_path = os.path.join(OUTPUT_DIR, filename)
-                file_stat = os.stat(file_path)
-                result_files.append({
-                    'filename': filename,
-                    'size': file_stat.st_size,
-                    'created': datetime.fromtimestamp(file_stat.st_ctime).isoformat()
-                })
-                
-        return jsonify({
-            "status": "success",
-            "count": len(result_files),
-            "files": result_files
-        })
-    except Exception as e:
-        logger.error(f"Error listing direct test results: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-        
-@app.route('/debug/direct-test-results/<filename>', methods=['GET'])
-def get_direct_test_result(filename):
-    """Get a specific direct transcription test result file"""
-    try:
-        from direct_test import OUTPUT_DIR
-        file_path = os.path.join(OUTPUT_DIR, filename)
-        
-        if not os.path.exists(file_path):
-            return jsonify({
-                "status": "error",
-                "message": f"File not found: {filename}"
-            }), 404
-            
-        # Read and return the file contents
-        with open(file_path, 'r') as f:
-            result = json.load(f)
-            
-        return jsonify({
-            "status": "success",
-            "filename": filename,
-            "result": result
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving direct test result: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/generate-urls', methods=['GET'])
-def generate_urls():
-    """Generate both regular blob URL and SAS URL for a file"""
-    try:
-        # Get filename parameter
-        filename = request.args.get('filename')
-        
-        if not filename:
-            return jsonify({
-                "status": "error",
-                "message": "Please provide a filename parameter"
-            }), 400
-            
-        # Get container parameter (optional)
-        container = request.args.get('container', azure_storage_service.source_container)
-        
-        # Get expiry_hours parameter (optional)
-        try:
-            expiry_hours = int(request.args.get('expiry_hours', 240))
-        except ValueError:
-            expiry_hours = 240
-            
-        # Generate regular blob URL
-        blob_url = azure_storage_service.get_blob_url(container, filename)
-        
-        # Generate SAS URL
-        sas_url = azure_storage_service.generate_sas_url(container, filename, expiry_hours)
-        
-        # Format expiry time for display
-        expiry_time = (datetime.now() + timedelta(hours=expiry_hours)).isoformat()
-        
-        return jsonify({
-            "status": "success",
-            "filename": filename,
-            "container": container,
-            "blob_url": blob_url,
-            "sas_url": sas_url,
-            "expiry_hours": expiry_hours,
-            "expiry_time": expiry_time,
-            "timestamp": datetime.now().isoformat()
-        })
-            
-    except Exception as e:
-        logger.error(f"Error generating URLs: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.exception(f"Error processing direct transcription request: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port)
+    # Check if running in production
+    is_production = os.environ.get('FLASK_ENV') == 'production'
+    
+    # Run the app
+    app.run(host='0.0.0.0', port=5001, debug=not is_production)

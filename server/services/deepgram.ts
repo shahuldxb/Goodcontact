@@ -441,6 +441,7 @@ export class DeepgramService {
   private sentimentAnalysis;
   private languageDetection;
   private callSummarization;
+  private useDirectTranscription: boolean = true; // Use the direct transcription method by default
 
   constructor() {
     const deepgramApiKey = process.env.DEEPGRAM_API_KEY || azureConfig.deepgramKey;
