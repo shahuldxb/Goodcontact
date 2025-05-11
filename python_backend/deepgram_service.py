@@ -8,6 +8,13 @@ from datetime import datetime
 import traceback
 from deepgram import Deepgram
 
+# Import the modern Deepgram SDK 
+from deepgram import (
+    DeepgramClient,
+    PrerecordedOptions,
+    DeepgramClientOptions
+)
+
 # Import the Deepgram classes from the attached assets
 from dg_class_sentiment_analysis import DgClassSentimentAnalysis
 from dg_class_language_detection import DgClassLanguageDetection
@@ -22,7 +29,7 @@ class DeepgramService:
         self.logger = logging.getLogger(__name__)
         
         # Deepgram API key
-        self.deepgram_api_key = os.environ.get("DEEPGRAM_API_KEY", "d6290865c35bddd50928c5d26983769682fca987")
+        self.deepgram_api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
         
         # Initialize API access
         try:
@@ -219,10 +226,77 @@ class DeepgramService:
             traceback.print_exc()
             raise
 
+    def transcribe_with_listen_rest(self, audio_file_path):
+        """
+        Transcribe audio using Deepgram's modern listen.rest API.
+        This is the recommended method using the latest SDK with a Blob SAS URL.
+        
+        Args:
+            audio_file_path (str): Path to the local audio file to transcribe.
+            
+        Returns:
+            dict: A result object with the structure {"result": response_json, "error": error_message}
+        """
+        try:
+            self.logger.info(f"Using listen.rest API for transcription: {audio_file_path}")
+            
+            # For testing with local files, we need to create a SAS URL from Azure Storage
+            from azure_storage_service import AzureStorageService
+            storage = AzureStorageService()
+            
+            # Get the blob name from the file path
+            blob_name = os.path.basename(audio_file_path)
+            self.logger.info(f"Generating SAS URL for blob: {blob_name}")
+            
+            # Generate a SAS URL for the file
+            audio_url = storage.generate_sas_url("shahulin", blob_name)
+            self.logger.info(f"SAS URL generated: {audio_url[:60]}...")
+            
+            # Initialize the Deepgram client with API key
+            client_options = DeepgramClientOptions(
+                verbose=True  # Enable verbose logging for debugging
+            )
+            deepgram = DeepgramClient(self.deepgram_api_key, options=client_options)
+            
+            # Set up transcription options
+            transcription_options = PrerecordedOptions(
+                model="nova-3",  # Using the latest model
+                smart_format=True,
+                diarize=True,
+                detect_language=True,
+                punctuate=True,
+                utterances=True,
+                summarize=True
+            )
+            
+            # Prepare the URL in the format expected by the API
+            url_data = {
+                "url": audio_url
+            }
+            
+            # Make the transcription request
+            self.logger.info("Sending request to Deepgram listen.rest API...")
+            response = deepgram.listen.rest.v("1").transcribe_url(url_data, transcription_options)
+            
+            self.logger.info("Listen REST API transcription completed successfully")
+            return {"result": response, "error": None}
+            
+        except Exception as e:
+            error_message = f"Error in listen.rest transcription: {str(e)}"
+            self.logger.error(error_message)
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return {"result": None, "error": {"name": "ListenRestError", "message": error_message, "status": 500}}
+
     async def transcribe_audio(self, audio_file_path):
         """
-        Main transcription method that can use either SDK or REST API approach.
-        Currently defaults to REST API as the primary method, with fallback to SDK.
+        Main transcription method that can use various Deepgram integration approaches.
+        Currently supports:
+        - listen.rest (newest and recommended for SAS URLs)
+        - sdk (original SDK method)
+        - rest_api (manual REST calls)
+        - direct (direct Azure blob transcription)
+        - shortcut (test implementation)
         
         Args:
             audio_file_path (str): Path to the local audio file to transcribe.
@@ -237,8 +311,19 @@ class DeepgramService:
         # Defaults to 'rest_api' if not specified
         transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api").lower()
         
-        # Add shortcut method as a fourth option
-        if transcription_method == "shortcut":
+        # New listen.rest API method (highest priority)
+        if transcription_method == "listen.rest":
+            self.logger.info("Using listen.rest API method for transcription")
+            result = self.transcribe_with_listen_rest(audio_file_path)
+            
+            # If the method fails, fall back to SDK
+            if result["error"] is not None:
+                self.logger.warning("listen.rest API method failed, falling back to SDK")
+                return await self.transcribe_audio_sdk(audio_file_path)
+            return result
+        
+        # Shortcut method as fourth option
+        elif transcription_method == "shortcut":
             self.logger.info("Using SHORTCUT method for transcription")
             try:
                 # Import the shortcut function
