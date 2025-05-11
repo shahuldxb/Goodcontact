@@ -89,6 +89,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.assets.values());
   }
 
+  async getAllAssets(): Promise<RdtAsset[]> {
+    return Array.from(this.assets.values());
+  }
+
   async getAssetById(fileid: string): Promise<RdtAsset | undefined> {
     return this.assets.get(fileid);
   }

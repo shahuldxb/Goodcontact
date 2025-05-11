@@ -296,6 +296,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/debug/direct-transcription-upload", createPythonProxyMiddleware('/debug/direct-transcription-upload', 'POST'));
   app.get("/api/debug/direct-test-results", createPythonProxyMiddleware('/debug/direct-test-results'));
   app.get("/api/debug/direct-test-result", createPythonProxyMiddleware('/debug/direct-test-result'));
+  
+  // Add an endpoint to check assets in database
+  app.get("/api/debug/assets", async (req: Request, res: Response) => {
+    try {
+      const assets = await storage.getAllAssets();
+      res.json({ assets });
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+      res.status(500).json({ error: "Failed to fetch assets from database" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
