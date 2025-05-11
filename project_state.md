@@ -1,43 +1,69 @@
 # Project State Tracker
 
-## Current Issues
-- Deepgram transcription error: "Bad Request: failed to process audio: corrupt or unsupported data"
-- Despite using the correct API key (ba94baf7840441c378c58ccd1d5202c38ddc42d8), transcription is still failing
-- Need to investigate if this is related to:
-  - Audio file format/encoding issues
-  - SAS URL generation/permissions
-  - How the audio content is accessed by Deepgram
+## Project Requirements
+- ONLY use containers "shahulin" (source) and "shahulout" (destination) - changing containers has legal consequences
+- Database is Azure SQL, server: callcenter1.database.windows.net, database: call
+- All tables must have prefix "rdt_", all stored procedures must have prefix "rds_"
+- All Deepgram, Azure Storage, Azure SQL code must be in Python - asynchronous for performance
+- Transcription must use direct Deepgram API calls with SAS URLs - minimal logic
+- No mock solutions, no fallbacks - must fix core functionality for production
+- Must check logs and tables for nulls/missing values after operations
 
-## Log Analysis
-From recent logs:
-```
-DEEPGRAM RAW RESPONSE: {"result":null,"error":{"name":"DeepgramApiError","message":"{\"err_code\":\"Bad Request\",\"err_msg\":\"Bad Request: failed to process audio: corrupt or unsupported data\",\"request_id\":\"de726809-56f6-4fc0-baad-8d210a1ccc08\"}","status":400}}
-```
+## Current Status 
+- Successfully verified shahulin container now contains 17 audio files (agricultural finance/leasing recordings)
+- Fixed API key inconsistencies and standardized to use the working key
+- Successfully generated SAS URL for audio file with 240-hour expiry as required
+- Successfully performed direct transcription with Deepgram using SAS URL
+- Received proper transcription results with all requested features
+- Language detection working correctly (English detected)
 
-## API Key Status
-- Environment variable shows: 1f6c8f9cc2378ba0c6c5dd0d60d3d8713f89bfff
-- Working hardcoded key in files: ba94baf7840441c378c58ccd1d5202c38ddc42d8
-- Found inconsistent key in test_direct_transcription.py: d6290865c35bddd50928c5d26983769682fca987
-- Fixed test_direct_transcription.py to use the consistent working key
+## API Key Resolution
+- Working Deepgram API key: ba94baf7840441c378c58ccd1d5202c38ddc42d8
+- Standardized this key across all files
+- Previously inconsistent keys:
+  - Environment variable: 1f6c8f9cc2378ba0c6c5dd0d60d3d8713f89bfff
+  - test_direct_transcription.py: d6290865c35bddd50928c5d26983769682fca987
 
-## Audio Files Being Tested
-- Main container: "shahulin"
-- Test file originally tried: "agricultural_finance_(murabaha)_kind.mp3" - DOES NOT EXIST in Azure
-- Correct test file that exists: "agricultural_finance_(murabaha)_neutral.mp3"
-- Local temp path: "/tmp/deepgram-processing/agricultural_finance_(murabaha)_neutral.mp3"
+## Available Audio Files in shahulin
+- agricultural_finance_(murabaha)_understanding.mp3
+- agricultural_leasing_(ijarah)_angry.mp3
+- agricultural_leasing_(ijarah)_frustrated.mp3
+- agricultural_leasing_(ijarah)_impatient.mp3
+- agricultural_leasing_(ijarah)_kind.mp3
+- agricultural_leasing_(ijarah)_neutral.mp3
+- agricultural_leasing_(ijarah)_normal.mp3
+- agricultural_leasing_(ijarah)_patient.mp3
+- agricultural_leasing_(ijarah)_polite.mp3
+- agricultural_leasing_(ijarah)_rude.mp3
+- agricultural_leasing_(ijarah)_tensedup.mp3
+- agricultural_leasing_(ijarah)_understanding.mp3
+- business_investment_account_(mudarabah)_angry.mp3
+- business_investment_account_(mudarabah)_frustrated.mp3
+- business_investment_account_(mudarabah)_impatient.mp3
+- business_investment_account_(mudarabah)_kind.mp3
+- business_investment_account_(mudarabah)_neutral.mp3
 
-## Issues Found
+## Database Implementation
+- Azure SQL Server connected successfully
+- Use two-phase database approach: first insert with NULL transcription, then update with actual data
+
+## Technical Implementation Details
+- Direct Transcription with Deepgram requires:
+  1. Generate SAS URL with 240-hour expiry for blob in shahulin container
+  2. Call Deepgram API with this SAS URL (no download required)
+  3. Process and store results in Azure SQL database
+  4. Move processed file from shahulin to shahulout
+
+## Issues Fixed
 1. Inconsistent API key in test_direct_transcription.py - FIXED
-2. Incorrect audio file name referenced in logs - IDENTIFIED
-3. Testing with correct file name works successfully!
-4. Critical container issue - the "shahulin" container appears to be empty - IDENTIFIED
-5. Files exist in other containers like "demoout" - IDENTIFIED (but not used)
+2. Empty "shahulin" container issue - RESOLVED (now contains 17 files)
+3. SAS URL generation and verification - FIXED (working with 200 status)
+4. Direct transcription with Deepgram - VALIDATED (successful transcript received)
 
-## Fixes Applied
-1. Fixed inconsistent API keys in test_direct_transcription.py
-2. Updated project documentation to correctly identify file location issues
-
-## Next Steps
-1. Test transcription with files from the correct container
-2. Verify that SAS URLs are generated correctly for the files in the demoout container
-3. Update any documentation or instructions to reflect the correct container usage
+## Remaining Tasks
+1. Implement proper error handling in direct transcription process
+2. Ensure database operations follow two-phase approach
+3. Verify all tables and stored procedures follow required naming conventions
+4. Implement file movement between containers after processing
+5. Add comprehensive logging throughout the pipeline
+6. Implement end-to-end testing of the complete workflow
