@@ -1,73 +1,99 @@
 #!/usr/bin/env python3
 """
-Direct transcription module using DgClassCriticalTranscribeRest
+Direct transcription module for Deepgram API
 
-This module provides a minimal implementation for transcribing audio files 
-using Deepgram's API directly from a SAS URL.
-
-Usage:
-    python direct_transcribe.py <deepgram_api_key> <blob_sas_url>
+This module provides a class for transcribing audio files directly from a SAS URL
+using Deepgram's API.
 """
 
 import os
 import sys
 import logging
-from dg_class_critical_transcribe_rest import DgClassCriticalTranscribeRest
+from deepgram import DeepgramClient, PrerecordedOptions
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def transcribe_url(api_key, audio_url, model="nova-3", diarize=True):
-    """
-    Transcribe an audio file from a URL using Deepgram's API via DgClassCriticalTranscribeRest
-
-    Args:
-        api_key (str): Deepgram API key
-        audio_url (str): SAS URL to the audio file
-        model (str): Model to use for transcription
-        diarize (bool): Whether to enable speaker diarization
-
-    Returns:
-        dict: The transcription response
-    """
-    try:
-        logger.info(f"Initializing DgClassCriticalTranscribeRest with provided API key")
-        transcriber = DgClassCriticalTranscribeRest(api_key)
-
-        logger.info(f"Transcribing audio from URL with model {model}")
-        result = transcriber.transcribe_with_url(
-            audio_url=audio_url,
-            model=model,
-            diarize=diarize,
-            debug_mode=True
-        )
+class DirectTranscriber:
+    """Class for direct transcription using Deepgram API"""
+    
+    def __init__(self, api_key):
+        """
+        Initialize the DirectTranscriber with a Deepgram API key
         
-        if result['success']:
+        Args:
+            api_key (str): Deepgram API key
+        """
+        self.api_key = api_key
+        self.client = DeepgramClient(api_key)
+    
+    async def transcribe_url(self, audio_url, model="nova-3", diarize=True):
+        """
+        Transcribe an audio file from a URL using Deepgram's API
+        
+        Args:
+            audio_url (str): SAS URL to the audio file
+            model (str): Model to use for transcription (default: nova-3)
+            diarize (bool): Whether to enable speaker diarization (default: True)
+            
+        Returns:
+            dict: The transcription response
+        """
+        try:
+            logger.info(f"Transcribing audio from URL with model {model}")
+            
+            # Prepare the audio URL in the format expected by Deepgram
+            audio_source = {"url": audio_url}
+            
+            # Configure transcription options
+            options = PrerecordedOptions(
+                model=model,
+                smart_format=True,
+                diarize=diarize
+            )
+            
+            # Call the Deepgram API
+            response = await self.client.listen.asyncio.v("1").transcribe_url(audio_source, options)
+            
             logger.info("Transcription completed successfully")
             return {
                 "success": True,
-                "response": result['full_response']
+                "response": response
             }
-        else:
-            logger.error(f"Transcription failed: {result.get('error', 'Unknown error')}")
+        except Exception as e:
+            logger.error(f"Error in transcription: {str(e)}")
             return {
                 "success": False,
-                "error": result.get('error', 'Unknown error')
+                "error": str(e)
             }
-    except Exception as e:
-        logger.error(f"Error in transcription: {str(e)}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
+# Main function for demonstration and testing
+async def main(api_key, audio_url, model="nova-3"):
+    """
+    Main function to demonstrate the usage of the DirectTranscriber class
+    
+    Args:
+        api_key (str): Deepgram API key
+        audio_url (str): SAS URL to the audio file
+        model (str): Model to use for transcription (default: nova-3)
+        
+    Returns:
+        dict: The transcription response
+    """
+    transcriber = DirectTranscriber(api_key)
+    result = await transcriber.transcribe_url(audio_url, model=model)
+    return result
 
 if __name__ == "__main__":
+    # Execute only when run directly
+    import asyncio
+    
     # Get API key and SAS URL from command line arguments
     if len(sys.argv) < 3:
         print("Error: Missing required parameters")
         print("Usage: python direct_transcribe.py <deepgram_api_key> <blob_sas_url>")
-        print("Example: python direct_transcribe.py ba94baf7840441c378c58ccd1d5202c38ddc42d8 https://infolder.blob.core.windows.net/shahulin/example.mp3?sv=...")
+        print("Example: python direct_transcribe.py YOUR_API_KEY https://infolder.blob.core.windows.net/shahulin/example.mp3?sv=...")
         sys.exit(1)
     
     # Get parameters from command line
@@ -81,8 +107,8 @@ if __name__ == "__main__":
     print(f"SAS URL length: {len(sas_url)} characters")
     print(f"Using model: {model}")
     
-    # Call the transcription function
-    result = transcribe_url(api_key, sas_url, model=model)
+    # Call the main function with asyncio
+    result = asyncio.run(main(api_key, sas_url, model))
     
     if result["success"]:
         print("Transcription successful!")
