@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "sentiment": "positive",
+  "score": 1.0,
+  "details": {
+    "positive_count": 3,
+    "negative_count": 0,
+    "transcript_length": 3846
+  }
+}
