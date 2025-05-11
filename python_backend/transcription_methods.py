@@ -1,0 +1,232 @@
+#!/usr/bin/env python3
+"""
+This module provides two methods for transcribing audio using Deepgram:
+1. Using the official Deepgram SDK
+2. Using direct REST API calls with requests library
+"""
+import os
+import json
+import logging
+import requests
+import asyncio
+from deepgram import DeepgramClient, PrerecordedOptions
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Get API key from environment or use a default for testing (replace in production)
+DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY", "")
+
+
+async def transcribe_with_sdk(audio_file_path):
+    """
+    Transcribe audio using the official Deepgram SDK.
+    
+    Args:
+        audio_file_path (str): Path to the local audio file to transcribe.
+        
+    Returns:
+        dict: The complete Deepgram response including transcript and metadata.
+    """
+    try:
+        # Ensure file exists
+        if not os.path.exists(audio_file_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
+            
+        # Initialize Deepgram client
+        deepgram = DeepgramClient(DEEPGRAM_API_KEY)
+        
+        # Determine mime type based on file extension
+        file_extension = os.path.splitext(audio_file_path)[1].lower()
+        mimetype = "audio/wav"  # Default
+        if file_extension == ".mp3":
+            mimetype = "audio/mp3"
+        elif file_extension == ".ogg":
+            mimetype = "audio/ogg"
+        elif file_extension == ".flac":
+            mimetype = "audio/flac"
+        
+        # Log file info
+        logger.info(f"Transcribing file {audio_file_path} ({mimetype}) using Deepgram SDK")
+        file_size = os.path.getsize(audio_file_path)
+        logger.info(f"File size: {file_size} bytes")
+        
+        # Configure transcription options
+        options = PrerecordedOptions(
+            smart_format=True,
+            model="nova",
+            language="en",  # Can be auto-detected if not specified
+            detect_language=True,
+            punctuate=True,
+            diarize=True,
+            utterances=True,
+            summarize=True
+        )
+        
+        # Open audio file and send to Deepgram
+        with open(audio_file_path, "rb") as audio:
+            payload = {
+                "buffer": audio.read()
+            }
+            
+            response = await deepgram.listen.prerecorded.v("1").transcribe_file(payload, options)
+            
+            # Extract relevant information for debugging
+            if response and hasattr(response, "results"):
+                try:
+                    detected_language = "unknown"
+                    if (hasattr(response.results, "channels") and 
+                        len(response.results.channels) > 0 and 
+                        hasattr(response.results.channels[0], "detected_language")):
+                        detected_language = response.results.channels[0].detected_language
+                        
+                    logger.info(f"Detected language: {detected_language}")
+                    
+                    transcript = ""
+                    if (hasattr(response.results, "channels") and 
+                        len(response.results.channels) > 0 and 
+                        hasattr(response.results.channels[0], "alternatives") and
+                        len(response.results.channels[0].alternatives) > 0 and
+                        hasattr(response.results.channels[0].alternatives[0], "transcript")):
+                        transcript = response.results.channels[0].alternatives[0].transcript
+                        
+                    logger.info(f"Transcript (first 100 chars): {transcript[:100]}...")
+                except Exception as extract_err:
+                    logger.error(f"Error extracting response data: {str(extract_err)}")
+            
+            return response
+    except Exception as e:
+        logger.error(f"Error in SDK transcription: {str(e)}")
+        raise
+
+
+def transcribe_with_rest_api(audio_file_path):
+    """
+    Transcribe audio using direct REST API calls to Deepgram.
+    
+    Args:
+        audio_file_path (str): Path to the local audio file to transcribe.
+        
+    Returns:
+        dict: The complete Deepgram response including transcript and metadata.
+    """
+    try:
+        # Ensure file exists
+        if not os.path.exists(audio_file_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
+            
+        # Determine content type based on file extension
+        file_extension = os.path.splitext(audio_file_path)[1].lower()
+        content_type = "audio/wav"  # Default
+        if file_extension == ".mp3":
+            content_type = "audio/mp3"
+        elif file_extension == ".ogg":
+            content_type = "audio/ogg"
+        elif file_extension == ".flac":
+            content_type = "audio/flac"
+        
+        # Log file info
+        logger.info(f"Transcribing file {audio_file_path} ({content_type}) using REST API")
+        file_size = os.path.getsize(audio_file_path)
+        logger.info(f"File size: {file_size} bytes")
+        
+        # Set up the request 
+        url = "https://api.deepgram.com/v1/listen"
+        
+        # Prepare headers with API key
+        headers = {
+            "Authorization": f"Token {DEEPGRAM_API_KEY}",
+            "Content-Type": content_type
+        }
+        
+        # Prepare query parameters for transcription options
+        params = {
+            "smart_format": "true",
+            "model": "nova",
+            "detect_language": "true",
+            "punctuate": "true",
+            "diarize": "true",
+            "utterances": "true",
+            "summarize": "true"
+        }
+        
+        # Open and read audio file
+        with open(audio_file_path, "rb") as audio:
+            # Send POST request to Deepgram API
+            response = requests.post(
+                url, 
+                headers=headers,
+                params=params,
+                data=audio
+            )
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Extract relevant information for debugging
+                try:
+                    detected_language = "unknown"
+                    if ("results" in result and 
+                        "channels" in result["results"] and 
+                        len(result["results"]["channels"]) > 0 and
+                        "detected_language" in result["results"]["channels"][0]):
+                        detected_language = result["results"]["channels"][0]["detected_language"]
+                    
+                    logger.info(f"Detected language: {detected_language}")
+                    
+                    transcript = ""
+                    if ("results" in result and 
+                        "channels" in result["results"] and 
+                        len(result["results"]["channels"]) > 0 and
+                        "alternatives" in result["results"]["channels"][0] and
+                        len(result["results"]["channels"][0]["alternatives"]) > 0 and
+                        "transcript" in result["results"]["channels"][0]["alternatives"][0]):
+                        transcript = result["results"]["channels"][0]["alternatives"][0]["transcript"]
+                    
+                    logger.info(f"Transcript (first 100 chars): {transcript[:100]}...")
+                except Exception as extract_err:
+                    logger.error(f"Error extracting response data: {str(extract_err)}")
+                
+                return result
+            else:
+                error = f"Deepgram API request failed: {response.status_code} - {response.text}"
+                logger.error(error)
+                raise Exception(error)
+    except Exception as e:
+        logger.error(f"Error in REST API transcription: {str(e)}")
+        raise
+
+
+async def main():
+    """
+    Example of how to use both transcription methods.
+    """
+    # Path to audio file for testing
+    test_file = "test_speech_fr.wav"
+    
+    if not os.path.exists(test_file):
+        logger.error(f"Test file {test_file} not found!")
+        return
+    
+    # Method 1: Using the SDK
+    try:
+        logger.info("=== Transcribing with SDK ===")
+        sdk_result = await transcribe_with_sdk(test_file)
+        logger.info("SDK transcription completed successfully")
+    except Exception as sdk_err:
+        logger.error(f"SDK transcription failed: {str(sdk_err)}")
+    
+    # Method 2: Using the REST API
+    try:
+        logger.info("=== Transcribing with REST API ===")
+        rest_result = transcribe_with_rest_api(test_file)
+        logger.info("REST API transcription completed successfully")
+    except Exception as rest_err:
+        logger.error(f"REST API transcription failed: {str(rest_err)}")
+
+
+if __name__ == "__main__":
+    # Run the main async function
+    asyncio.run(main())
