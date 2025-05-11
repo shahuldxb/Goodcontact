@@ -574,6 +574,52 @@ def get_direct_test_result(filename):
         logger.error(f"Error retrieving direct test result: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/generate-urls', methods=['GET'])
+def generate_urls():
+    """Generate both regular blob URL and SAS URL for a file"""
+    try:
+        # Get filename parameter
+        filename = request.args.get('filename')
+        
+        if not filename:
+            return jsonify({
+                "status": "error",
+                "message": "Please provide a filename parameter"
+            }), 400
+            
+        # Get container parameter (optional)
+        container = request.args.get('container', azure_storage_service.source_container)
+        
+        # Get expiry_hours parameter (optional)
+        try:
+            expiry_hours = int(request.args.get('expiry_hours', 240))
+        except ValueError:
+            expiry_hours = 240
+            
+        # Generate regular blob URL
+        blob_url = azure_storage_service.get_blob_url(container, filename)
+        
+        # Generate SAS URL
+        sas_url = azure_storage_service.generate_sas_url(container, filename, expiry_hours)
+        
+        # Format expiry time for display
+        expiry_time = (datetime.now() + timedelta(hours=expiry_hours)).isoformat()
+        
+        return jsonify({
+            "status": "success",
+            "filename": filename,
+            "container": container,
+            "blob_url": blob_url,
+            "sas_url": sas_url,
+            "expiry_hours": expiry_hours,
+            "expiry_time": expiry_time,
+            "timestamp": datetime.now().isoformat()
+        })
+            
+    except Exception as e:
+        logger.error(f"Error generating URLs: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port)
