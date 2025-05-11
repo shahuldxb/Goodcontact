@@ -11,7 +11,6 @@ import json
 import asyncio
 import logging
 from datetime import datetime
-from azure.storage.blob import BlobServiceClient
 import pymssql
 
 # Import the DirectTranscriber class
@@ -28,22 +27,18 @@ DB_USER = "shahul"
 DB_PASSWORD = "apple123!@#"
 DB_NAME = "callcenterdb"
 
-async def test_transcription(blob_name, api_key=None):
+def test_transcription(blob_name, api_key):
     """
     Test the transcription of a specific blob and verify database entry
     
     Args:
         blob_name (str): Name of the blob in the 'shahulin' container
-        api_key (str, optional): Deepgram API key, defaults to env variable
+        api_key (str): Deepgram API key
     
     Returns:
         dict: Results of the test
     """
     try:
-        # Use provided API key or get from environment
-        if not api_key:
-            api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
-        
         # 1. Generate SAS URL with 240 hour expiry
         logger.info(f"Generating SAS URL for blob: {blob_name}")
         storage_service = AzureStorageService()
@@ -64,7 +59,8 @@ async def test_transcription(blob_name, api_key=None):
         transcriber = DirectTranscriber(api_key)
         
         logger.info("Starting transcription")
-        result = await transcriber.transcribe_url(sas_url)
+        # Since the transcription is actually synchronous, we just call it directly
+        result = transcriber.transcribe_url(sas_url, model="nova-3")
         
         if not result["success"]:
             logger.error(f"Transcription failed: {result.get('error')}")
@@ -131,10 +127,23 @@ async def test_transcription(blob_name, api_key=None):
         # Close database connection
         conn.close()
         
+        # Check for transcript content in the response to verify success
+        try:
+            transcript_data = result["response"]["full_response"]["results"]["channels"][0]["alternatives"][0]["transcript"]
+            transcript_present = bool(transcript_data and len(transcript_data) > 0)
+            if transcript_present:
+                logger.info(f"Transcript preview: {transcript_data[:100]}...")
+            else:
+                logger.warning("Transcript appears to be empty")
+        except (KeyError, IndexError, TypeError) as e:
+            logger.warning(f"Could not verify transcript content in response: {str(e)}")
+            transcript_present = False
+        
         return {
             "success": True,
             "fileid": fileid,
             "id": id,
+            "transcript_present": transcript_present,
             "transcription_length": len(stored_transcription)
         }
     
@@ -146,20 +155,22 @@ async def main():
     """
     Main function that tests transcription on two different blob files
     """
+    # Get Deepgram API key
+    api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
+    
     # Test files to transcribe (real Azure blob files)
     test_files = [
         "agricultural_finance_(murabaha)_angry.mp3",
         "banking_enquiries_hindi.mp3"
     ]
     
-    api_key = os.environ.get("DEEPGRAM_API_KEY", "ba94baf7840441c378c58ccd1d5202c38ddc42d8")
-    
     for i, blob_name in enumerate(test_files):
         logger.info(f"TEST {i+1}: Testing transcription of {blob_name}")
         result = await test_transcription(blob_name, api_key)
         
         if result["success"]:
-            logger.info(f"TEST {i+1} PASSED: Successfully transcribed and stored {blob_name}")
+            transcript_status = "with transcript" if result.get("transcript_present", False) else "without transcript"
+            logger.info(f"TEST {i+1} PASSED: Successfully transcribed and stored {blob_name} {transcript_status}")
             logger.info(f"FileID: {result['fileid']}")
             logger.info(f"Database ID: {result['id']}")
             logger.info(f"Transcription length: {result['transcription_length']} bytes")
@@ -167,6 +178,11 @@ async def main():
             logger.error(f"TEST {i+1} FAILED: {result.get('error')}")
         
         logger.info("-" * 80)
+        
+        # Sleep between tests to avoid rate limiting
+        if i < len(test_files) - 1:
+            logger.info("Waiting 5 seconds before next test...")
+            await asyncio.sleep(5)
 
 if __name__ == "__main__":
     asyncio.run(main())

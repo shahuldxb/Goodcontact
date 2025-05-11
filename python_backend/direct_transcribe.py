@@ -8,8 +8,10 @@ using Deepgram's API.
 
 import os
 import sys
+import json
+import asyncio
 import logging
-from deepgram import DeepgramClient, PrerecordedOptions
+from dg_class_critical_transcribe_rest import DgClassCriticalTranscribeRest
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -26,9 +28,9 @@ class DirectTranscriber:
             api_key (str): Deepgram API key
         """
         self.api_key = api_key
-        self.client = DeepgramClient(api_key)
+        self.transcriber = DgClassCriticalTranscribeRest(api_key)
     
-    async def transcribe_url(self, audio_url, model="nova-3", diarize=True):
+    def transcribe_url(self, audio_url, model="nova-3", diarize=True):
         """
         Transcribe an audio file from a URL using Deepgram's API
         
@@ -43,24 +45,16 @@ class DirectTranscriber:
         try:
             logger.info(f"Transcribing audio from URL with model {model}")
             
-            # Prepare the audio URL in the format expected by Deepgram
-            audio_source = {"url": audio_url}
-            
-            # Configure transcription options
-            options = PrerecordedOptions(
+            # Using synchronous call from DgClassCriticalTranscribeRest
+            result = self.transcriber.transcribe_with_url(
+                audio_url=audio_url,
                 model=model,
-                smart_format=True,
-                diarize=diarize
+                diarize=diarize,
+                debug_mode=True
             )
             
-            # Call the Deepgram API
-            response = await self.client.listen.asyncio.v("1").transcribe_url(audio_source, options)
+            return result
             
-            logger.info("Transcription completed successfully")
-            return {
-                "success": True,
-                "response": response
-            }
         except Exception as e:
             logger.error(f"Error in transcription: {str(e)}")
             return {
@@ -69,7 +63,7 @@ class DirectTranscriber:
             }
 
 # Main function for demonstration and testing
-async def main(api_key, audio_url, model="nova-3"):
+def main(api_key, audio_url, model="nova-3"):
     """
     Main function to demonstrate the usage of the DirectTranscriber class
     
@@ -82,13 +76,11 @@ async def main(api_key, audio_url, model="nova-3"):
         dict: The transcription response
     """
     transcriber = DirectTranscriber(api_key)
-    result = await transcriber.transcribe_url(audio_url, model=model)
+    result = transcriber.transcribe_url(audio_url, model=model)
     return result
 
 if __name__ == "__main__":
     # Execute only when run directly
-    import asyncio
-    
     # Get API key and SAS URL from command line arguments
     if len(sys.argv) < 3:
         print("Error: Missing required parameters")
@@ -107,8 +99,8 @@ if __name__ == "__main__":
     print(f"SAS URL length: {len(sas_url)} characters")
     print(f"Using model: {model}")
     
-    # Call the main function with asyncio
-    result = asyncio.run(main(api_key, sas_url, model))
+    # Call the main function directly (synchronous)
+    result = main(api_key, sas_url, model)
     
     if result["success"]:
         print("Transcription successful!")
