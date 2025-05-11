@@ -111,9 +111,23 @@ def process_file():
                 try:
                     from azure_deepgram_transcribe import process_audio_file as direct_process_audio
                     logger.info(f"Using direct Deepgram REST API implementation for {filename}")
+                    
+                    # Send the file name directly to the direct processor - it will handle the Azure Storage interaction
+                    # This is a key change - we're not using the locally downloaded file for direct processing
+                    logger.info(f"Passing blob name {filename} directly to the Azure Deepgram transcribe module")
                     result = direct_process_audio(filename, fileid)
+                    
+                    # Log the result structure for debugging
+                    if isinstance(result, dict):
+                        logger.info(f"Direct process result keys: {', '.join(result.keys())}")
+                        if "transcription" in result and isinstance(result["transcription"], dict):
+                            logger.info(f"Transcription data type: {type(result['transcription'])}")
+                            if isinstance(result["transcription"], dict):
+                                logger.info(f"Transcription object keys: {', '.join(result['transcription'].keys())}")
+                    
                 except Exception as e:
                     logger.error(f"Error using direct API implementation: {str(e)}")
+                    logger.error(f"Detailed error: {traceback.format_exc()}")
                     # Fall back to regular implementation
                     logger.info(f"Falling back to standard implementation")
                     import asyncio

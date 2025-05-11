@@ -60,13 +60,31 @@ def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True
 
     # Azure Storage connection
     try:
+        # Try multiple ways to get the connection string
         connect_str = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
+        
+        # If not found, try to build it from account name and key
         if not connect_str:
-            logger.error("AZURE_STORAGE_CONNECTION_STRING environment variable not set")
-            return {"error": "Azure Storage connection string not provided"}
+            account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
+            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
+            account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
+            
+            if account_url and account_key:
+                # Use the account URL and key directly
+                logger.info(f"Using AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
+            elif account_name and account_key:
+                # Build connection string from account name and key
+                connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+                logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
+            else:
+                logger.error("Azure Storage connection information not found")
+                return {"error": "Azure Storage connection information not provided"}
         
         # Create a BlobServiceClient
-        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        if connect_str:
+            blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        else:
+            raise ValueError("No valid Azure Storage connection information available")
         
         # Get a blob client for the specified file
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
@@ -100,21 +118,43 @@ def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True
             
             # Open the file for sending to Deepgram
             with open(local_path, "rb") as file:
-                # Get the file's MIME type
-                mime_type, _ = mimetypes.guess_type(local_path)
-                if not mime_type:
-                    # Default to audio/mpeg if MIME type can't be determined
+                # Get the file's MIME type based on extension
+                file_extension = os.path.splitext(blob_name)[1].lower()
+                
+                if file_extension in ['.mp3', '.mpeg', '.mpga']:
+                    mime_type = "audio/mpeg"
+                elif file_extension == '.wav':
+                    mime_type = "audio/wav"
+                elif file_extension == '.flac':
+                    mime_type = "audio/flac"
+                elif file_extension in ['.m4a', '.aac']:
+                    mime_type = "audio/aac"
+                elif file_extension == '.ogg':
+                    mime_type = "audio/ogg"
+                else:
+                    # Default to audio/mpeg if extension not recognized
                     mime_type = "audio/mpeg"
                 
+                # Set the Content-Type header
+                headers["Content-Type"] = mime_type
+                
                 logger.info(f"Sending {blob_name} with mimetype {mime_type} to Deepgram for transcription...")
+                
+                # Read the entire file content
+                file_content = file.read()
+                
+                # Log first few bytes to help with debugging
+                if len(file_content) > 24:
+                    header_hex = file_content[:24].hex()
+                    logger.info(f"File header (hex): {header_hex}")
                 
                 # Make the API request
                 response = requests.post(
                     url,
                     params=params,
                     headers=headers,
-                    data=file,
-                    timeout=60  # 60-second timeout
+                    data=file_content,
+                    timeout=120  # Increase timeout for large files
                 )
                 
                 # Log the response status
@@ -202,14 +242,34 @@ def process_audio_file(blob_name, fileid=None, output_container="shahulout"):
     
     # Move the file to the output container
     try:
+        # Try multiple ways to get the connection string
         connect_str = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
-        if connect_str:
-            # Create a BlobServiceClient
-            blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        
+        # If not found, try to build it from account name and key
+        if not connect_str:
+            account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
+            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
+            account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
             
-            # Get the source blob client
-            source_blob_client = blob_service_client.get_blob_client(container="shahulin", blob=blob_name)
+            if account_url and account_key:
+                # Use the account URL and key directly
+                logger.info(f"Using AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
+            elif account_name and account_key:
+                # Build connection string from account name and key
+                connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+                logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
+        
+        if not connect_str:
+            logger.warning("No Azure connection string available, skipping file copy")
+            # Return early with what we've got so far
+            return result
             
+        # Create a BlobServiceClient
+        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        
+        # Get the source blob client
+        source_blob_client = blob_service_client.get_blob_client(container="shahulin", blob=blob_name)
+        
             # Get the destination blob client
             dest_blob_client = blob_service_client.get_blob_client(container=output_container, blob=blob_name)
             
