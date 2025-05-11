@@ -86,8 +86,8 @@ def direct_transcribe():
         sas_url = f"https://{account_name}.blob.core.windows.net/{SOURCE_CONTAINER}/{filename}?{sas_token}"
         logger.info(f"Generated SAS URL for {filename} with 240 hour expiry")
         
-        # Use run_sync to run the async transcribe method in a sync context
-        result = asyncio.run(transcriber.transcribe_audio(sas_url))
+        # Call the transcribe_audio method directly (it's now synchronous)
+        result = transcriber.transcribe_audio(sas_url)
         
         if not result["success"]:
             logger.error(f"Transcription failed: {result['error']['message']}")
@@ -103,7 +103,7 @@ def direct_transcribe():
             "fileid": fileid,
             "filename": filename,
             "transcript_length": len(result["transcript"]),
-            "transcription": result["result"],
+            "result": result["result"],
             "transcript": result["transcript"]
         }
         
