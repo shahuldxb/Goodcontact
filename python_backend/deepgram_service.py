@@ -230,6 +230,9 @@ class DeepgramService:
         Returns:
             dict: A result object with the structure {"result": response_json, "error": error_message}
         """
+        # Import required modules
+        import os
+        
         # Get environment variable that determines which method to use
         # Defaults to 'rest_api' if not specified
         transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api").lower()
@@ -573,6 +576,8 @@ class DeepgramService:
             
             # Update asset status to error
             try:
+                from azure_sql_service import AzureSQLService
+                sql_service = AzureSQLService()
                 conn = sql_service._get_connection()
                 cursor = conn.cursor()
                 cursor.execute("""
