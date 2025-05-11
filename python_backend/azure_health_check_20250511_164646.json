@@ -1,0 +1,43 @@
+{
+  "overall_status": "Failed",
+  "timestamp": "2025-05-11T16:46:45.780717",
+  "environment": {
+    "DB_SERVER": "callcenter1.database.windows.net",
+    "DB_NAME": "callcenter",
+    "DB_USER": "shahul",
+    "SOURCE_CONTAINER": "shahulin",
+    "DESTINATION_CONTAINER": "shahulout"
+  },
+  "services": {
+    "azure_storage": {
+      "service": "Azure Storage",
+      "status": "Failed",
+      "connection": true,
+      "source_container": false,
+      "destination_container": false,
+      "blob_count": {
+        "source": 0,
+        "destination": 0
+      },
+      "timestamp": "2025-05-11T16:46:45.780729",
+      "errors": [
+        "Storage connection error: Session.request() got an unexpected keyword argument 'max_results'"
+      ],
+      "account_info": {
+        "sku_name": "Standard_RAGRS",
+        "account_kind": "StorageV2"
+      }
+    },
+    "azure_sql": {
+      "service": "Azure SQL Database",
+      "status": "Failed",
+      "connection": false,
+      "tables": [],
+      "row_counts": {},
+      "timestamp": "2025-05-11T16:46:46.144912",
+      "errors": [
+        "SQL connection error: (18456, b\"Login failed for user 'shahul'.DB-Lib error message 20018, severity 14:\\nGeneral SQL Server error: Check messages from the SQL Server\\nDB-Lib error message 20002, severity 9:\\nAdaptive Server connection failed (callcenter1.database.windows.net)\\nDB-Lib error message 20002, severity 9:\\nAdaptive Server connection failed (callcenter1.database.windows.net)\\n\")"
+      ]
+    }
+  }
+}

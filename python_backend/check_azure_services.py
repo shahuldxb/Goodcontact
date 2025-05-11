@@ -64,7 +64,13 @@ def check_azure_storage():
         try:
             container_client = blob_service_client.get_container_client(SOURCE_CONTAINER)
             # List a few blobs to verify access
-            blobs = list(container_client.list_blobs(max_results=5))
+            # Note: Some Azure SDK versions use max_results, others use num_results
+            try:
+                blobs = list(container_client.list_blobs(max_results=5))
+            except TypeError:
+                # Try with the alternate parameter name
+                blobs = list(container_client.list_blobs(num_results=5))
+            
             results["source_container"] = True
             results["blob_count"]["source"] = len(blobs)
             results["source_blobs"] = [blob.name for blob in blobs]
@@ -75,7 +81,13 @@ def check_azure_storage():
         try:
             container_client = blob_service_client.get_container_client(DESTINATION_CONTAINER)
             # List a few blobs to verify access
-            blobs = list(container_client.list_blobs(max_results=5))
+            # Note: Some Azure SDK versions use max_results, others use num_results
+            try:
+                blobs = list(container_client.list_blobs(max_results=5))
+            except TypeError:
+                # Try with the alternate parameter name
+                blobs = list(container_client.list_blobs(num_results=5))
+                
             results["destination_container"] = True
             results["blob_count"]["destination"] = len(blobs)
             results["destination_blobs"] = [blob.name for blob in blobs]
@@ -92,7 +104,24 @@ def check_azure_storage():
             
     except Exception as e:
         results["status"] = "Failed"
-        results["errors"].append(f"Storage connection error: {str(e)}")
+        error_message = str(e)
+        results["errors"].append(f"Storage connection error: {error_message}")
+        
+        # Provide more detailed information for common storage errors
+        if "AuthenticationFailed" in error_message:
+            results["errors"].append("Authentication Failed. This typically means:")
+            results["errors"].append("1. The storage account key is incorrect or expired")
+            results["errors"].append("2. The connection string format is invalid")
+            
+        if "ResourceNotFound" in error_message:
+            results["errors"].append("Resource Not Found. This typically means:")
+            results["errors"].append("1. The storage account name doesn't exist")
+            results["errors"].append("2. The container name is incorrect")
+            
+        if "timeout" in error_message.lower():
+            results["errors"].append("Connection timeout. This typically means:")
+            results["errors"].append("1. Network connectivity issues to Azure services")
+            results["errors"].append("2. Firewall rules blocking outbound connections")
     
     return results
 
@@ -164,7 +193,22 @@ def check_azure_sql():
         
     except Exception as e:
         results["status"] = "Failed"
-        results["errors"].append(f"SQL connection error: {str(e)}")
+        error_message = str(e)
+        results["errors"].append(f"SQL connection error: {error_message}")
+        
+        # Provide more detailed information for common SQL errors
+        if "18456" in error_message:  # Login failed error
+            results["errors"].append("SQL Error 18456: Login failed for user. This typically means either:")
+            results["errors"].append("1. The username or password is incorrect")
+            results["errors"].append("2. The user doesn't have permission to access this database")
+            results["errors"].append("3. The user account is disabled or locked")
+            results["errors"].append("4. The database server may be rejecting connections from this IP address")
+            
+        if "timeout" in error_message.lower():
+            results["errors"].append("Connection timeout. This typically means either:")
+            results["errors"].append("1. The database server is unreachable (network issues)")
+            results["errors"].append("2. The server is rejecting connections due to firewall settings")
+            results["errors"].append("3. The server may be under heavy load or experiencing issues")
     
     return results
 
