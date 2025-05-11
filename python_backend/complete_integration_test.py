@@ -401,14 +401,14 @@ def store_in_sql_database(fileid, blob_name, transcription_result):
                     @start_time = %s,
                     @end_time = %s
                     """, (
-                            fileid,
-                            paragraph_id,
-                            sent_idx,
-                            sentence.strip() + '.',
-                            sent_start,
-                            sent_end
-                        ))
-                        sent_count += 1
+                        fileid,
+                        paragraph_id,
+                        sent_idx,
+                        sentence.strip() + '.',
+                        sent_start,
+                        sent_end
+                    ))
+                    sent_count += 1
         except Exception as e:
             logger.error(f"Error processing paragraphs/sentences: {str(e)}")
             # Continue with the rest of the function, don't throw exception
