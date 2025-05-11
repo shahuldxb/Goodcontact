@@ -33,9 +33,15 @@ logger = logging.getLogger(__name__)
 # Azure Storage imports
 try:
     from azure.storage.blob import BlobServiceClient, BlobClient
-    from azure.identity import DefaultAzureCredential
+    from azure.identity import DefaultAzureCredential, EnvironmentCredential
 except ImportError:
     logger.warning("Azure Storage libraries not installed. Install with: pip install azure-storage-blob azure-identity")
+    # Define dummy classes for graceful degradation if imports fail
+    class BlobServiceClient:
+        @classmethod
+        def from_connection_string(cls, *args, **kwargs):
+            logger.error("BlobServiceClient could not be imported. Please install azure-storage-blob")
+            raise ImportError("BlobServiceClient not available")
 
 def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True, container_name="shahulin"):
     """
@@ -192,11 +198,15 @@ def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True
         finally:
             # Clean up the temporary file
             try:
-                if local_path.exists():
-                    local_path.unlink()
+                if os.path.exists(local_path):
+                    os.remove(local_path)
                     logger.debug(f"Removed temporary file {local_path}")
+                # Also try to clean up the temp directory if it's empty
+                if os.path.exists(temp_dir) and not os.listdir(temp_dir):
+                    os.rmdir(temp_dir)
+                    logger.debug(f"Removed temporary directory {temp_dir}")
             except Exception as cleanup_error:
-                logger.warning(f"Error cleaning up temporary file: {str(cleanup_error)}")
+                logger.warning(f"Error cleaning up temporary file/directory: {str(cleanup_error)}")
     
     except Exception as e:
         # Handle Azure Storage exceptions
