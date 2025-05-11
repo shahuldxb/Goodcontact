@@ -103,12 +103,30 @@ def process_file():
                 if not valid_format:
                     logger.warning(f"Proceeding with potentially invalid file format for {filename}")
             
-            # Process with Deepgram
-            # process_audio_file is already async inside deepgram_service
-            import asyncio
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            # Choose processing method based on configuration
+            transcription_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
+            
+            if transcription_method == "direct":
+                # Use the direct REST API implementation
+                try:
+                    from azure_deepgram_transcribe import process_audio_file as direct_process_audio
+                    logger.info(f"Using direct Deepgram REST API implementation for {filename}")
+                    result = direct_process_audio(filename, fileid)
+                except Exception as e:
+                    logger.error(f"Error using direct API implementation: {str(e)}")
+                    # Fall back to regular implementation
+                    logger.info(f"Falling back to standard implementation")
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            else:
+                # Use the standard implementation (SDK or REST API)
+                logger.info(f"Using standard implementation ({transcription_method}) for {filename}")
+                import asyncio
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
             
             # Extract important details for logging
             transcript_length = 0
@@ -240,7 +258,7 @@ def setup_stored_procedures():
 
 @app.route('/config/transcription-method', methods=['GET', 'POST'])
 def configure_transcription_method():
-    """Get or set the transcription method (SDK or REST API)"""
+    """Get or set the transcription method (SDK, REST API or direct)"""
     try:
         # Check current setting
         current_method = os.environ.get("DEEPGRAM_TRANSCRIPTION_METHOD", "rest_api")
@@ -251,8 +269,8 @@ def configure_transcription_method():
             new_method = data.get('method', '').lower()
             
             # Validate the method
-            if new_method not in ['sdk', 'rest_api']:
-                return jsonify({"error": "Invalid transcription method. Use 'sdk' or 'rest_api'"}), 400
+            if new_method not in ['sdk', 'rest_api', 'direct']:
+                return jsonify({"error": "Invalid transcription method. Use 'sdk', 'rest_api', or 'direct'"}), 400
             
             # Update the environment variable
             os.environ["DEEPGRAM_TRANSCRIPTION_METHOD"] = new_method
@@ -269,7 +287,7 @@ def configure_transcription_method():
         else:
             return jsonify({
                 "current_method": current_method,
-                "available_methods": ["sdk", "rest_api"]
+                "available_methods": ["sdk", "rest_api", "direct"]
             })
             
     except Exception as e:

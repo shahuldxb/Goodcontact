@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""
+Transcribe Audio File using Deepgram's API
+
+A simple script to transcribe audio files using Deepgram's REST API directly.
+This script demonstrates the speaker diarization functionality to identify
+different speakers in an audio recording.
+
+Usage:
+    python transcribe_audio.py path/to/your/audio_file.wav
+
+Requirements:
+    - Python 3.6+
+    - requests library
+    - An environment variable DEEPGRAM_API_KEY with your Deepgram API key
+"""
+
+import os
+import sys
+import requests
+import argparse
+from datetime import datetime
+
+def parse_arguments():
+    """Parse command line arguments"""
+    parser = argparse.ArgumentParser(
+        description="Transcribe audio files using Deepgram API with speaker diarization"
+    )
+    parser.add_argument(
+        "audio_file", 
+        help="Path to the audio file to transcribe"
+    )
+    parser.add_argument(
+        "--model", 
+        default="nova-2",
+        help="Deepgram model to use for transcription (default: nova-2)"
+    )
+    parser.add_argument(
+        "--no-diarize", 
+        action="store_true", 
+        help="Disable speaker diarization"
+    )
+    parser.add_argument(
+        "--output", 
+        help="Path to save the transcription result (optional)"
+    )
+    return parser.parse_args()
+
+def transcribe_audio_file(file_path, api_key, model="nova-2", diarize=True):
+    """
+    Transcribe an audio file using Deepgram API
+    
+    Args:
+        file_path: Path to the audio file
+        api_key: Deepgram API key
+        model: Deepgram model to use
+        diarize: Whether to enable speaker diarization
+        
+    Returns:
+        dict: Result of the transcription
+    """
+    # Determine file type from extension
+    file_type = file_path.split('.')[-1].lower()
+    
+    # Configure API parameters
+    api_url = "https://api.deepgram.com/v1/listen"
+    params = {
+        "model": model,
+        "smart_format": "true",
+        "punctuate": "true"
+    }
+    
+    # Add diarization if requested
+    if diarize:
+        params["diarize"] = "true"
+    
+    # Set up headers with API key
+    headers = {
+        "Authorization": f"Token {api_key}",
+        "Content-Type": f"audio/{file_type}"
+    }
+    
+    print(f"Transcribing {file_path} using Deepgram API...")
+    print(f"Model: {model}, Speaker Diarization: {'Enabled' if diarize else 'Disabled'}")
+    
+    try:
+        # Read the audio file
+        with open(file_path, 'rb') as audio_file:
+            audio_data = audio_file.read()
+        
+        # Send the request to Deepgram
+        print("Sending audio to Deepgram, please wait...")
+        response = requests.post(api_url, params=params, headers=headers, data=audio_data)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            print("Transcription successful!")
+            response_data = response.json()
+            
+            # Extract basic transcript
+            basic_transcript = ""
+            if 'results' in response_data and 'channels' in response_data['results']:
+                basic_transcript = response_data['results']['channels'][0]['alternatives'][0]['transcript']
+            
+            # Process speaker information
+            has_speakers = False
+            speaker_transcript = ""
+            
+            # Try to extract utterances with speaker info first
+            if diarize and 'results' in response_data and 'utterances' in response_data['results']:
+                has_speakers = True
+                utterances = response_data['results']['utterances']
+                
+                for utterance in utterances:
+                    if 'speaker' in utterance and 'text' in utterance:
+                        speaker = utterance['speaker']
+                        text = utterance['text']
+                        speaker_transcript += f"Speaker {speaker}: {text}\n\n"
+            
+            # If no utterances but paragraphs with speaker info are available
+            elif diarize and 'results' in response_data and 'paragraphs' in response_data['results'] and 'paragraphs' in response_data['results']['paragraphs']:
+                has_speakers = True
+                paragraphs = response_data['results']['paragraphs']['paragraphs']
+                
+                current_speaker = None
+                for paragraph in paragraphs:
+                    if 'speaker' in paragraph:
+                        speaker_num = paragraph.get('speaker', 0)
+                        
+                        # Add speaker change
+                        if current_speaker != speaker_num:
+                            current_speaker = speaker_num
+                            if speaker_transcript:
+                                speaker_transcript += "\n\n"
+                            speaker_transcript += f"Speaker {speaker_num}: "
+                        
+                        # Add paragraph text
+                        if 'text' in paragraph:
+                            speaker_transcript += paragraph['text'] + " "
+            
+            return {
+                'success': True,
+                'has_speakers': has_speakers,
+                'basic_transcript': basic_transcript,
+                'speaker_transcript': speaker_transcript.strip() if has_speakers else None
+            }
+        else:
+            print(f"Error: Deepgram API returned status code {response.status_code}")
+            print(f"Error details: {response.text}")
+            return {
+                'success': False,
+                'error': f"API Error: {response.status_code} - {response.text}"
+            }
+    
+    except FileNotFoundError:
+        return {
+            'success': False,
+            'error': f"File not found: {file_path}"
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f"Error: {str(e)}"
+        }
+
+def main():
+    """Main function"""
+    args = parse_arguments()
+    
+    # Get API key from environment
+    api_key = os.environ.get('DEEPGRAM_API_KEY')
+    if not api_key:
+        print("Error: DEEPGRAM_API_KEY environment variable not set.")
+        print("Please set your Deepgram API key in the environment variables.")
+        sys.exit(1)
+    
+    # Check if file exists
+    if not os.path.exists(args.audio_file):
+        print(f"Error: File not found: {args.audio_file}")
+        sys.exit(1)
+    
+    # Perform transcription
+    result = transcribe_audio_file(
+        args.audio_file,
+        api_key,
+        model=args.model,
+        diarize=not args.no_diarize
+    )
+    
+    if result['success']:
+        print("\n" + "=" * 50)
+        print("TRANSCRIPTION RESULT")
+        print("=" * 50)
+        
+        if result['has_speakers']:
+            print("\nWith Speaker Diarization:")
+            print("-" * 25)
+            print(result['speaker_transcript'])
+        else:
+            print("\nBasic Transcript:")
+            print("-" * 25)
+            print(result['basic_transcript'])
+        
+        # Save to file if requested
+        if args.output:
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            output_file = args.output if args.output else f"transcription_{timestamp}.txt"
+            
+            with open(output_file, 'w') as f:
+                f.write("TRANSCRIPTION RESULT\n")
+                f.write("=" * 50 + "\n\n")
+                
+                if result['has_speakers']:
+                    f.write("With Speaker Diarization:\n")
+                    f.write("-" * 25 + "\n")
+                    f.write(result['speaker_transcript'] + "\n")
+                else:
+                    f.write("Basic Transcript:\n")
+                    f.write("-" * 25 + "\n")
+                    f.write(result['basic_transcript'] + "\n")
+            
+            print(f"\nTranscription saved to: {output_file}")
+    else:
+        print(f"\nTranscription failed: {result['error']}")
+
+if __name__ == '__main__':
+    main()
