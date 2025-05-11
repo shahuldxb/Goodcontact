@@ -28,19 +28,11 @@ def test_direct_transcription(blob_name="call_center_sample.mp3", container_name
     """
     logger.info(f"Testing direct transcription of blob: {blob_name} from container: {container_name}")
     
-    # Set up Azure Storage credentials
-    # These values are from the provided file
-    # Build a proper connection string
-    account_url = "https://infolder.blob.core.windows.net"
-    account_key = "NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw=="
+    # Set up Azure Storage credentials using the provided connection string
+    azure_connection_string = "DefaultEndpointsProtocol=https;AccountName=infolder;AccountKey=NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw==;EndpointSuffix=core.windows.net"
     
-    # Set individual environment variables
-    os.environ['AZURE_STORAGE_ACCOUNT_URL'] = account_url
-    os.environ['AZURE_STORAGE_ACCOUNT_KEY'] = account_key
-    
-    # Also set the full connection string (which seems to be preferred)
-    connection_string = f"DefaultEndpointsProtocol=https;AccountName=infolder;AccountKey={account_key};EndpointSuffix=core.windows.net;BlobEndpoint={account_url}/"
-    os.environ['AZURE_STORAGE_CONNECTION_STRING'] = connection_string
+    # Set environment variables
+    os.environ['AZURE_STORAGE_CONNECTION_STRING'] = azure_connection_string
     
     logger.info("Set Azure Storage environment variables with connection string")
     
@@ -84,7 +76,8 @@ def test_direct_transcription(blob_name="call_center_sample.mp3", container_name
 def main():
     """Command-line interface"""
     # Get blob name from command line if provided
-    blob_name = sys.argv[1] if len(sys.argv) > 1 else "agricultural_finance_(murabaha)_neutral.mp3"
+    # Default to a file we know exists in the shahulin container
+    blob_name = sys.argv[1] if len(sys.argv) > 1 else "agricultural_finance_(murabaha)_normal.mp3"
     
     # Print a header with timestamp
     print(f"\n===== DIRECT TRANSCRIPTION TEST - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} =====")

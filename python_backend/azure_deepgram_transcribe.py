@@ -69,26 +69,47 @@ def transcribe_azure_audio(blob_name, api_key=None, model="nova-2", diarize=True
         # Try multiple ways to get the connection string
         connect_str = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
         
-        # If not found, try to build it from account name and key
+        # If not found, try to build it from account URL and key (preferred)
         if not connect_str:
-            account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
-            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
             account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
+            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
             
             if account_url and account_key:
-                # Use the account URL and key directly
-                logger.info(f"Using AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
-            elif account_name and account_key:
-                # Build connection string from account name and key
+                # Extract account name from the URL
+                account_name = account_url.replace('https://', '').split('.')[0]
+                # Build connection string from URL-derived account name and key
                 connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
-                logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
+                logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
             else:
-                logger.error("Azure Storage connection information not found")
-                return {"error": "Azure Storage connection information not provided"}
+                # If no URL available, try traditional account name and key
+                account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
+                if account_name and account_key:
+                    # Build connection string from explicit account name and key
+                    connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+                    logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
+                else:
+                    logger.error("Azure Storage connection information not found")
+                    return {"error": {"message": "Azure Storage connection information not provided"}}
         
         # Create a BlobServiceClient
         if connect_str:
-            blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+            try:
+                logger.info("Using connection string to create BlobServiceClient")
+                blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+            except Exception as e:
+                logger.error(f"Failed to create BlobServiceClient from connection string: {str(e)}")
+                # Fallback to creating BlobServiceClient directly with URL and key if available
+                account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
+                account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
+                if account_url and account_key:
+                    logger.info("Fallback: Creating BlobServiceClient directly with URL and key")
+                    try:
+                        blob_service_client = BlobServiceClient(account_url=account_url, credential=account_key)
+                    except Exception as inner_e:
+                        logger.error(f"Failed to create BlobServiceClient with URL and key: {str(inner_e)}")
+                        raise ValueError("Could not create Azure Storage client with any available methods")
+                else:
+                    raise ValueError("Failed to create Azure Storage client and no fallback options available")
         else:
             raise ValueError("No valid Azure Storage connection information available")
         
@@ -277,19 +298,24 @@ def process_audio_file(blob_name, fileid=None, output_container="shahulout"):
         # Try multiple ways to get the connection string
         connect_str = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
         
-        # If not found, try to build it from account name and key
+        # If not found, try to build it from account URL and key (preferred)
         if not connect_str:
-            account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
-            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
             account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
+            account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
             
             if account_url and account_key:
-                # Use the account URL and key directly
-                logger.info(f"Using AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
-            elif account_name and account_key:
-                # Build connection string from account name and key
+                # Extract account name from the URL
+                account_name = account_url.replace('https://', '').split('.')[0]
+                # Build connection string from URL-derived account name and key
                 connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
-                logger.info(f"Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
+                logger.info(f"Process audio: Built connection string from AZURE_STORAGE_ACCOUNT_URL and AZURE_STORAGE_ACCOUNT_KEY")
+            else:
+                # If no URL available, try traditional account name and key
+                account_name = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME')
+                if account_name and account_key:
+                    # Build connection string from explicit account name and key
+                    connect_str = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+                    logger.info(f"Process audio: Built connection string from AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY")
         
         if not connect_str:
             logger.warning("No Azure connection string available, skipping file copy")
