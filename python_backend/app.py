@@ -27,6 +27,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Global variable to store direct transcription results
+direct_transcription_results = {}
+
 # Initialize services
 try:
     deepgram_service = DeepgramService()
@@ -312,14 +315,25 @@ def configure_transcription_method():
 def get_direct_transcriptions():
     """Get the raw results from test_direct_transcription calls"""
     try:
-        # Import the dictionary from the module
-        from transcription_methods import direct_transcription_results
+        # Get stored direct transcription results
+        global direct_transcription_results
+        results = {}
         
+        # Since the Workflow was restarted, let's process a file directly to get a result
+        if request.args.get('test_file'):
+            filename = request.args.get('test_file')
+            from test_direct_transcription import test_direct_transcription
+            result = test_direct_transcription(blob_name=filename)
+            results[filename] = {
+                'timestamp': datetime.now().isoformat(),
+                'result': result
+            }
+            
         # Return all stored results
         return jsonify({
             "status": "success",
-            "count": len(direct_transcription_results),
-            "results": direct_transcription_results
+            "count": len(results),
+            "results": results
         })
     except Exception as e:
         logger.error(f"Error retrieving direct transcription results: {str(e)}")
