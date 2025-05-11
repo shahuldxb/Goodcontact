@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
 import { 
   PlayCircle, 
   Download, 
   MoreVertical, 
-  Search
+  Search,
+  Copy,
+  CheckCircle
 } from "lucide-react";
 import { formatBytes, formatDate, getFileTypeLabel } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 
 interface SourceFilesGridProps {
   onSelectFiles: (files: string[]) => void;
