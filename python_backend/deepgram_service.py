@@ -1,4 +1,4 @@
-from deepgram import DeepgramClient, PrerecordedOptions
+import requests
 import os
 import json
 import logging
@@ -23,9 +23,9 @@ class DeepgramService:
         # Deepgram API key
         self.deepgram_api_key = os.environ.get("DEEPGRAM_API_KEY", "d6290865c35bddd50928c5d26983769682fca987")
         
-        # Initialize Deepgram client
+        # Initialize API access
         try:
-            self.deepgram = DeepgramClient(self.deepgram_api_key)
+            self.api_url = "https://api.deepgram.com/v1/listen"
             
             # Initialize analysis classes
             self.sentiment_analysis = DgClassSentimentAnalysis(self.deepgram_api_key)
@@ -44,24 +44,51 @@ class DeepgramService:
     async def transcribe_audio(self, audio_file_path):
         """Transcribe audio using Deepgram API"""
         try:
-            with open(audio_file_path, "rb") as audio:
-                source = {"buffer": audio, "mimetype": "audio/mp3"}
-                options = PrerecordedOptions(
-                    punctuate=True,
-                    diarize=True,
-                    detect_language=True,
-                    model="nova-2",
-                    smart_format=True,
-                    summarize=True
+            # Determine file type from extension
+            file_extension = os.path.splitext(audio_file_path)[1].lower().replace('.', '')
+            file_type = file_extension if file_extension in ['mp3', 'wav', 'ogg', 'flac', 'mp4', 'm4a'] else 'mp3'
+            
+            # Set up the API URL with query parameters
+            params = {
+                "model": "nova-2",
+                "smart_format": "true",
+                "diarize": "true",
+                "punctuate": "true",
+                "detect_language": "true",
+                "summarize": "true"
+            }
+            
+            # Set up headers with API key
+            headers = {
+                "Authorization": f"Token {self.deepgram_api_key}",
+                "Content-Type": f"audio/{file_type}"
+            }
+            
+            self.logger.info(f"Sending audio file {audio_file_path} to Deepgram for transcription...")
+            
+            # Read the audio file
+            with open(audio_file_path, 'rb') as audio_file:
+                audio_data = audio_file.read()
+                
+                # Make async request
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: requests.post(self.api_url, params=params, headers=headers, data=audio_data)
                 )
                 
-                self.logger.info(f"Sending audio file {audio_file_path} to Deepgram for transcription...")
-                response = await self.deepgram.listen.prerecorded.transcribe_file(source, options)
+                # Check if the request was successful
+                if response.status_code != 200:
+                    self.logger.error(f"Deepgram API error: {response.status_code}, {response.text}")
+                    raise Exception(f"Deepgram API error: {response.status_code}, {response.text}")
+                
+                # Parse JSON response
+                response_json = response.json()
                 
                 # Log the full response structure
-                self.logger.info(f"Deepgram response structure: {json.dumps(response.to_dict(), indent=2)}")
+                self.logger.info(f"Deepgram response structure: {json.dumps(response_json, indent=2)}")
                 
-                return response
+                return response_json
         except Exception as e:
             self.logger.error(f"Error during transcription: {str(e)}")
             traceback.print_exc()
@@ -80,14 +107,14 @@ class DeepgramService:
             
             # Perform transcription
             transcription_response = await self.transcribe_audio(audio_file_path)
-            transcription_json_str = json.dumps(transcription_response.to_dict())
+            transcription_json_str = json.dumps(transcription_response)
             
             # Extract the transcript text
             transcript_text = ""
-            if transcription_response.results and transcription_response.results.channels:
-                for channel in transcription_response.results.channels:
-                    if channel.alternatives and len(channel.alternatives) > 0:
-                        transcript_text += channel.alternatives[0].transcript
+            if 'results' in transcription_response and 'channels' in transcription_response['results']:
+                for channel in transcription_response['results']['channels']:
+                    if 'alternatives' in channel and len(channel['alternatives']) > 0:
+                        transcript_text += channel['alternatives'][0]['transcript']
             
             self.logger.info(f"Extracted transcript: {transcript_text[:100]}...")
             
