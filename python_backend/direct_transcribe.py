@@ -156,7 +156,31 @@ class DirectTranscribe:
         start_time = time.time()
         
         try:
-            # Generate a SAS URL for the blob
+            # First, check if the blob exists - critical to avoid 404 errors
+            container_client = self.blob_service_client.get_container_client(container_name)
+            blob_client = container_client.get_blob_client(blob_name)
+            
+            # Check if the blob exists
+            if not blob_client.exists():
+                logger.error(f"Blob {blob_name} does not exist in container {container_name}")
+                processing_time = time.time() - start_time
+                return {
+                    "result": None,
+                    "metadata": {
+                        "processing_time": processing_time,
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "source_blob": blob_name,
+                        "source_container": container_name,
+                        "transcription_method": "direct_rest_api"
+                    },
+                    "error": {
+                        "name": "BlobNotFoundError",
+                        "message": f"Blob {blob_name} does not exist in container {container_name}",
+                        "status": 404
+                    }
+                }
+                
+            # Blob exists, now generate a SAS URL for the blob
             audio_url = self.generate_sas_url(container_name, blob_name)
             
             # Set up the Deepgram API endpoint
