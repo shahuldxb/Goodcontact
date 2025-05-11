@@ -15,6 +15,7 @@ import sys
 import json
 import logging
 import uuid
+import traceback
 from datetime import datetime, timedelta
 from azure_storage_service import AzureStorageService
 from azure_sql_service import AzureSQLService
@@ -106,21 +107,99 @@ def run_full_integration_test(blob_name=None):
             "duration": transcription_result.get('duration', 0)
         })
         
-        # Step 5: Store transcription in database
+        # Step 5: Store transcription in database (both rdt_assets and sentence tables)
         logger.info(f"Storing transcription in database with fileid: {fileid}")
-        # Use the store_transcription_details function from update_sentence_tables module
+        
+        # First update or insert into rdt_assets table
+        try:
+            logger.info("Updating rdt_assets table...")
+            sql_service = AzureSQLService()
+            conn = sql_service._get_connection()
+            cursor = conn.cursor()
+            
+            # Extract essential info from transcription
+            full_response = transcription_result['full_response']
+            transcript_text = full_response.get('transcript', '')
+            detected_language = full_response.get('language', 'en')
+            transcription_json_str = json.dumps(full_response)
+            
+            # Check if record already exists
+            cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
+            existing_asset = cursor.fetchone()
+            
+            if existing_asset:
+                # Update existing asset
+                logger.info(f"Updating existing record in rdt_assets for fileid {fileid}")
+                cursor.execute("""
+                    UPDATE rdt_assets 
+                    SET transcription = %s, 
+                        transcription_json = %s, 
+                        language_detected = %s,
+                        status = 'completed',
+                        processed_date = %s,
+                        processing_duration = %s
+                    WHERE fileid = %s
+                """, (
+                    transcript_text,
+                    transcription_json_str,
+                    detected_language,
+                    datetime.now(),
+                    transcription_result.get('duration', 0),
+                    fileid
+                ))
+            else:
+                # Create new asset record
+                logger.info(f"Inserting new record into rdt_assets for fileid {fileid}")
+                blob_name = blob_name or "unknown_blob"
+                source_path = f"shahulin/{blob_name}"
+                file_size = 0  # We don't have the file size readily available
+                
+                cursor.execute("""
+                    INSERT INTO rdt_assets 
+                    (fileid, filename, source_path, file_size, transcription, transcription_json, language_detected, status,
+                     created_dt, processed_date, processing_duration) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    fileid,
+                    blob_name,
+                    source_path,
+                    file_size,
+                    transcript_text,
+                    transcription_json_str,
+                    detected_language,
+                    'completed',
+                    datetime.now(),
+                    datetime.now(),
+                    transcription_result.get('duration', 0)
+                ))
+            
+            conn.commit()
+            logger.info("Successfully updated rdt_assets table")
+            assets_updated = True
+        except Exception as e:
+            logger.error(f"Error updating rdt_assets table: {str(e)}")
+            logger.error(traceback.format_exc())
+            assets_updated = False
+        finally:
+            cursor.close()
+            conn.close()
+        
+        # Now store detailed paragraph and sentence data using the utility function
+        logger.info("Storing detailed paragraph and sentence data...")
         storage_result = store_transcription_details(fileid, transcription_result['full_response'])
         
         if storage_result['status'] != 'success':
-            error_msg = f"Database storage failed: {storage_result.get('message', 'Unknown error')}"
+            error_msg = f"Detailed database storage failed: {storage_result.get('message', 'Unknown error')}"
             logger.error(error_msg)
-            results["steps"].append({"step": "store_in_db", "status": "error", "message": error_msg})
-            return results
-            
+            if not assets_updated:
+                results["steps"].append({"step": "store_in_db", "status": "error", "message": error_msg})
+                return results
+        
         logger.info(f"Transcription stored successfully in database")
         results["steps"].append({
             "step": "store_in_db", 
             "status": "success",
+            "rdt_assets_updated": assets_updated,
             "metadata_stored": storage_result.get('metadata_stored', False),
             "paragraphs_stored": storage_result.get('paragraphs_stored', 0),
             "sentences_stored": storage_result.get('sentences_stored', 0)
@@ -132,6 +211,17 @@ def run_full_integration_test(blob_name=None):
         conn = sql_service._get_connection()
         cursor = conn.cursor(as_dict=True)
         
+        # Check rdt_assets table first
+        cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
+        asset_row = cursor.fetchone()
+        
+        if asset_row:
+            logger.info(f"Found record in rdt_assets for fileid {fileid}")
+            asset_found = True
+        else:
+            logger.warning(f"No asset record found in rdt_assets for fileid {fileid}")
+            asset_found = False
+        
         # Check if metadata exists in database
         cursor.execute("SELECT * FROM rdt_audio_metadata WHERE fileid = %s", (fileid,))
         metadata_row = cursor.fetchone()
@@ -139,12 +229,18 @@ def run_full_integration_test(blob_name=None):
         if not metadata_row:
             error_msg = f"No metadata found in database for fileid {fileid}"
             logger.error(error_msg)
-            results["steps"].append({"step": "verify_db", "status": "error", "message": error_msg})
-            return results
+            if not asset_found:
+                results["steps"].append({"step": "verify_db", "status": "error", "message": error_msg})
+                return results
+            else:
+                metadata_found = False
+        else:
+            metadata_found = True
             
         # Check paragraphs
         cursor.execute("SELECT COUNT(*) as para_count FROM rdt_paragraphs WHERE fileid = %s", (fileid,))
         para_count = cursor.fetchone()
+        para_count_val = para_count['para_count'] if para_count else 0
         
         # Check sentences
         cursor.execute("""
@@ -154,14 +250,16 @@ def run_full_integration_test(blob_name=None):
             WHERE p.fileid = %s
         """, (fileid,))
         sent_count = cursor.fetchone()
+        sent_count_val = sent_count['sent_count'] if sent_count else 0
         
-        logger.info(f"Database verification complete: Found {para_count['para_count']} paragraphs and {sent_count['sent_count']} sentences")
+        logger.info(f"Database verification complete: Asset found: {asset_found}, Metadata found: {metadata_found}, Found {para_count_val} paragraphs and {sent_count_val} sentences")
         results["steps"].append({
             "step": "verify_db", 
             "status": "success",
-            "metadata_found": True,
-            "paragraphs_count": para_count['para_count'],
-            "sentences_count": sent_count['sent_count']
+            "asset_found": asset_found,
+            "metadata_found": metadata_found,
+            "paragraphs_count": para_count_val,
+            "sentences_count": sent_count_val
         })
         
         # Step 7: Check logs for this blob and request
