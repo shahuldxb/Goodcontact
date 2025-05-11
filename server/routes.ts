@@ -284,8 +284,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Debug endpoints
   app.get("/api/debug/direct-transcriptions", createPythonProxyMiddleware('/debug/direct-transcriptions'));
+  app.get("/api/debug/direct-transcription", createPythonProxyMiddleware('/debug/direct-transcription'));
+  app.post("/api/debug/direct-transcription-upload", createPythonProxyMiddleware('/debug/direct-transcription-upload'));
   app.get("/api/debug/direct-test-results", createPythonProxyMiddleware('/debug/direct-test-results'));
-  app.get("/api/debug/direct-test-results/:filename", createPythonProxyMiddleware('/debug/direct-test-results/:filename'));
+  app.get("/api/debug/direct-test-result", createPythonProxyMiddleware('/debug/direct-test-result'));
 
   const httpServer = createServer(app);
   return httpServer;
