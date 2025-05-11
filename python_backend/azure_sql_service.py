@@ -12,7 +12,7 @@ class AzureSQLService:
         # Azure SQL Server configuration
         self.server = os.environ.get("AZURE_SQL_SERVER", "callcenter1.database.windows.net")
         self.database = os.environ.get("AZURE_SQL_DATABASE", "call")
-        self.username = os.environ.get("AZURE_SQL_USERNAME", "shahul")
+        self.username = os.environ.get("AZURE_SQL_USER", "shahul")  # Changed to match Node.js env var name
         self.password = os.environ.get("AZURE_SQL_PASSWORD", "apple123!@#")
         self.port = int(os.environ.get("AZURE_SQL_PORT", "1433"))
         
