@@ -12,16 +12,18 @@ import tempfile
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def generate_speech_like_signal():
+def generate_speech_like_signal(duration=2.0):
     """
     Generate a signal that has speech-like characteristics
     This creates a more complex waveform than a simple sine wave,
     which might be more easily recognized by Deepgram as speech
+    
+    Args:
+        duration (float): Duration of the audio signal in seconds (default: 2)
     """
     # Parameters
     sample_rate = 16000  # Standard speech sample rate
-    duration = 2  # seconds
-    total_samples = sample_rate * duration
+    total_samples = int(sample_rate * duration)
     
     # Generate a frame-by-frame signal with frequency shifts to mimic speech
     signal = np.zeros(total_samples, dtype=np.float32)
@@ -91,16 +93,29 @@ def save_wav(signal, filename, sample_rate=16000):
     logger.info(f"Saved WAV file to {filename} ({os.path.getsize(filename)} bytes)")
     return filename
 
-def create_speech_wav():
-    """Create a WAV file with speech-like content"""
+def create_speech_wav(output_filename=None, duration=2.0):
+    """
+    Create a WAV file with speech-like content
+    
+    Args:
+        output_filename (str): Output filename (default: None, creates a temp file)
+        duration (float): Duration of the audio in seconds (default: 2.0)
+    
+    Returns:
+        str: Path to the created WAV file
+    """
     try:
-        # Create a temp directory for our file
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "speech_test.wav")
+        # Create a temp directory for our file if output_filename is not provided
+        if output_filename is None:
+            temp_dir = tempfile.mkdtemp()
+            output_path = os.path.join(temp_dir, "speech_test.wav")
+        else:
+            # Use the provided output filename
+            output_path = output_filename
         
         # Generate speech-like signal
-        logger.info("Generating speech-like signal...")
-        signal = generate_speech_like_signal()
+        logger.info(f"Generating speech-like signal with duration {duration} seconds...")
+        signal = generate_speech_like_signal(duration=duration)
         
         # Save to WAV file
         logger.info(f"Saving speech signal to {output_path}...")
