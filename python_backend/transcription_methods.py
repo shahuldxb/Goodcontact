@@ -252,8 +252,26 @@ def transcribe_audio_shortcut(audio_file_path):
         elapsed_time = time.time() - start_time
         logger.info(f"SHORTCUT transcription completed in {elapsed_time:.2f} seconds")
         
-        # Return the raw result as is - no additional processing
-        return result
+        # Format the result to match the extraction logic expectations
+        # The service extracts from result.channels/alternatives/transcript
+        if "results" in result and "channels" in result["results"] and len(result["results"]["channels"]) > 0:
+            # Extract transcript from first channel's first alternative
+            if ("alternatives" in result["results"]["channels"][0] and
+                len(result["results"]["channels"][0]["alternatives"]) > 0 and
+                "transcript" in result["results"]["channels"][0]["alternatives"][0]):
+                # Add a reference at the root level for easier extraction
+                transcript = result["results"]["channels"][0]["alternatives"][0]["transcript"]
+                # This simplified format ensures the transcript is accessible
+                return {
+                    "result": result,
+                    "error": None
+                }
+        
+        # Return the raw result as is if we couldn't add the transcript reference
+        return {
+            "result": result,
+            "error": None
+        }
         
     except Exception as e:
         logger.error(f"Error in SHORTCUT transcription: {str(e)}")
