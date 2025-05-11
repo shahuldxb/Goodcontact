@@ -223,33 +223,72 @@ class DeepgramService:
             cursor = conn.cursor()
             
             # Extract the detected language using various paths
-            detected_language = 'en'  # Default fallback to English
+            detected_language = 'unknown'  # Default fallback to unknown
+            language_confidence = 0.0
             language_path = 'default'
             
+            # Parse the nested JSON response
+            if isinstance(transcription_response, dict) and 'result' in transcription_response:
+                result_json = transcription_response['result']
+            else:
+                result_json = transcription_response
+                
             # Try various paths where the language might be found
-            if ('results' in transcription_response and 'channels' in transcription_response['results'] and 
-                transcription_response['results']['channels'] and len(transcription_response['results']['channels']) > 0 and
-                'detected_language' in transcription_response['results']['channels'][0]):
-                detected_language = transcription_response['results']['channels'][0]['detected_language']
-                language_path = 'results.channels[0].detected_language'
-            elif ('results' in transcription_response and 'metadata' in transcription_response['results'] and 
-                'detected_language' in transcription_response['results']['metadata']):
-                detected_language = transcription_response['results']['metadata']['detected_language']
+            if ('results' in result_json and 'channels' in result_json['results'] and 
+                result_json['results']['channels'] and len(result_json['results']['channels']) > 0):
+                channel = result_json['results']['channels'][0]
+                if 'detected_language' in channel:
+                    detected_language = channel['detected_language']
+                    language_path = 'results.channels[0].detected_language'
+                    # Check for language confidence too
+                    if 'language_confidence' in channel:
+                        language_confidence = channel['language_confidence']
+                        self.logger.info(f"Found language confidence: {language_confidence}")
+            elif ('results' in result_json and 'metadata' in result_json['results'] and 
+                'detected_language' in result_json['results']['metadata']):
+                detected_language = result_json['results']['metadata']['detected_language']
                 language_path = 'results.metadata.detected_language'
-            elif ('metadata' in transcription_response and 
-                  'detected_language' in transcription_response['metadata']):
-                detected_language = transcription_response['metadata']['detected_language']
+            elif ('metadata' in result_json and 
+                  'detected_language' in result_json['metadata']):
+                detected_language = result_json['metadata']['detected_language']
                 language_path = 'metadata.detected_language'
-            elif ('results' in transcription_response and 
-                  'language' in transcription_response['results']):
-                detected_language = transcription_response['results']['language']
+            elif ('results' in result_json and 
+                  'language' in result_json['results']):
+                detected_language = result_json['results']['language']
                 language_path = 'results.language'
-            elif 'language' in transcription_response:
-                detected_language = transcription_response['language']
+            elif 'language' in result_json:
+                detected_language = result_json['language']
                 language_path = 'language'
             
             self.logger.info(f"Extracted language: {detected_language} via path: {language_path}")
             
+            # Also directly update rdt_language table
+            cursor.execute("SELECT * FROM rdt_language WHERE fileid = %s", (fileid,))
+            existing_language = cursor.fetchone()
+            
+            if existing_language:
+                cursor.execute("""
+                    UPDATE rdt_language
+                    SET language = %s,
+                        confidence = %s
+                    WHERE fileid = %s
+                """, (
+                    detected_language,
+                    language_confidence,
+                    fileid
+                ))
+            else:
+                cursor.execute("""
+                    INSERT INTO rdt_language
+                    (fileid, language, confidence, status)
+                    VALUES (%s, %s, %s, %s)
+                """, (
+                    fileid,
+                    detected_language,
+                    language_confidence,
+                    'completed'
+                ))
+                
             # Check if asset already exists
             cursor.execute("SELECT * FROM rdt_assets WHERE fileid = %s", (fileid,))
             existing_asset = cursor.fetchone()
