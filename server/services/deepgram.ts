@@ -6,6 +6,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { pipeline } from 'stream/promises';
 import { Readable } from 'stream';
+import { directTranscribe } from './python-proxy';
 
 // DgClassForbiddenPhrases from the attached assets
 export class DgClassForbiddenPhrases {
@@ -523,28 +524,24 @@ export class DeepgramService {
     try {
       console.log(`Processing audio file: ${filename}`);
       
-      // Download from Azure Blob storage to temporary file
-      const tempDir = join(tmpdir(), 'deepgram-processing');
-      if (!existsSync(tempDir)) {
-        mkdirSync(tempDir, { recursive: true });
+      // Generate unique file ID if not provided
+      const fileid = assetFileid || `file_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      
+      // Use direct transcription with REST API instead of SDK
+      console.log(`Using direct transcription with REST API for ${filename}`);
+      const directResult = await directTranscribe(filename, fileid);
+      
+      if (!directResult.success) {
+        console.error(`Direct transcription failed: ${directResult.error}`);
+        throw new Error(`Direct transcription failed: ${directResult.error}`);
       }
       
-      const localFilePath = join(tempDir, filename);
-      const audioData = await downloadBlob(sourceContainerClient, filename);
-      
-      // Save to temp file
-      await writeBufferToFile(audioData, localFilePath);
-      
-      // Perform transcription
-      const transcriptionResponse = await this.transcribeAudio(localFilePath);
+      console.log(`Direct transcription successful for ${filename}`);
       
       // Add extremely detailed debug logging of the full response structure
-      console.log(`FULL DEEPGRAM RESPONSE: ${JSON.stringify(transcriptionResponse)}`);
+      console.log(`FULL DEEPGRAM RESPONSE: ${JSON.stringify(directResult.transcription)}`);
       
-      const transcriptionJsonStr = JSON.stringify(transcriptionResponse);
-      
-      // Generate unique file ID
-      const fileid = assetFileid || `file_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      const transcriptionJsonStr = JSON.stringify(directResult.transcription);
       
       // Import storage to save analysis results to database
       const { storage } = await import('../storage');
@@ -554,12 +551,8 @@ export class DeepgramService {
         // Log the response structure for debugging
         console.log("Deepgram transcription response structure:", 
           JSON.stringify({
-            hasResult: !!transcriptionResponse?.result,
-            hasChannels: !!transcriptionResponse?.result?.channels,
-            channelsLength: transcriptionResponse?.result?.channels?.length,
-            hasAlternatives: !!transcriptionResponse?.result?.channels?.[0]?.alternatives,
-            alternativesLength: transcriptionResponse?.result?.channels?.[0]?.alternatives?.length,
-            hasTranscript: !!transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript
+            hasTranscription: !!directResult.transcription,
+            transcriptLength: directResult.transcript ? directResult.transcript.length : 0
           }));
           
         // Extract transcript using a comprehensive approach with enhanced debugging
