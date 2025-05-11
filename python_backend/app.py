@@ -59,22 +59,62 @@ def process_file():
         temp_dir = tempfile.mkdtemp()
         local_path = os.path.join(temp_dir, filename)
         
-        azure_storage_service.download_blob(filename, local_path)
-        logger.info(f"Downloaded {filename} to {local_path}")
-        
-        # Process with Deepgram
-        result = deepgram_service.process_audio_file(local_path, fileid)
-        logger.info(f"Deepgram processing complete: {result}")
-        
-        # Move to destination container
-        azure_storage_service.copy_blob_to_destination(filename)
-        logger.info(f"Moved {filename} to destination container")
-        
-        # Clean up temporary file
-        if os.path.exists(local_path):
-            os.remove(local_path)
-        
-        return jsonify({"status": "success", "result": result})
+        try:
+            azure_storage_service.download_blob(filename, local_path)
+            logger.info(f"Downloaded {filename} to {local_path}")
+            
+            # Validate audio file
+            file_size = os.path.getsize(local_path)
+            logger.info(f"Audio file size: {file_size} bytes")
+            
+            if file_size == 0:
+                logger.error(f"Audio file is empty: {filename}")
+                return jsonify({"error": f"Audio file is empty: {filename}"}), 400
+                
+            # Log first few bytes to help with debugging
+            with open(local_path, "rb") as f:
+                header = f.read(12)
+                logger.info(f"File header: {header.hex()}")
+                
+                # Check WAV header
+                if header[:4] != b'RIFF' or header[8:12] != b'WAVE':
+                    logger.warning(f"File {filename} does not appear to be a valid WAV file")
+            
+            # Process with Deepgram
+            # process_audio_file is already async inside deepgram_service
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(deepgram_service.process_audio_file(local_path, fileid))
+            
+            # Extract important details for logging
+            transcript_length = 0
+            has_error = False
+            error_message = None
+            
+            if isinstance(result, dict):
+                if "transcription" in result and isinstance(result["transcription"], dict):
+                    if "error" in result["transcription"] and result["transcription"]["error"]:
+                        has_error = True
+                        error_message = result["transcription"]["error"].get("message", "Unknown error")
+                
+            logger.info(f"Deepgram processing complete: {'ERROR: ' + error_message if has_error else 'SUCCESS'}")
+            
+            # Move to destination container
+            azure_storage_service.copy_blob_to_destination(filename)
+            logger.info(f"Moved {filename} to destination container")
+            
+            return jsonify({"status": "success", "result": result})
+            
+        except Exception as e:
+            logger.error(f"Error processing file {filename}: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(local_path):
+                os.remove(local_path)
+                logger.info(f"Cleaned up temporary file: {local_path}")
     
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
