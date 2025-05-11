@@ -324,15 +324,19 @@ def get_direct_transcriptions():
                 "message": "Please provide a test_file parameter"
             }), 400
             
-        # Import the run_test function and use it to get a fresh result
-        from direct_test import run_test
+        # Import the run_test function and the extract_transcript function
+        from direct_test import run_test, extract_transcript
         result = run_test(filename)
+        
+        # Also get the formatted transcript directly
+        formatted_transcript = extract_transcript(result)
         
         # Return formatted results
         return jsonify({
             "status": "success",
             "filename": filename,
             "timestamp": datetime.now().isoformat(),
+            "formatted_transcript": formatted_transcript,
             "result": result
         })
     except Exception as e:

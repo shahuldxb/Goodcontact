@@ -368,8 +368,15 @@ export function DirectTestResults() {
                 ) : selectedResult ? (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="font-semibold mb-2">Transcript</h3>
-                      <div className="p-2 border rounded bg-slate-50 dark:bg-slate-900 max-h-[300px] overflow-y-auto">
+                      <h3 className="font-semibold mb-2">Formatted Transcript</h3>
+                      <div className="p-4 border rounded bg-slate-50 dark:bg-slate-900 max-h-[300px] overflow-y-auto font-mono whitespace-pre-line">
+                        {formattedTranscript || 'No formatted transcript available'}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Raw Transcript</h3>
+                      <div className="p-2 border rounded bg-slate-50 dark:bg-slate-900 max-h-[150px] overflow-y-auto">
                         {selectedResult.result?.transcript || 'No transcript found'}
                       </div>
                     </div>
