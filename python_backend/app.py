@@ -28,7 +28,7 @@ def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
 @app.route('/direct/transcribe', methods=['POST'])
-async def direct_transcribe():
+def direct_transcribe():
     try:
         data = request.json
         
@@ -86,8 +86,8 @@ async def direct_transcribe():
         sas_url = f"https://{account_name}.blob.core.windows.net/{SOURCE_CONTAINER}/{filename}?{sas_token}"
         logger.info(f"Generated SAS URL for {filename} with 240 hour expiry")
         
-        # Transcribe the audio using our DirectTranscribe class
-        result = await transcriber.transcribe_audio(sas_url)
+        # Use run_sync to run the async transcribe method in a sync context
+        result = asyncio.run(transcriber.transcribe_audio(sas_url))
         
         if not result["success"]:
             logger.error(f"Transcription failed: {result['error']['message']}")
@@ -103,7 +103,7 @@ async def direct_transcribe():
             "fileid": fileid,
             "filename": filename,
             "transcript_length": len(result["transcript"]),
-            "result": result["result"],
+            "transcription": result["result"],
             "transcript": result["transcript"]
         }
         

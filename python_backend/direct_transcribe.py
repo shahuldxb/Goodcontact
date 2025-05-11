@@ -36,7 +36,7 @@ class DirectTranscribe:
         self.deepgram_api_key = deepgram_api_key
         self.api_endpoint = "https://api.deepgram.com/v1/listen"
         
-    async def transcribe_audio(self, audio_url: str, **kwargs) -> Dict[str, Any]:
+    def transcribe_audio(self, audio_url: str, **kwargs) -> Dict[str, Any]:
         """
         Transcribe audio using Deepgram REST API with SAS URL
         
