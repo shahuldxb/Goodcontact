@@ -459,15 +459,41 @@ def main():
         fileid = f"test_{uuid.uuid4().hex[:16]}"
         logger.info(f"Using file ID: {fileid}")
         
-        # Download the blob to a temporary file
-        temp_file = download_blob_to_temp_file(blob_sas_url)
-        if not temp_file:
-            logger.error("Failed to download blob to temporary file.")
-            return
-        
         try:
-            # Transcribe the audio file
-            transcription_result = transcribe_audio_file(temp_file)
+            # Initialize the DirectTranscribe class
+            direct_transcriber = DirectTranscribe()
+            
+            # Transcribe the audio file directly from the SAS URL
+            logger.info("Transcribing audio directly from SAS URL (without downloading)")
+            dg_response = direct_transcriber.transcribe_audio(blob_sas_url, DEEPGRAM_API_KEY)
+            
+            # Process the Deepgram response to match the expected format for storage
+            transcription_result = {
+                'success': True,
+                'basic_transcript': "",
+                'speaker_transcript': "",
+                'response_data': dg_response
+            }
+            
+            # Extract the basic transcript
+            if 'results' in dg_response and 'channels' in dg_response['results'] and len(dg_response['results']['channels']) > 0:
+                if 'alternatives' in dg_response['results']['channels'][0] and len(dg_response['results']['channels'][0]['alternatives']) > 0:
+                    transcription_result['basic_transcript'] = dg_response['results']['channels'][0]['alternatives'][0].get('transcript', '')
+            
+            # Extract speaker transcript if diarization is enabled
+            if 'results' in dg_response and 'utterances' in dg_response['results']:
+                utterances = dg_response['results']['utterances']
+                speaker_segments = []
+                
+                for utterance in utterances:
+                    speaker = utterance.get('speaker', 'unknown')
+                    text = utterance.get('transcript', '')
+                    speaker_segments.append(f"Speaker {speaker}: {text}")
+                
+                transcription_result['speaker_transcript'] = "\n".join(speaker_segments)
+            
+            # Log some information about the transcription
+            logger.info(f"Transcription completed. Transcript length: {len(transcription_result['basic_transcript'])}")
             
             # Store the results in the SQL database
             success, storage_result = store_in_sql_database(fileid, blob_name, transcription_result)
@@ -477,11 +503,8 @@ def main():
             else:
                 logger.error(f"Failed to store transcription results: {storage_result}")
         
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-                logger.info(f"Temporary file removed: {temp_file}")
+        except Exception as e:
+            logger.error(f"Error in direct transcription process: {str(e)}")
     
     except Exception as e:
         logger.error(f"Error in main function: {str(e)}")
