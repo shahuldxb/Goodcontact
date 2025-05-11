@@ -133,6 +133,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Process the file with Deepgram
           console.log(`Sending file ${filename} with ID ${fileid} to Deepgram for processing...`);
           const result = await deepgramService.processAudioFile(filename, fileid);
+          
+          // Verify we have a valid result before proceeding
+          if (!result || !result.success) {
+            console.error(`Transcription failed for ${filename}: ${result?.error || 'Unknown error'}`);
+            throw new Error(`Transcription failed: ${result?.error || 'Unknown error'}`);
+          }
+          
           console.log(`RESULT FROM DEEPGRAM PROCESSING: ${JSON.stringify(result, null, 2)}`);
           
           // Debug output for transcription
@@ -145,43 +152,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           } else {
             console.log(`No transcription data available in result: ${JSON.stringify(result)}`);
+            throw new Error('No transcription data available in result');
+          }
+          
+          // Verify transcript exists and is valid
+          const transcript = result.transcript || '';
+          if (!transcript || typeof transcript !== 'string' || transcript.trim().length === 0) {
+            console.error(`Invalid or empty transcript for ${filename}`);
+            throw new Error('Invalid or empty transcript');
           }
           
           // Calculate processing duration
           const processingDuration = Date.now() - processingStartTime;
           
-          // Move the file from source to processed container
-          await moveFileToProcessed(filename);
-          
-          // Update the asset record
-          await storage.updateAsset(fileid, {
-            status: 'completed',
-            processedDate: new Date(),
-            processingDuration: Math.round(processingDuration / 1000), // Convert to seconds
-            // Extract the transcript from the correct structure with more fallback options
-            transcription: 
-              // First try the most common paths based on structure
-              result.transcription?.result?.utterances?.[0]?.transcript ||
-              result.transcription?.result?.channels?.[0]?.alternatives?.[0]?.transcript ||
-              // Try other possible paths (from direct API)
-              result.transcription?.results?.channels?.[0]?.alternatives?.[0]?.transcript ||
-              result.transcription?.results?.utterances?.[0]?.transcript ||
-              // Look at paragraphs if available
-              (result.transcription?.result?.paragraphs?.paragraphs && 
-                result.transcription.result.paragraphs.paragraphs
-                  .map(p => p.text || p.paragraph || "")
-                  .join(' ')) ||
-              // Check if transcription is directly a string
-              (typeof result.transcription === 'string' ? result.transcription : ''),
-            // Save the entire JSON response (stringify + parse to ensure proper serialization)
-            transcriptionJson: JSON.parse(JSON.stringify(result.transcription || {})),
-            // Use 'language' field name to match database column
-            language: 
-              result.transcription?.result?.metadata?.detected_language || 
-              result.transcription?.results?.metadata?.detected_language || 
-              result.languageDetection?.language || 
-              'English'
-          });
+          try {
+            // Update the asset record FIRST, before moving the file
+            await storage.updateAsset(fileid, {
+              status: 'completed',
+              processedDate: new Date(),
+              processingDuration: Math.round(processingDuration / 1000), // Convert to seconds
+              // Use the direct transcript from our DirectTranscribe class
+              transcription: transcript,
+              // Store the full response JSON
+              transcriptionJson: result.transcription,
+              // Use language from metadata if available
+              languageDetected: 
+                result.transcription?.results?.metadata?.detected_language || 
+                'English'
+            });
+            
+            console.log(`Successfully updated asset record in database for ${fileid}`);
+            
+            // Move the file from source to processed container AFTER database update
+            await moveFileToProcessed(filename);
+            console.log(`Successfully moved file ${filename} to processed container`);
+          } catch (dbError) {
+            console.error(`Database error updating asset record: ${dbError}`);
+            throw new Error(`Failed to update database: ${dbError.message}`);
+          }
           
           results.push({ fileid, filename, status: 'success' });
         } catch (error) {

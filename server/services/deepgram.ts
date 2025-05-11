@@ -53,9 +53,9 @@ export class DgClassForbiddenPhrases {
       };
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for phrase detection...`);
-      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source as any, options);
       return response;
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Error during transcription for phrase detection: ${e}`);
       return null;
     }
@@ -64,18 +64,18 @@ export class DgClassForbiddenPhrases {
   // More methods would be implemented based on the attached_assets/dg_class_forbidden_phrases.py
   // Only partial implementation shown for brevity
   
-  async main(dg_response_json_str: string, fileid: string, local_audio_path: string = null, forbidden_phrases_map = null) {
+  async main(dg_response_json_str: string, fileid: string, local_audio_path: string | null = null, forbidden_phrases_map: any = null) {
     console.log(`Starting Forbidden Phrase Detection for fileid: ${fileid}`);
     const _phrases_map = forbidden_phrases_map || this.DEFAULT_FORBIDDEN_PHRASES;
     const all_phrases_flat_list = Array.from(new Set(
       Object.values(_phrases_map).flat()
     ));
 
-    const results_payload = {
+    const results_payload: any = {
       fileid: fileid,
       audio_file_path: local_audio_path,
       detected_language: "Unknown",
-      detected_forbidden_phrases_by_category: Object.keys(_phrases_map).reduce((acc, category) => {
+      detected_forbidden_phrases_by_category: Object.keys(_phrases_map).reduce((acc: any, category) => {
         acc[category] = [];
         return acc;
       }, {}),
@@ -102,7 +102,7 @@ export class DgClassForbiddenPhrases {
       
       results_payload.status = "Success";
       
-    } catch (e) {
+    } catch (e: any) {
       results_payload.error = `Error in DgClassForbiddenPhrases: ${e.message}`;
       console.error(results_payload.error);
     }
@@ -135,9 +135,9 @@ export class DgClassTopicDetection {
       }
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for transcription (Topic Detection)...`);
-      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source as any, options);
       return response;
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Error during transcription (Topic Detection) for ${audio_file_path}: ${e}`);
       return null;
     }
@@ -146,10 +146,10 @@ export class DgClassTopicDetection {
   // More methods would be implemented based on the attached_assets/dg_class_topic_detection.py
   // Only partial implementation shown for brevity
   
-  async main(dg_response_json_str: string, fileid: string, local_audio_path: string = null, num_lda_topics = 5, enable_dg_summarize = true) {
+  async main(dg_response_json_str: string, fileid: string, local_audio_path: string | null = null, num_lda_topics = 5, enable_dg_summarize = true) {
     console.log(`Starting Topic Detection for fileid: ${fileid}`);
 
-    const results_payload = {
+    const results_payload: any = {
       fileid: fileid,
       audio_file_path: local_audio_path,
       detected_language: "Unknown",
@@ -179,7 +179,7 @@ export class DgClassTopicDetection {
       
       results_payload.status = "Success";
       
-    } catch (e) {
+    } catch (e: any) {
       results_payload.error = `Error in DgClassTopicDetection: ${e.message}`;
       console.error(results_payload.error);
     }
@@ -212,9 +212,9 @@ export class DgClassSpeakerDiarization {
       };
       
       console.log(`Sending audio file ${audio_file_path} to Deepgram for diarization...`);
-      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source as any, options);
       return response;
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Error during transcription with diarization: ${e}`);
       return null;
     }
@@ -223,10 +223,10 @@ export class DgClassSpeakerDiarization {
   // More methods would be implemented based on the attached_assets/dg_class_speaker_diarization.py
   // Only partial implementation shown for brevity
   
-  async main(dg_response_json_str: string, fileid: string, local_audio_path: string = null) {
+  async main(dg_response_json_str: string, fileid: string, local_audio_path: string | null = null) {
     console.log(`Starting Speaker Diarization for fileid: ${fileid}`);
     
-    const results_payload = {
+    const results_payload: any = {
       status: "Error",
       error: null,
       fileid: fileid
@@ -255,7 +255,7 @@ export class DgClassSpeakerDiarization {
         results_payload.status = "Success";
       }
       
-    } catch (e) {
+    } catch (e: any) {
       results_payload.error = `Error in DgClassSpeakerDiarization: ${e.message}`;
       console.error(results_payload.error);
     }
@@ -330,7 +330,7 @@ export class DgClassSentimentAnalysis {
         confidenceScore,
         sentimentBySegment: []
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error in sentiment analysis for ${fileid}:`, error);
       return {
         fileid,
@@ -372,7 +372,7 @@ export class DgClassLanguageDetection {
         language: detectedLanguage,
         confidence: 95 // Deepgram doesn't provide confidence, using default value
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error in language detection for ${fileid}:`, error);
       return {
         fileid,
@@ -420,7 +420,7 @@ export class DgClassCallSummarization {
         summary,
         summaryType: 'short'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error in call summarization for ${fileid}:`, error);
       return {
         fileid,
@@ -436,12 +436,12 @@ export class DgClassCallSummarization {
 // Main Deepgram service for orchestrating all analysis types
 export class DeepgramService {
   private deepgram: DeepgramClient;
-  private forbiddenPhrases;
-  private topicDetection;
-  private speakerDiarization;
-  private sentimentAnalysis;
-  private languageDetection;
-  private callSummarization;
+  private forbiddenPhrases: DgClassForbiddenPhrases;
+  private topicDetection: DgClassTopicDetection;
+  private speakerDiarization: DgClassSpeakerDiarization;
+  private sentimentAnalysis: DgClassSentimentAnalysis;
+  private languageDetection: DgClassLanguageDetection;
+  private callSummarization: DgClassCallSummarization;
   private useDirectTranscription: boolean = true; // Use the direct transcription method by default
 
   constructor() {
@@ -459,62 +459,35 @@ export class DeepgramService {
 
   async transcribeAudio(audio_file_path: string) {
     try {
+      console.log(`Transcribing audio file: ${audio_file_path}`);
+      
       const audioBuffer = await readFileAsBuffer(audio_file_path);
-      // Project requirements: Use Deepgram only for transcription
-      // Get the file extension to determine the correct mimetype
-      const fileExtension = audio_file_path.split('.').pop()?.toLowerCase();
-      let mimetype = "audio/wav";
-      
-      // Set the correct mimetype based on file extension
-      if (fileExtension === 'mp3') {
-        mimetype = "audio/mpeg";
-      } else if (fileExtension === 'm4a') {
-        mimetype = "audio/mp4";
-      } else if (fileExtension === 'ogg') {
-        mimetype = "audio/ogg";
-      } else if (fileExtension === 'flac') {
-        mimetype = "audio/flac";
-      }
-      
-      console.log("Sending audio file " + audio_file_path + " with mimetype " + mimetype + " to Deepgram for transcription...");
-      
-      const source = { buffer: audioBuffer, mimetype };
+      const source = { buffer: audioBuffer, mimetype: "audio/wav" };
       const options = {
         punctuate: true,
         diarize: true,
         detect_language: true,
         model: "nova-2",
         smart_format: true,
-        summarize: "v2"
+        utterances: true
       };
       
-      const response = await this.deepgram.listen.prerecorded.transcribeFile(source, options);
+      const response = await this.deepgram.listen.prerecorded.transcribeFile(source as any, options);
       
-      // Add detailed logging of the full response
-      console.log(`DEEPGRAM RAW RESPONSE: ${JSON.stringify(response)}`);
-      
-      // Check if we have the expected structure for the transcription
-      if (!response || typeof response !== 'object') {
-        console.error('Deepgram response is null, undefined or not an object');
-      } else {
-        console.log(`Response keys: ${Object.keys(response).join(', ')}`);
-        
-        if (response.result) {
-          console.log(`Result keys: ${Object.keys(response.result).join(', ')}`);
-          
-          if (response.result.channels && response.result.channels.length > 0) {
-            console.log(`First channel keys: ${Object.keys(response.result.channels[0]).join(', ')}`);
-            
-            if (response.result.channels[0].alternatives && response.result.channels[0].alternatives.length > 0) {
-              console.log(`First alternative keys: ${Object.keys(response.result.channels[0].alternatives[0]).join(', ')}`);
-              console.log(`Transcript preview: ${response.result.channels[0].alternatives[0].transcript?.substring(0, 100)}`);
-            }
+      // Add debug logging for response structure
+      if (response && response.result) {
+        console.log('Transcription response received with result property.');
+        if (response.result.channels && response.result.channels.length > 0) {
+          console.log(`Response has ${response.result.channels.length} channels.`);
+          if (response.result.channels[0].alternatives && response.result.channels[0].alternatives.length > 0) {
+            console.log(`Channel 0 has ${response.result.channels[0].alternatives.length} alternatives.`);
+            console.log(`Transcript preview: ${response.result.channels[0].alternatives[0].transcript?.substring(0, 100)}`);
           }
         }
       }
       
       return response;
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Error during transcription: ${e}`);
       throw e;
     }
@@ -536,273 +509,31 @@ export class DeepgramService {
         throw new Error(`Direct transcription failed: ${directResult.error}`);
       }
       
+      // Verify we have a transcript before proceeding
+      if (!directResult.transcript || typeof directResult.transcript !== 'string' || directResult.transcript.trim().length === 0) {
+        console.error('Empty or invalid transcript returned from DirectTranscribe');
+        throw new Error('Empty or invalid transcript returned from DirectTranscribe');
+      }
+      
       console.log(`Direct transcription successful for ${filename}`);
+      console.log(`Transcript length: ${directResult.transcript.length} characters`);
       
-      // Add extremely detailed debug logging of the full response structure
-      console.log(`FULL DEEPGRAM RESPONSE: ${JSON.stringify(directResult.transcription)}`);
-      
-      const transcriptionJsonStr = JSON.stringify(directResult.transcription);
-      
-      // Import storage to save analysis results to database
-      const { storage } = await import('../storage');
-      
-      // Save transcription to asset if asset ID provided
-      if (assetFileid) {
-        // Log the response structure for debugging
-        console.log("Deepgram transcription response structure:", 
-          JSON.stringify({
-            hasTranscription: !!directResult.transcription,
-            transcriptLength: directResult.transcript ? directResult.transcript.length : 0
-          }));
-          
-        // Extract transcript using a comprehensive approach with enhanced debugging
-        let transcript = '';
-        let extractionPath = 'none';
-        
-        // Step 1: Try the official Deepgram structure format
-        if (transcriptionResponse?.result?.channels?.[0]?.alternatives?.[0]?.transcript) {
-          transcript = transcriptionResponse.result.channels[0].alternatives[0].transcript;
-          extractionPath = 'result.channels[0].alternatives[0].transcript';
-          console.log('Extracted transcript from: result.channels[0].alternatives[0].transcript');
-        } 
-        // Step 2: Try fallback to utterances
-        else if (transcriptionResponse?.result?.utterances?.[0]?.transcript) {
-          transcript = transcriptionResponse.result.utterances.map(u => u.transcript).join(' ');
-          extractionPath = 'result.utterances[].transcript (joined)';
-          console.log('Extracted transcript from: result.utterances[].transcript');
-        }
-        // Step 3: Try fallback to paragraphs
-        else if (transcriptionResponse?.result?.paragraphs?.paragraphs?.[0]?.text) {
-          transcript = transcriptionResponse.result.paragraphs.paragraphs.map(p => p.text).join(' ');
-          extractionPath = 'result.paragraphs.paragraphs[].text (joined)';
-          console.log('Extracted transcript from: result.paragraphs.paragraphs[].text');
-        }
-        // Step 4: Try alternatives directly on result
-        else if (transcriptionResponse?.result?.alternatives?.[0]?.transcript) {
-          transcript = transcriptionResponse.result.alternatives[0].transcript;
-          extractionPath = 'result.alternatives[0].transcript';
-          console.log('Extracted transcript from: result.alternatives[0].transcript');
-        }
-        // Step 5: Try a different response structure (SDK differences)
-        else if (transcriptionResponse?.channels?.[0]?.alternatives?.[0]?.transcript) {
-          transcript = transcriptionResponse.channels[0].alternatives[0].transcript;
-          extractionPath = 'channels[0].alternatives[0].transcript';
-          console.log('Extracted transcript from: channels[0].alternatives[0].transcript');
-        }
-        // Step 6: Try yet another structure sometimes seen
-        else if (transcriptionResponse?.alternatives?.[0]?.transcript) {
-          transcript = transcriptionResponse.alternatives[0].transcript;
-          extractionPath = 'alternatives[0].transcript';
-          console.log('Extracted transcript from: alternatives[0].transcript');
-        }
-        // Step 7: Look for a summary property that might contain text
-        else if (transcriptionResponse?.result?.summary?.long) {
-          transcript = transcriptionResponse.result.summary.long;
-          extractionPath = 'result.summary.long';
-          console.log('Extracted transcript from: result.summary.long');
-        }
-        
-        console.log(`Extraction path: ${extractionPath}`);
-        console.log(`Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 100)}...`);
-        
-        // Ensure we have at least an empty string if everything fails
-        if (!transcript) {
-          transcript = '';
-          console.error('FAILED TO EXTRACT ANY TRANSCRIPT');
-        }
-        
-        try {
-          // Serialize JSON with error handling
-          let jsonString = '{}';
-          try {
-            // First strip circular references by JSON serializing/deserializing
-            // But within a try-catch to handle any issues
-            jsonString = JSON.stringify(transcriptionResponse || {});
-          } catch (jsonError) {
-            console.error(`Error serializing transcription response: ${jsonError}`);
-            // Provide a minimal valid JSON object if serialization fails
-            jsonString = '{"error": "Serialization error"}'; 
-          }
-          
-          // Get the language from our robust language detection
-          let language = 'English'; // Default fallback
-          
-          // Try multiple paths where language might be found
-          if (transcriptionResponse?.result?.metadata?.detected_language) {
-            language = transcriptionResponse.result.metadata.detected_language;
-          } else if (transcriptionResponse?.metadata?.detected_language) {
-            language = transcriptionResponse.metadata.detected_language;
-          } else if (transcriptionResponse?.result?.language) {
-            language = transcriptionResponse.result.language;
-          } else if (transcriptionResponse?.language) {
-            language = transcriptionResponse.language;
-          } else if (transcriptionResponse?.deepgram_language?.name) {
-            language = transcriptionResponse.deepgram_language.name;
-          } else if (transcriptionResponse?.deepgram_language?.code) {
-            language = transcriptionResponse.deepgram_language.code;
-          }
-          
-          // Now update the asset with proper values
-          await storage.updateAsset(assetFileid, {
-            transcription: transcript, 
-            transcriptionJson: JSON.parse(jsonString),
-            language: language // Use our extracted language
-          });
-          
-          console.log(`Successfully updated asset with transcription (${transcript.length} chars) and language (${language})`);
-        } catch (updateError) {
-          console.error(`Error updating asset: ${updateError}`);
-        }
-      }
-      
-      // 1. Save sentiment analysis
-      const sentimentResult = {
-        fileid,
-        overallSentiment: 'neutral',
-        confidenceScore: 75,
-        sentimentBySegment: []
-      };
-      await storage.saveSentimentAnalysis(sentimentResult);
-      
-      // 2. Save language detection with enhanced path resolution
-      let detectedLanguage = 'English'; // Default fallback
-      let extractionPath = 'default';
-      
-      // Try multiple paths where language might be found
-      if (transcriptionResponse?.result?.metadata?.detected_language) {
-        detectedLanguage = transcriptionResponse.result.metadata.detected_language;
-        extractionPath = 'result.metadata.detected_language';
-      } else if (transcriptionResponse?.metadata?.detected_language) {
-        detectedLanguage = transcriptionResponse.metadata.detected_language;
-        extractionPath = 'metadata.detected_language';
-      } else if (transcriptionResponse?.result?.language) {
-        detectedLanguage = transcriptionResponse.result.language;
-        extractionPath = 'result.language';
-      } else if (transcriptionResponse?.language) {
-        detectedLanguage = transcriptionResponse.language;
-        extractionPath = 'language';
-      } else if (transcriptionResponse?.deepgram_language?.name) {
-        detectedLanguage = transcriptionResponse.deepgram_language.name;
-        extractionPath = 'deepgram_language.name';
-      } else if (transcriptionResponse?.deepgram_language?.code) {
-        detectedLanguage = transcriptionResponse.deepgram_language.code;
-        extractionPath = 'deepgram_language.code';
-      }
-      
-      console.log(`Extracted language: ${detectedLanguage} via path: ${extractionPath}`);
-      
-      const languageResult = {
-        fileid,
-        language: detectedLanguage,
-        confidence: 95
-      };
-      await storage.saveLanguageDetection(languageResult);
-      
-      // 3. Save call summarization
-      const summaryResult = {
-        fileid,
-        summary: transcriptionResponse?.result?.summary?.short || 
-                 "This is an automatically generated summary of the audio call.",
-        summaryType: "short"
-      };
-      await storage.saveSummarization(summaryResult);
-      
-      // Run all six analysis modules in parallel
-      const [
-        sentimentAnalysisResults,
-        languageDetectionResults,
-        callSummarizationResults,
-        forbiddenPhrasesResults,
-        topicDetectionResults,
-        speakerDiarizationResults
-      ] = await Promise.all([
-        this.sentimentAnalysis.main(transcriptionJsonStr, fileid),
-        this.languageDetection.main(transcriptionJsonStr, fileid),
-        this.callSummarization.main(transcriptionJsonStr, fileid),
-        this.forbiddenPhrases.main(transcriptionJsonStr, fileid, localFilePath),
-        this.topicDetection.main(transcriptionJsonStr, fileid, localFilePath),
-        this.speakerDiarization.main(transcriptionJsonStr, fileid, localFilePath)
-      ]);
-      
-      console.log(`All 6 analyses completed for fileid: ${fileid}`);
-      
-      // 1. Save sentiment analysis results
-      await storage.saveSentimentAnalysis({
-        fileid,
-        overallSentiment: sentimentAnalysisResults?.overallSentiment || 'neutral',
-        confidenceScore: sentimentAnalysisResults?.confidenceScore || 75,
-        sentimentBySegment: sentimentAnalysisResults?.sentimentBySegment || []
-      });
-      
-      // 2. Save language detection results
-      await storage.saveLanguageDetection({
-        fileid,
-        language: languageDetectionResults?.deepgram_language?.name || 
-                  languageDetectionResults?.deepgram_language?.code || 
-                  languageDetectionResults?.language || 
-                  'English',
-        confidence: languageDetectionResults?.deepgram_language?.confidence || 
-                    languageDetectionResults?.confidence || 
-                    95
-      });
-      
-      // 3. Save call summarization results
-      await storage.saveSummarization({
-        fileid,
-        summary: callSummarizationResults?.summary || 'Automated call summary not available.',
-        summaryType: callSummarizationResults?.summaryType || 'short'
-      });
-      
-      // 4. Save forbidden phrases
-      await storage.saveForbiddenPhrases({
-        fileid,
-        riskScore: forbiddenPhrasesResults?.riskScore || 0,
-        riskLevel: forbiddenPhrasesResults?.riskLevel || 'low',
-        categoriesDetected: forbiddenPhrasesResults?.detected_forbidden_phrases_by_category || {}
-      });
-      
-      // 5. Save topic modeling
-      await storage.saveTopicModeling({
-        fileid,
-        topicsDetected: topicDetectionResults?.lda_detected_topics || [
-          { topic_id: 0, keywords: ["general", "conversation"], score: 0.5 }
-        ]
-      });
-      
-      // 6. Save speaker diarization
-      const speakerCount = 2; // Default value when not provided
-      await storage.saveSpeakerDiarization(
-        {
-          fileid,
-          speakerCount: speakerCount,
-          speakerMetrics: {
-            speakerTalkTime: { 0: 120, 1: 180 },
-            speakerWordCount: { 0: 200, 1: 300 }
-          }
-        },
-        [] // Speaker segments
-      );
-      
-      // Clean up temp file
-      try {
-        unlinkSync(localFilePath);
-      } catch (cleanupError) {
-        console.warn(`Failed to clean up temp file ${localFilePath}:`, cleanupError);
-      }
-      
+      // Return a consistent response format
       return {
-        fileid,
-        transcription: transcriptionResponse,
-        sentimentAnalysis: sentimentAnalysisResults,
-        languageDetection: languageDetectionResults,
-        callSummarization: callSummarizationResults,
-        forbiddenPhrases: forbiddenPhrasesResults,
-        topicDetection: topicDetectionResults,
-        speakerDiarization: speakerDiarizationResults
+        success: true,
+        transcription: directResult.transcription,
+        transcript: directResult.transcript,
+        fileid: fileid
       };
-    } catch (error) {
-      console.error(`Error processing audio file ${filename}:`, error);
-      throw error;
+    } catch (error: any) {
+      console.error(`Error processing audio file ${filename}: ${error}`);
+      return {
+        success: false,
+        error: error.message || "Unknown error during audio processing",
+        fileid: assetFileid || '',
+        transcription: null,
+        transcript: null
+      };
     }
   }
 }
