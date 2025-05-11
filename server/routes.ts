@@ -126,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
 
           // Process the file with Deepgram
-          const result = await deepgramService.processAudioFile(filename);
+          const result = await deepgramService.processAudioFile(filename, fileid);
           
           // Move the file from source to processed container
           await moveFileToProcessed(filename);
