@@ -17,6 +17,7 @@ import logging
 import uuid
 import json
 import time
+import pymssql
 from datetime import datetime
 
 # Configure logging
@@ -30,11 +31,34 @@ sys.path.append('./python_backend')
 # Try to import required modules
 try:
     from azure_storage_service import AzureStorageService
-    from azure_sql_service import AzureSQLService
     from deepgram_service import DeepgramService
 except Exception as e:
     logger.error(f"Error importing required modules: {e}")
     sys.exit(1)
+
+def connect_to_database():
+    """Connect to the Azure SQL database"""
+    # Connection parameters
+    server = "callcenter1.database.windows.net"
+    database = "call"  # Correct database name from azure_sql_service.py
+    username = "shahul"
+    password = "apple123!@#"
+    
+    try:
+        # Create a connection
+        print("Connecting to database...")
+        conn = pymssql.connect(
+            server=server,
+            database=database,
+            user=username,
+            password=password,
+            as_dict=True
+        )
+        print("Database connection established")
+        return conn
+    except Exception as e:
+        logger.error(f"Database connection error: {str(e)}")
+        raise
 
 def log_sql(query, params=None):
     """Log the SQL query with parameter substitution"""
@@ -66,11 +90,11 @@ async def real_azure_file_test():
     """Test with a real Azure file using the two-phase approach"""
     print("\n===== TESTING WITH REAL AZURE FILE =====")
     
+    conn = None
+    
     try:
-        # Initialize services
+        # Initialize storage service
         storage_service = AzureStorageService()
-        sql_service = AzureSQLService()
-        dg_service = DeepgramService()
         
         # Get the first available file from Azure storage
         print("Fetching files from Azure Storage...")
@@ -112,6 +136,10 @@ async def real_azure_file_test():
         print("Generating SAS URL...")
         sas_url = storage_service.generate_sas_url(container_name, blob_name, expiry_hours=240)
         
+        # Connect to database
+        conn = connect_to_database()
+        cursor = conn.cursor()
+        
         # STEP 1: INSERT with NULL transcription
         print("\n===== STEP 1: INITIAL INSERT WITH NULL TRANSCRIPTION =====")
         insert_sql = """
@@ -146,8 +174,24 @@ async def real_azure_file_test():
         
         # Execute the INSERT
         print("Executing INSERT with NULL transcription...")
-        sql_service.execute_query(insert_sql, insert_params)
-        print("Row inserted with NULL transcription and committed to database")
+        cursor.execute(insert_sql, insert_params)
+        
+        # COMMIT the transaction - this is critical
+        print("Committing the INSERT transaction...")
+        conn.commit()
+        print("Row with NULL transcription committed to database")
+        
+        # Verify the insert
+        verify_sql = "SELECT id, fileid, status, transcription FROM rdt_assets WHERE fileid = %(fileid)s"
+        verify_params = {"fileid": test_fileid}
+        cursor.execute(verify_sql, verify_params)
+        result = cursor.fetchone()
+        
+        if result:
+            print(f"Verified INSERT: ID={result['id']}, FileID={result['fileid']}, Status={result['status']}")
+            print(f"Transcription is NULL: {result['transcription'] is None}")
+        else:
+            print("Failed to verify INSERT")
         
         # STEP 2: Perform the transcription
         print("\n===== STEP 2: TRANSCRIBING AUDIO =====")
@@ -155,8 +199,7 @@ async def real_azure_file_test():
         
         # Transcribe using Deepgram
         try:
-            # Use direct transcription instead of the service layer
-            import json
+            # Use direct transcription 
             from python_backend.direct_transcribe import DirectTranscribe
             
             # Initialize the direct transcription class
@@ -218,18 +261,25 @@ async def real_azure_file_test():
         
         # Execute the UPDATE
         print("Executing UPDATE with transcription data...")
-        sql_service.execute_query(update_sql, update_params)
-        print("Row updated with transcription and committed to database")
+        cursor.execute(update_sql, update_params)
+        
+        # COMMIT the transaction - this is critical
+        print("Committing the UPDATE transaction...")
+        conn.commit()
+        print("Transcription update committed to database")
         
         # STEP 4: Verify the record
         print("\n===== STEP 4: VERIFY RECORD =====")
-        verify_sql = "SELECT id, fileid, status, processed_date FROM rdt_assets WHERE fileid = %(fileid)s"
+        verify_sql = "SELECT id, fileid, status, processed_date, LEFT(transcription, 100) AS transcription_sample FROM rdt_assets WHERE fileid = %(fileid)s"
         verify_params = {"fileid": test_fileid}
         
         # Execute the verification query
-        result = sql_service.execute_query(verify_sql, verify_params)
+        cursor.execute(verify_sql, verify_params)
+        result = cursor.fetchone()
+        
         if result:
-            print(f"Verified record: {result[0]}")
+            print(f"Verified record: ID={result['id']}, FileID={result['fileid']}, Status={result['status']}")
+            print(f"Transcription sample: {result['transcription_sample']}...")
         else:
             print("Record not found - verification failed")
         
@@ -243,6 +293,11 @@ async def real_azure_file_test():
         logger.error(f"Error during test: {e}")
         import traceback
         traceback.print_exc()
+    finally:
+        # Close database connection
+        if conn:
+            conn.close()
+            print("Database connection closed")
 
 if __name__ == "__main__":
     import asyncio
