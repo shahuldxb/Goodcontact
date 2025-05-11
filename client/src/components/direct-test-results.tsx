@@ -9,6 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface TestResultFile {
   filename: string;
@@ -27,15 +29,68 @@ export function DirectTestResults() {
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
   const [testFileName, setTestFileName] = useState("agricultural_leasing_(ijarah)_normal.mp3");
+  const [transcriptionMethod, setTranscriptionMethod] = useState("shortcut");
+  const [currentMethod, setCurrentMethod] = useState("");
   const [resultFiles, setResultFiles] = useState<TestResultFile[]>([]);
   const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
   const [currentTab, setCurrentTab] = useState("run");
+  const [formattedTranscript, setFormattedTranscript] = useState("");
   const { toast } = useToast();
 
-  // Load test result files on component mount
+  // Load test result files and get current transcription method on component mount
   useEffect(() => {
     fetchResultFiles();
+    fetchCurrentMethod();
   }, []);
+  
+  // Fetch the current transcription method
+  const fetchCurrentMethod = async () => {
+    try {
+      const response = await apiRequest('/api/config/transcription-method');
+      setCurrentMethod(response.current_method || "");
+      // Set the state value to match the current setting
+      setTranscriptionMethod(response.current_method || "shortcut");
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to get current transcription method',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Update the transcription method on the server
+  const updateTranscriptionMethod = async (method: string) => {
+    try {
+      const response = await apiRequest('/api/config/transcription-method', {
+        method: 'POST',
+        body: JSON.stringify({ method }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.status === 'success') {
+        setCurrentMethod(response.current_method);
+        toast({
+          title: 'Success',
+          description: `Transcription method set to ${response.current_method}`,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: response.message || 'Failed to update transcription method',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update transcription method',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const fetchResultFiles = async () => {
     setLoading(true);
@@ -71,6 +126,11 @@ export function DirectTestResults() {
       return;
     }
 
+    // Update the transcription method if needed before running the test
+    if (transcriptionMethod !== currentMethod) {
+      await updateTranscriptionMethod(transcriptionMethod);
+    }
+
     setRunning(true);
     try {
       const response = await apiRequest(
@@ -80,8 +140,14 @@ export function DirectTestResults() {
       if (response.status === 'success') {
         toast({
           title: 'Success',
-          description: `Test completed for ${testFileName}`,
+          description: `Test completed for ${testFileName} using ${transcriptionMethod} method`,
         });
+        
+        // Set the formatted transcript if available
+        if (response.formatted_transcript) {
+          setFormattedTranscript(response.formatted_transcript);
+        }
+        
         // Refresh the list of result files
         fetchResultFiles();
         setCurrentTab("results");
@@ -109,6 +175,15 @@ export function DirectTestResults() {
       const response = await apiRequest(`/api/debug/direct-test-results/${filename}`);
       if (response.status === 'success') {
         setSelectedResult(response.result);
+        
+        // Set formatted transcript if available
+        if (response.result?.formatted_transcript) {
+          setFormattedTranscript(response.result.formatted_transcript);
+        } else if (response.result?.transcript) {
+          setFormattedTranscript(response.result.transcript);
+        } else {
+          setFormattedTranscript('No transcript available');
+        }
       } else {
         toast({
           title: 'Error',
@@ -174,6 +249,41 @@ export function DirectTestResults() {
                     onChange={(e) => setTestFileName(e.target.value)}
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label>Transcription Method</Label>
+                  <RadioGroup 
+                    value={transcriptionMethod}
+                    onValueChange={setTranscriptionMethod}
+                    className="flex flex-col space-y-1"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="shortcut" id="shortcut" />
+                      <Label htmlFor="shortcut" className="font-normal">Shortcut (Fastest)</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="direct" id="direct" />
+                      <Label htmlFor="direct" className="font-normal">Direct REST API</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="rest_api" id="rest_api" />
+                      <Label htmlFor="rest_api" className="font-normal">REST API Client</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="sdk" id="sdk" />
+                      <Label htmlFor="sdk" className="font-normal">SDK</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                
+                {currentMethod && (
+                  <Alert className="bg-muted">
+                    <AlertTitle>Current Setting</AlertTitle>
+                    <AlertDescription>
+                      The current transcription method is set to: <span className="font-semibold">{currentMethod}</span>
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </CardContent>
             <CardFooter>
