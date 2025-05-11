@@ -1,0 +1,295 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+
+interface TestResultFile {
+  filename: string;
+  size: number;
+  created: string;
+}
+
+interface TestResult {
+  blob_name: string;
+  timestamp: string;
+  execution_time_seconds: number;
+  result: any;
+}
+
+export function DirectTestResults() {
+  const [loading, setLoading] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [testFileName, setTestFileName] = useState("agricultural_leasing_(ijarah)_normal.mp3");
+  const [resultFiles, setResultFiles] = useState<TestResultFile[]>([]);
+  const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
+  const [currentTab, setCurrentTab] = useState("run");
+  const { toast } = useToast();
+
+  // Load test result files on component mount
+  useEffect(() => {
+    fetchResultFiles();
+  }, []);
+
+  const fetchResultFiles = async () => {
+    setLoading(true);
+    try {
+      const response = await apiRequest('/api/debug/direct-test-results');
+      if (response.status === 'success') {
+        setResultFiles(response.files || []);
+      } else {
+        toast({
+          title: 'Error',
+          description: response.message || 'Failed to load test result files',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load test result files',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runTest = async () => {
+    if (!testFileName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a file name',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setRunning(true);
+    try {
+      const response = await apiRequest(
+        `/api/debug/direct-transcriptions?test_file=${encodeURIComponent(testFileName)}`
+      );
+      
+      if (response.status === 'success') {
+        toast({
+          title: 'Success',
+          description: `Test completed for ${testFileName}`,
+        });
+        // Refresh the list of result files
+        fetchResultFiles();
+        setCurrentTab("results");
+      } else {
+        toast({
+          title: 'Error',
+          description: response.message || 'Test failed',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Test failed',
+        variant: 'destructive',
+      });
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const viewResult = async (filename: string) => {
+    setLoading(true);
+    try {
+      const response = await apiRequest(`/api/debug/direct-test-results/${filename}`);
+      if (response.status === 'success') {
+        setSelectedResult(response.result);
+      } else {
+        toast({
+          title: 'Error',
+          description: response.message || 'Failed to load test result',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load test result',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const formatSize = (bytes: number) => {
+    const kb = bytes / 1024;
+    if (kb < 1024) {
+      return `${kb.toFixed(2)} KB`;
+    }
+    const mb = kb / 1024;
+    return `${mb.toFixed(2)} MB`;
+  };
+
+  return (
+    <div className="container mx-auto py-4">
+      <h1 className="text-2xl font-bold mb-4">Direct Transcription Test Results</h1>
+      
+      <Tabs defaultValue="run" value={currentTab} onValueChange={setCurrentTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="run">Run Test</TabsTrigger>
+          <TabsTrigger value="results">View Results</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="run">
+          <Card>
+            <CardHeader>
+              <CardTitle>Run Direct Transcription Test</CardTitle>
+              <CardDescription>
+                Test the direct transcription function with a file from Azure Blob Storage
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="filename">Blob File Name</Label>
+                  <Input
+                    id="filename"
+                    placeholder="Enter blob file name (e.g., audio_sample.mp3)"
+                    value={testFileName}
+                    onChange={(e) => setTestFileName(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={runTest} disabled={running}>
+                {running ? 'Running Test...' : 'Run Test'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="results">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Left panel: List of result files */}
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Test Results</CardTitle>
+                <CardDescription>
+                  {resultFiles.length} result files found
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ) : resultFiles.length === 0 ? (
+                  <Alert>
+                    <AlertTitle>No Results</AlertTitle>
+                    <AlertDescription>
+                      No test results found. Run a test first.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="space-y-2">
+                    {resultFiles.map((file) => (
+                      <div 
+                        key={file.filename}
+                        className="p-2 border rounded cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                        onClick={() => viewResult(file.filename)}
+                      >
+                        <div className="font-medium truncate">{file.filename}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatSize(file.size)} • {formatDate(file.created)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={fetchResultFiles}
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            {/* Right panel: Result details */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Result Details</CardTitle>
+                {selectedResult && (
+                  <CardDescription>
+                    {selectedResult.blob_name} • {formatDate(selectedResult.timestamp)} • 
+                    {selectedResult.execution_time_seconds.toFixed(2)}s
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ) : selectedResult ? (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Transcript</h3>
+                      <div className="p-2 border rounded bg-slate-50 dark:bg-slate-900 max-h-[300px] overflow-y-auto">
+                        {selectedResult.result?.transcript || 'No transcript found'}
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Raw Response</h3>
+                      <div className="p-2 border rounded bg-slate-50 dark:bg-slate-900 max-h-[300px] overflow-y-auto">
+                        <pre className="text-xs">
+                          {JSON.stringify(selectedResult.result, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Alert>
+                    <AlertTitle>No Result Selected</AlertTitle>
+                    <AlertDescription>
+                      Select a test result from the list to view details.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default DirectTestResults;

@@ -315,28 +315,87 @@ def configure_transcription_method():
 def get_direct_transcriptions():
     """Get the raw results from test_direct_transcription calls"""
     try:
-        # Get stored direct transcription results
-        global direct_transcription_results
-        results = {}
+        # Get test file parameter
+        filename = request.args.get('test_file')
         
-        # Since the Workflow was restarted, let's process a file directly to get a result
-        if request.args.get('test_file'):
-            filename = request.args.get('test_file')
-            from test_direct_transcription import test_direct_transcription
-            result = test_direct_transcription(blob_name=filename)
-            results[filename] = {
-                'timestamp': datetime.now().isoformat(),
-                'result': result
-            }
+        if not filename:
+            return jsonify({
+                "status": "error",
+                "message": "Please provide a test_file parameter"
+            }), 400
             
-        # Return all stored results
+        # Import the run_test function and use it to get a fresh result
+        from direct_test import run_test
+        result = run_test(filename)
+        
+        # Return formatted results
         return jsonify({
             "status": "success",
-            "count": len(results),
-            "results": results
+            "filename": filename,
+            "timestamp": datetime.now().isoformat(),
+            "result": result
         })
     except Exception as e:
         logger.error(f"Error retrieving direct transcription results: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+        
+@app.route('/debug/direct-test-results', methods=['GET'])
+def list_direct_test_results():
+    """List files containing direct transcription test results"""
+    try:
+        # Look for results in the direct_test_results directory
+        from direct_test import OUTPUT_DIR
+        
+        # Create directory if it doesn't exist
+        if not os.path.exists(OUTPUT_DIR):
+            os.makedirs(OUTPUT_DIR)
+            
+        # List all JSON files in the directory
+        result_files = []
+        for filename in os.listdir(OUTPUT_DIR):
+            if filename.endswith('.json'):
+                file_path = os.path.join(OUTPUT_DIR, filename)
+                file_stat = os.stat(file_path)
+                result_files.append({
+                    'filename': filename,
+                    'size': file_stat.st_size,
+                    'created': datetime.fromtimestamp(file_stat.st_ctime).isoformat()
+                })
+                
+        return jsonify({
+            "status": "success",
+            "count": len(result_files),
+            "files": result_files
+        })
+    except Exception as e:
+        logger.error(f"Error listing direct test results: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+        
+@app.route('/debug/direct-test-results/<filename>', methods=['GET'])
+def get_direct_test_result(filename):
+    """Get a specific direct transcription test result file"""
+    try:
+        from direct_test import OUTPUT_DIR
+        file_path = os.path.join(OUTPUT_DIR, filename)
+        
+        if not os.path.exists(file_path):
+            return jsonify({
+                "status": "error",
+                "message": f"File not found: {filename}"
+            }), 404
+            
+        # Read and return the file contents
+        with open(file_path, 'r') as f:
+            result = json.load(f)
+            
+        return jsonify({
+            "status": "success",
+            "filename": filename,
+            "result": result
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving direct test result: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
