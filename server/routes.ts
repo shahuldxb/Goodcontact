@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             // Import our direct database methods
-            const { updateTranscriptionRecord, createAssetRecord, checkRecordExists } = await import('./services/direct-postgres');
+            const { updateTranscriptionRecord, createAssetRecord, checkRecordExists } = await import('./services/direct-sql');
             
             // Check if record exists, if not, create it
             const exists = await checkRecordExists(fileid);
@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             
             if (updated) {
-              console.log(`Successfully updated asset record in PostgreSQL database for ${fileid}`);
+              console.log(`Successfully updated asset record in SQL Server database for ${fileid}`);
               
               // Also update in-memory storage
               await storage.updateAsset(fileid, {
