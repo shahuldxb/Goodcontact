@@ -46,10 +46,11 @@ export function DirectTestResults() {
   // Fetch the current transcription method
   const fetchCurrentMethod = async () => {
     try {
-      const response = await apiRequest('/api/config/transcription-method');
-      setCurrentMethod(response.current_method || "");
+      const response = await fetch('/api/config/transcription-method');
+      const data = await response.json();
+      setCurrentMethod(data.current_method || "");
       // Set the state value to match the current setting
-      setTranscriptionMethod(response.current_method || "shortcut");
+      setTranscriptionMethod(data.current_method || "shortcut");
     } catch (error) {
       toast({
         title: 'Error',
@@ -62,7 +63,7 @@ export function DirectTestResults() {
   // Update the transcription method on the server
   const updateTranscriptionMethod = async (method: string) => {
     try {
-      const response = await apiRequest('/api/config/transcription-method', {
+      const response = await fetch('/api/config/transcription-method', {
         method: 'POST',
         body: JSON.stringify({ method }),
         headers: {
@@ -70,16 +71,17 @@ export function DirectTestResults() {
         },
       });
       
-      if (response.status === 'success') {
-        setCurrentMethod(response.current_method);
+      const data = await response.json();
+      if (data.status === 'success') {
+        setCurrentMethod(data.current_method);
         toast({
           title: 'Success',
-          description: `Transcription method set to ${response.current_method}`,
+          description: `Transcription method set to ${data.current_method}`,
         });
       } else {
         toast({
           title: 'Error',
-          description: response.message || 'Failed to update transcription method',
+          description: data.message || 'Failed to update transcription method',
           variant: 'destructive',
         });
       }
@@ -95,13 +97,15 @@ export function DirectTestResults() {
   const fetchResultFiles = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest('/api/debug/direct-test-results');
-      if (response.status === 'success') {
-        setResultFiles(response.files || []);
+      const response = await fetch('/debug/direct-test-results');
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setResultFiles(data.files || []);
       } else {
         toast({
           title: 'Error',
-          description: response.message || 'Failed to load test result files',
+          description: data.message || 'Failed to load test result files',
           variant: 'destructive',
         });
       }
@@ -133,19 +137,20 @@ export function DirectTestResults() {
 
     setRunning(true);
     try {
-      const response = await apiRequest(
-        `/api/debug/direct-transcriptions?test_file=${encodeURIComponent(testFileName)}`
+      const response = await fetch(
+        `/debug/direct-transcription?test_file=${encodeURIComponent(testFileName)}`
       );
+      const data = await response.json();
       
-      if (response.status === 'success') {
+      if (data.status === 'success') {
         toast({
           title: 'Success',
           description: `Test completed for ${testFileName} using ${transcriptionMethod} method`,
         });
         
         // Set the formatted transcript if available
-        if (response.formatted_transcript) {
-          setFormattedTranscript(response.formatted_transcript);
+        if (data.formatted_transcript) {
+          setFormattedTranscript(data.formatted_transcript);
         }
         
         // Refresh the list of result files
@@ -154,7 +159,7 @@ export function DirectTestResults() {
       } else {
         toast({
           title: 'Error',
-          description: response.message || 'Test failed',
+          description: data.message || 'Test failed',
           variant: 'destructive',
         });
       }
@@ -221,11 +226,11 @@ export function DirectTestResults() {
   };
 
   return (
-    <div className="container mx-auto py-4">
+    <div className="w-full max-w-7xl mx-auto py-4 px-4">
       <h1 className="text-2xl font-bold mb-4">Direct Transcription Test Results</h1>
       
       <Tabs defaultValue="run" value={currentTab} onValueChange={setCurrentTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="run">Run Test</TabsTrigger>
           <TabsTrigger value="results">View Results</TabsTrigger>
         </TabsList>
@@ -295,10 +300,10 @@ export function DirectTestResults() {
         </TabsContent>
         
         <TabsContent value="results">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left panel: List of result files */}
-            <Card className="md:col-span-1">
-              <CardHeader>
+            <Card className="lg:col-span-1 h-fit">
+              <CardHeader className="pb-2">
                 <CardTitle>Test Results</CardTitle>
                 <CardDescription>
                   {resultFiles.length} result files found
@@ -319,7 +324,7 @@ export function DirectTestResults() {
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {resultFiles.map((file) => (
                       <div 
                         key={file.filename}
@@ -348,8 +353,8 @@ export function DirectTestResults() {
             </Card>
             
             {/* Right panel: Result details */}
-            <Card className="md:col-span-2">
-              <CardHeader>
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2">
                 <CardTitle>Result Details</CardTitle>
                 {selectedResult && (
                   <CardDescription>
