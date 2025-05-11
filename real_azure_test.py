@@ -193,6 +193,9 @@ async def real_azure_file_test():
         else:
             print("Failed to verify INSERT")
         
+        # Record start time for processing duration calculation
+        start_time = time.time()
+        
         # STEP 2: Perform the transcription
         print("\n===== STEP 2: TRANSCRIBING AUDIO =====")
         print(f"Transcribing file using SAS URL: {sas_url[:50]}...")
@@ -221,6 +224,71 @@ async def real_azure_file_test():
                     if 'channels' in results and len(results['channels']) > 0:
                         if 'alternatives' in results['channels'][0] and len(results['channels'][0]['alternatives']) > 0:
                             transcript = results['channels'][0]['alternatives'][0].get('transcript', '')
+            
+            # Extract paragraphs and sentences
+            paragraphs = []
+            
+            # Check if results contain paragraphs directly
+            if 'results' in transcription_result and 'paragraphs' in transcription_result['results']:
+                print("Found paragraphs in transcription result")
+                paragraphs = transcription_result['results']['paragraphs'].get('paragraphs', [])
+            
+            # If no paragraphs, try to extract from utterances as fallback
+            if not paragraphs and 'results' in transcription_result and 'utterances' in transcription_result['results']:
+                print("Extracting paragraphs from utterances as fallback")
+                utterances = transcription_result['results']['utterances']
+                for i, utterance in enumerate(utterances):
+                    paragraph = {
+                        'text': utterance.get('transcript', ''),
+                        'start': utterance.get('start', 0),
+                        'end': utterance.get('end', 0),
+                        'speaker': utterance.get('speaker', 'unknown'),
+                        'num_words': len(utterance.get('transcript', '').split()),
+                        'sentences': []
+                    }
+                    # Create a sentence entry for each utterance
+                    paragraph['sentences'].append({
+                        'id': f"{i}_0",
+                        'text': utterance.get('transcript', ''),
+                        'start': utterance.get('start', 0),
+                        'end': utterance.get('end', 0)
+                    })
+                    paragraphs.append(paragraph)
+                    
+            # If no paragraphs or utterances, create a simple paragraph from the full transcript
+            if not paragraphs and transcript != "Transcription not available":
+                print("Creating default paragraph from transcript")
+                # Split transcript into sentences naively (this is a simple approach)
+                import re
+                sentence_texts = re.split(r'(?<=[.!?])\s+', transcript)
+                sentences = []
+                
+                for i, sent_text in enumerate(sentence_texts):
+                    sentences.append({
+                        'id': f"0_{i}",
+                        'text': sent_text,
+                        'start': 0,
+                        'end': 0
+                    })
+                
+                paragraphs.append({
+                    'text': transcript,
+                    'start': 0,
+                    'end': 0,
+                    'speaker': 'unknown',
+                    'num_words': len(transcript.split()),
+                    'sentences': sentences
+                })
+                
+            # Create a structured response object for storing in database
+            structured_response = {
+                'request_id': transcription_result.get('request_id', ''),
+                'sha256': '',
+                'created': datetime.utcnow().isoformat(),
+                'duration': transcription_result.get('metadata', {}).get('duration', 0),
+                'confidence': 0,
+                'paragraphs': paragraphs
+            }
                             
             # If we couldn't extract, just convert the whole response to a string
             if transcript == "Transcription not available" and transcription_result:
@@ -233,27 +301,47 @@ async def real_azure_file_test():
         except Exception as e:
             print(f"Error during transcription: {str(e)}")
             transcript = f"ERROR: {str(e)}"
+            structured_response = None
+            paragraphs = []
+            
+        # Calculate processing duration
+        end_time = time.time()
+        processing_duration = int(end_time - start_time)
+        print(f"Processing duration: {processing_duration} seconds")
             
         # Show the transcript summary
         transcript_length = len(transcript)
         print(f"Transcription complete. Length: {transcript_length} characters")
         if transcript_length > 0:
             print(f"Sample: {transcript[:100]}...")
+        print(f"Extracted {len(paragraphs)} paragraphs")
         
         # STEP 3: UPDATE with transcription data
         print("\n===== STEP 3: UPDATE WITH TRANSCRIPTION DATA =====")
         update_sql = """
         UPDATE rdt_assets
         SET transcription = %(transcription)s,
+            transcription_json = %(transcription_json)s,
             status = 'completed',
-            processed_date = GETDATE()
+            processed_date = GETDATE(),
+            destination_path = %(destination_path)s,
+            processing_duration = %(processing_duration)s
         WHERE fileid = %(fileid)s
         """
+        
+        # Set destination path - use the same container with a "processed/" prefix
+        destination_path = f"processed/{blob_name}"
+        
+        # Convert transcription_result to JSON string
+        transcription_json = json.dumps(transcription_result)
         
         # Parameters for the UPDATE
         update_params = {
             "fileid": test_fileid,
-            "transcription": transcript
+            "transcription": transcript,
+            "transcription_json": transcription_json,
+            "destination_path": destination_path,
+            "processing_duration": processing_duration
         }
         
         # Log the SQL that would be executed
