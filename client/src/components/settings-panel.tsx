@@ -117,7 +117,13 @@ export function SettingsPanel() {
               <SelectContent>
                 {data?.available_methods.map((method) => (
                   <SelectItem key={method} value={method}>
-                    {method === 'sdk' ? 'Deepgram SDK' : method === 'rest_api' ? 'REST API' : 'Direct REST API'}
+                    {method === 'sdk' 
+                      ? 'Deepgram SDK' 
+                      : method === 'rest_api' 
+                        ? 'REST API' 
+                        : method === 'direct' 
+                          ? 'Direct REST API' 
+                          : 'Shortcut Method'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -146,7 +152,7 @@ export function SettingsPanel() {
                     <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full">Medium Performance</span>
                   </div>
                 </div>
-              ) : (
+              ) : selectedMethod === 'direct' ? (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Direct REST API</h4>
                   <p className="text-xs text-muted-foreground">
@@ -156,6 +162,18 @@ export function SettingsPanel() {
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Optimized</span>
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Faster</span>
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Azure Integration</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Shortcut Method</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Uses a proven direct integration with Azure Storage and Deepgram for reliable transcription.
+                  </p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Reliable</span>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">High Performance</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Production Tested</span>
                   </div>
                 </div>
               )}
