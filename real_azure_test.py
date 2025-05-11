@@ -362,7 +362,8 @@ async def real_azure_file_test():
         if structured_response and structured_response.get('paragraphs'):
             try:
                 # Import the module for handling transcription details
-                from update_sentence_tables import store_transcription_details
+                sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+                from python_backend.update_sentence_tables import store_transcription_details
                 
                 # Store the transcription details
                 result = store_transcription_details(test_fileid, structured_response)
