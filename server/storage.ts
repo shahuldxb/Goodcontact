@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
       this.assets.set(fileid, updatedAsset);
       
       // Then update in SQL database
-      const { executeQuery } = await import('./services/postgres-sql');
+      const { executeQuery } = await import('./services/sql');
       
       // Convert camelCase to snake_case for SQL columns with safe values
       const sqlUpdates: Record<string, any> = {};

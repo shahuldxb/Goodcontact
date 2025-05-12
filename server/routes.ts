@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             // Import our direct database methods
-            const { updateTranscriptionRecord, createAssetRecord, checkRecordExists } = await import('./services/direct-sql');
+            const { updateTranscriptionRecord, createAssetRecord, checkRecordExists } = await import('./services/sql');
             
             // Check if record exists, if not, create it
             const exists = await checkRecordExists(fileid);
@@ -207,8 +207,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await moveFileToProcessed(filename);
               console.log(`Successfully moved file ${filename} to processed container`);
             } else {
-              console.error(`Failed to update asset record in PostgreSQL database for ${fileid}`);
-              throw new Error('Failed to update record in PostgreSQL database');
+              console.error(`Failed to update asset record in Azure SQL database for ${fileid}`);
+              throw new Error('Failed to update record in Azure SQL database');
             }
           } catch (dbError) {
             console.error(`Database error updating asset record: ${dbError}`);

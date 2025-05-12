@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { sqlConnect } from './services/azure-sql';
+import { sqlConnect } from './services/sql';
 
 // Get the directory name in ESM
 const __filename = fileURLToPath(import.meta.url);
