@@ -5,6 +5,7 @@ import logging
 import json
 import asyncio
 from direct_transcribe import DirectTranscribe
+from direct_transcribe_db import DirectTranscribeDB
 from datetime import datetime
 
 # Configure logging
@@ -20,8 +21,9 @@ AZURE_STORAGE_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRIN
                                               "DefaultEndpointsProtocol=https;AccountName=infolder;AccountKey=NN3vJ8jLMvleobtI+l0ImQtilzSN5KPlC+JAmYHJi7iWKqZjkKg1sjW274/wDNSoPwqwIgQvVy5m+ASt+S+Mjw==;EndpointSuffix=core.windows.net")
 SOURCE_CONTAINER = "shahulin"
 
-# Initialize DirectTranscribe
+# Initialize DirectTranscribe and DirectTranscribeDB
 transcriber = DirectTranscribe(DEEPGRAM_API_KEY)
+db_transcriber = DirectTranscribeDB()
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -110,6 +112,21 @@ def direct_transcribe():
                 "fileid": fileid
             }), 400
         
+        # Store transcription with paragraphs and sentences in database
+        logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
+        db_result = db_transcriber.store_transcription_result(
+            fileid=fileid,
+            blob_name=filename,
+            transcription_result=result["result"],
+            transcript_text=result["transcript"]
+        )
+        
+        if db_result.get("status") == "error":
+            logger.error(f"Error storing transcription in database: {db_result.get('message')}")
+            # Continue anyway - we'll return the transcription even if DB storage failed
+        else:
+            logger.info(f"Successfully stored transcription in database: {db_result.get('paragraphs_processed', 0)} paragraphs processed")
+        
         # Extract useful information for response
         response = {
             "success": True,
@@ -117,7 +134,11 @@ def direct_transcribe():
             "filename": filename,
             "transcript_length": len(result["transcript"]),
             "result": result["result"],
-            "transcript": result["transcript"]
+            "transcript": result["transcript"],
+            "db_storage": {
+                "success": db_result.get("status") == "success",
+                "paragraphs_processed": db_result.get("paragraphs_processed", 0)
+            }
         }
         
         logger.info(f"Successfully transcribed {filename} (length: {len(result['transcript'])} characters)")
