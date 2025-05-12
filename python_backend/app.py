@@ -347,30 +347,11 @@ def direct_transcribe():
             "processing_time": 0  # We don't track this here
         }
         
-        # Store transcription with paragraphs and sentences using enhanced database connection
-        logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
-        
-        # Use enhanced DB connection first (which we know works reliably)
-        db_result = db_transcriber_enhanced.store_transcription_result(processing_result)
-        
-        if db_result.get("status") == "error":
-            logger.warning(f"Enhanced DB storage failed: {db_result.get('message')}. Trying original method...")
-            
-            # Fallback to original method if enhanced fails
-            db_result = db_transcriber.store_transcription_result(processing_result)
-            
-            if db_result.get("status") == "error":
-                logger.error(f"Error storing transcription in database (both methods failed): {db_result.get('message')}")
-                # Continue anyway - we'll return the transcription even if DB storage failed
-            else:
-                logger.info(f"Successfully stored transcription using original method: {db_result.get('paragraphs_processed', 0)} paragraphs processed")
-        else:
-            logger.info(f"Successfully stored transcription using enhanced method: {db_result.get('paragraphs_processed', 0)} paragraphs, {db_result.get('sentences_processed', 0)} sentences")
-        
         # Check if we have paragraphs in the result
         paragraphs_found = 0
         sentences_found = 0
         paragraph_details = []
+        paragraphs = []  # Initialize paragraphs list
         
         # Analyze Deepgram response to log paragraphs and sentences
         # Note: According to Deepgram's structure, paragraphs may appear directly in 'results'
@@ -620,6 +601,31 @@ def direct_transcribe():
         logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
         if paragraph_details:
             logger.info(f"First paragraph: {paragraph_details[0]}")
+            
+        # Store transcription with paragraphs and sentences using enhanced database connection
+        logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
+        
+        # Add the paragraphs to the processing result if we found or created any
+        if paragraphs_found > 0:
+            processing_result["paragraphs"] = paragraphs
+            logger.info(f"Added {paragraphs_found} paragraphs to processing_result")
+        
+        # Use enhanced DB connection first (which we know works reliably)
+        enhanced_db_result = db_transcriber_enhanced.store_transcription_result(processing_result)
+        
+        if enhanced_db_result.get("status") == "error":
+            logger.warning(f"Enhanced DB storage failed: {enhanced_db_result.get('message')}. Trying original method...")
+            
+            # Fallback to original method if enhanced fails
+            original_db_result = db_transcriber.store_transcription_result(processing_result)
+            
+            if original_db_result.get("status") == "error":
+                logger.error(f"Error storing transcription in database (both methods failed): {original_db_result.get('message')}")
+                # Continue anyway - we'll return the transcription even if DB storage failed
+            else:
+                logger.info(f"Successfully stored transcription using original method: {original_db_result.get('paragraphs_processed', 0)} paragraphs processed")
+        else:
+            logger.info(f"Successfully stored transcription using enhanced method: {enhanced_db_result.get('paragraphs_processed', 0)} paragraphs, {enhanced_db_result.get('sentences_processed', 0)} sentences")
         
         # Extract useful information for response
         response = {

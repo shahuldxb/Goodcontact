@@ -153,36 +153,42 @@ class DirectTranscribeDBEnhanced:
             paragraphs_processed = 0
             sentences_processed = 0
             
-            # Extract paragraphs from the transcription result
-            # This logic assumes the structure we've seen in successful responses
+            # Check for paragraphs in the processing_result first
             paragraphs = []
             
-            # Try different structures for where paragraphs might be located
-            try:
-                if "results" in transcription_result and "paragraphs" in transcription_result["results"]:
-                    if "paragraphs" in transcription_result["results"]["paragraphs"]:
-                        paragraphs = transcription_result["results"]["paragraphs"]["paragraphs"]
-                        logger.info(f"Found {len(paragraphs)} paragraphs in structure 1")
-                        
-                # Structure 2: In channels > alternatives
-                if not paragraphs and "results" in transcription_result and "channels" in transcription_result["results"]:
-                    channels = transcription_result["results"]["channels"]
-                    for channel in channels:
-                        if "alternatives" in channel:
-                            alternatives = channel["alternatives"]
-                            for alternative in alternatives:
-                                if "paragraphs" in alternative:
-                                    if "paragraphs" in alternative["paragraphs"]:
-                                        paragraphs = alternative["paragraphs"]["paragraphs"]
-                                        logger.info(f"Found {len(paragraphs)} paragraphs in structure 2")
-                                        break
+            # First, check if paragraphs were sent directly in the processing_result
+            if "paragraphs" in processing_result:
+                paragraphs = processing_result["paragraphs"]
+                logger.info(f"Found {len(paragraphs)} paragraphs directly in processing_result")
+            
+            # If we don't have paragraphs yet, extract from transcription result
+            if not paragraphs:
+                # Try different structures for where paragraphs might be located
+                try:
+                    if "results" in transcription_result and "paragraphs" in transcription_result["results"]:
+                        if "paragraphs" in transcription_result["results"]["paragraphs"]:
+                            paragraphs = transcription_result["results"]["paragraphs"]["paragraphs"]
+                            logger.info(f"Found {len(paragraphs)} paragraphs in structure 1")
+                            
+                    # Structure 2: In channels > alternatives
+                    if not paragraphs and "results" in transcription_result and "channels" in transcription_result["results"]:
+                        channels = transcription_result["results"]["channels"]
+                        for channel in channels:
+                            if "alternatives" in channel:
+                                alternatives = channel["alternatives"]
+                                for alternative in alternatives:
+                                    if "paragraphs" in alternative:
+                                        if "paragraphs" in alternative["paragraphs"]:
+                                            paragraphs = alternative["paragraphs"]["paragraphs"]
+                                            logger.info(f"Found {len(paragraphs)} paragraphs in structure 2")
+                                            break
+                                if paragraphs:
+                                    break
                             if paragraphs:
                                 break
-                        if paragraphs:
-                            break
-            except Exception as e:
-                logger.error(f"Error extracting paragraphs: {str(e)}")
-                # Continue anyway - we'll still have the main transcription stored
+                except Exception as e:
+                    logger.error(f"Error extracting paragraphs from transcription result: {str(e)}")
+                    # Continue anyway - we'll still have the main transcription stored
             
             # Process and store paragraphs and sentences
             if paragraphs:
