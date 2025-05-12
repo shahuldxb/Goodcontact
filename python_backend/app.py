@@ -141,6 +141,38 @@ def direct_transcribe():
         else:
             logger.info(f"Successfully stored transcription in database: {db_result.get('paragraphs_processed', 0)} paragraphs processed")
         
+        # Check if we have paragraphs in the result
+        paragraphs_found = 0
+        sentences_found = 0
+        paragraph_details = []
+        
+        # Analyze Deepgram response to log paragraphs and sentences
+        if "results" in result["result"]:
+            # Look for paragraphs structure
+            if "paragraphs" in result["result"]["results"]:
+                if "paragraphs" in result["result"]["results"]["paragraphs"]:
+                    paragraphs = result["result"]["results"]["paragraphs"]["paragraphs"]
+                    paragraphs_found = len(paragraphs)
+                    
+                    # Process first few paragraphs
+                    for i, para in enumerate(paragraphs[:3]):  # Only first 3 for brevity
+                        para_text = para.get("text", "")[:100] + "..." if len(para.get("text", "")) > 100 else para.get("text", "")
+                        sentences = para.get("sentences", [])
+                        sentences_found += len(sentences)
+                        
+                        # Get first sentence if available
+                        first_sentence = sentences[0].get("text", "") if sentences else "No sentences"
+                        
+                        paragraph_details.append({
+                            "text": para_text,
+                            "sentences_count": len(sentences),
+                            "first_sentence": first_sentence
+                        })
+        
+        logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
+        if paragraph_details:
+            logger.info(f"First paragraph: {paragraph_details[0]}")
+            
         # Extract useful information for response
         response = {
             "success": True,
@@ -149,6 +181,9 @@ def direct_transcribe():
             "transcript_length": len(result["transcript"]),
             "result": result["result"],
             "transcript": result["transcript"],
+            "paragraphs_found": paragraphs_found,
+            "sentences_found": sentences_found,
+            "paragraph_details": paragraph_details[:3] if paragraph_details else [],
             "db_storage": {
                 "success": db_result.get("status") == "success",
                 "paragraphs_processed": db_result.get("paragraphs_processed", 0)

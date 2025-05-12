@@ -408,6 +408,37 @@ class DirectTranscribeDB:
             import traceback
             logger.error(traceback.format_exc())
             
+            # Analyze transcription result to log details about paragraphs and sentences
+            # This will help us verify the data is correctly extracted even if DB storage fails
+            try:
+                # Extract transcription result
+                transcription_result = processing_result.get('transcription', {}).get('result', {})
+                fileid = processing_result.get('fileid', 'unknown')
+                
+                # Try to find paragraphs
+                paragraphs = []
+                if 'results' in transcription_result and 'paragraphs' in transcription_result['results']:
+                    if 'paragraphs' in transcription_result['results']['paragraphs']:
+                        paragraphs = transcription_result['results']['paragraphs']['paragraphs']
+                
+                # Log number of paragraphs found
+                logger.info(f"Found {len(paragraphs)} paragraphs in transcription for fileid {fileid}")
+                
+                # Log first paragraph details if available
+                if paragraphs:
+                    first_para = paragraphs[0]
+                    logger.info(f"First paragraph text: {first_para.get('text', '')[:100]}...")
+                    
+                    # Check for sentences
+                    sentences = first_para.get('sentences', [])
+                    logger.info(f"Found {len(sentences)} sentences in first paragraph")
+                    
+                    # Log first sentence if available
+                    if sentences:
+                        logger.info(f"First sentence text: {sentences[0].get('text', '')}")
+            except Exception as parse_err:
+                logger.error(f"Error analyzing transcription content: {str(parse_err)}")
+            
             return {
                 "status": "error",
                 "message": f"Failed to store transcription result: {str(e)}",
