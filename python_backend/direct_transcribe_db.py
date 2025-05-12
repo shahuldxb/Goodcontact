@@ -237,10 +237,10 @@ class DirectTranscribeDB:
             
             # Insert the record
             cursor.execute("""
-                INSERT INTO rdt_asset 
+                INSERT INTO rdt_assets 
                 (fileid, filename, source_container, source_path, destination_container, 
-                destination_path, processing_time, transcription, status, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                destination_path, processing_time, transcription, status, created_at, file_size)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 fileid, 
                 blob_name, 

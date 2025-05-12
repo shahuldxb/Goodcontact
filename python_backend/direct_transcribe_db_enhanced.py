@@ -126,8 +126,8 @@ class DirectTranscribeDBEnhanced:
             query = """
             INSERT INTO rdt_assets 
             (fileid, filename, transcription, transcription_json, source_path, destination_path, 
-             processing_duration, status, created_dt)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+             processing_duration, status, created_dt, file_size)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
             # Create source and destination paths based on containers
@@ -136,6 +136,9 @@ class DirectTranscribeDBEnhanced:
             
             # Extract text-only transcript for easy searching
             transcript_text_only = transcript_text
+            
+            # Get file_size from processing_result or use 0 as it can't be NULL
+            file_size = processing_result.get("file_size", 0)
             
             params = (
                 fileid, 
@@ -146,7 +149,8 @@ class DirectTranscribeDBEnhanced:
                 destination_path,
                 total_processing_time or 0,
                 "COMPLETE",  # Status
-                datetime.now()  # Created date
+                datetime.now(),  # Created date
+                file_size  # File size in bytes
             )
             
             try:
@@ -241,7 +245,7 @@ class DirectTranscribeDBEnhanced:
                                 sentence_start = sentence.get("start", 0)
                                 sentence_end = sentence.get("end", 0)
                                 
-                                # Insert sentence - use the correct column names from schema
+                                # Insert sentence - use the correct column names from Azure SQL schema
                                 # id, fileid, paragraph_id, sentence_idx, text, start_time, end_time, created_dt
                                 sent_query = """
                                 INSERT INTO rdt_sentences 
