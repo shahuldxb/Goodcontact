@@ -23,11 +23,70 @@ SOURCE_CONTAINER = "shahulin"
 
 # Initialize DirectTranscribe and DirectTranscribeDB
 transcriber = DirectTranscribe(DEEPGRAM_API_KEY)
-db_transcriber = DirectTranscribeDB()
+
+# Azure SQL Server connection parameters
+AZURE_SQL_SERVER = os.environ.get("AZURE_SQL_SERVER", "callcenter1.database.windows.net")
+AZURE_SQL_DATABASE = os.environ.get("AZURE_SQL_DATABASE", "call") 
+AZURE_SQL_USER = os.environ.get("AZURE_SQL_USER", "shahul")
+AZURE_SQL_PASSWORD = os.environ.get("AZURE_SQL_PASSWORD", "apple123!@#")
+
+# Initialize DirectTranscribeDB with connection parameters
+db_transcriber = DirectTranscribeDB(sql_conn_params={
+    'server': AZURE_SQL_SERVER,
+    'database': AZURE_SQL_DATABASE,
+    'user': AZURE_SQL_USER,
+    'password': AZURE_SQL_PASSWORD
+})
 
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+
+@app.route('/health/db', methods=['GET'])
+def db_health_check():
+    """
+    Database health check endpoint to verify connectivity.
+    """
+    try:
+        # Test connection
+        conn = db_transcriber._get_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # Check if we can execute a simple query
+            cursor.execute("SELECT 1")
+            result = cursor.fetchone()
+            
+            # Check tables
+            cursor.execute("""
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                WHERE TABLE_NAME IN ('rdt_asset', 'rdt_paragraphs', 'rdt_sentences')
+            """)
+            table_count = cursor.fetchone()[0]
+            
+            conn.close()
+            
+            return jsonify({
+                "status": "ok",
+                "message": "Successfully connected to Azure SQL database",
+                "query_result": result[0] if result else None,
+                "tables_found": table_count,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        return jsonify({
+            "status": "error",
+            "message": "Failed to connect to Azure SQL database - connection was null",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+    
+    except Exception as e:
+        logger.error(f"DB health check failed: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to connect to Azure SQL database: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }), 500
 
 @app.route('/config/transcription-method', methods=['GET'])
 def get_transcription_method():
