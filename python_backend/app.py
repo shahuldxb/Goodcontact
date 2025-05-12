@@ -93,8 +93,14 @@ def direct_transcribe():
         sas_url = f"https://{account_name}.blob.core.windows.net/{SOURCE_CONTAINER}/{filename}?{sas_token}"
         logger.info(f"Generated SAS URL for {filename} with 240 hour expiry")
         
-        # Call the transcribe_audio method directly (it's now synchronous)
-        result = transcriber.transcribe_audio(sas_url)
+        # Call the transcribe_audio method with explicit paragraph and sentence support
+        result = transcriber.transcribe_audio(
+            sas_url, 
+            paragraphs=True,
+            punctuate=True,
+            smart_format=True,
+            diarize=True
+        )
         
         if not result["success"]:
             logger.error(f"Transcription failed: {result['error']['message']}")

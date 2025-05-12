@@ -76,8 +76,12 @@ class DirectTranscribe:
             "diarize": kwargs.get("diarize", True),
             "punctuate": kwargs.get("punctuate", True),
             "utterances": kwargs.get("utterances", True),
-            "paragraphs": kwargs.get("paragraphs", True),
-            "detect_language": kwargs.get("detect_language", True)
+            "paragraphs": True,
+            "detect_language": kwargs.get("detect_language", True),
+            "filler_words": kwargs.get("filler_words", True),
+            "alternatives": kwargs.get("alternatives", 1),
+            "sentiment": kwargs.get("sentiment", False),
+            "search": kwargs.get("search", [])
         }
         
         # Log the request (exclude sensitive parts)
@@ -150,7 +154,7 @@ class DirectTranscribe:
     
     def _extract_transcript(self, result: Dict[str, Any]) -> str:
         """
-        Extract transcript from Deepgram API response
+        Extract transcript from Deepgram API response with paragraphs and sentences if available
         
         Args:
             result (Dict): The Deepgram API response
@@ -163,9 +167,38 @@ class DirectTranscribe:
                 channels = result["results"]["channels"]
                 if channels and "alternatives" in channels[0]:
                     alternatives = channels[0]["alternatives"]
+                    
+                    # First check if there's a standard transcript
                     if alternatives and "transcript" in alternatives[0]:
-                        return alternatives[0]["transcript"]
+                        transcript = alternatives[0]["transcript"]
+                        
+                        # Now check if we have paragraphs
+                        if "paragraphs" in alternatives[0] and "paragraphs" in alternatives[0]["paragraphs"]:
+                            paragraphs = alternatives[0]["paragraphs"]["paragraphs"]
+                            if paragraphs:
+                                # Return structured paragraphs if available
+                                formatted_paragraphs = []
+                                for paragraph in paragraphs:
+                                    if "sentences" in paragraph:
+                                        sentences = [s.get("text", "") for s in paragraph.get("sentences", [])]
+                                        formatted_paragraphs.append(" ".join(sentences))
+                                    elif "text" in paragraph:
+                                        formatted_paragraphs.append(paragraph["text"])
+                                
+                                if formatted_paragraphs:
+                                    return "\n\n".join(formatted_paragraphs)
+                        
+                        # Return the standard transcript if paragraphs aren't available or failed
+                        return transcript
+            
+            # If we couldn't find a transcript in the standard way, look for it in utterances
+            if "results" in result and "utterances" in result["results"]:
+                utterances = result["results"]["utterances"]
+                if utterances:
+                    return " ".join([u.get("transcript", "") for u in utterances])
+                    
             return ""
+            
         except Exception as e:
             logger.error(f"Error extracting transcript: {str(e)}")
             return ""
