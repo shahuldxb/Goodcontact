@@ -82,7 +82,7 @@ class DirectTranscribeDB:
                 user = params.get('User ID', '')
                 password = params.get('Password', '')
                 
-                # Create connection
+                # Create connection with minimal parameters - must match what works in test_sql_connection.py
                 conn = pymssql.connect(
                     server=server, 
                     database=database, 
@@ -101,14 +101,14 @@ class DirectTranscribeDB:
                 if 'user' in params and 'username' not in params:
                     params['username'] = params['user']
                     
-                # Create connection with explicit parameters
+                # Create connection with minimal parameters - must match what works in test_sql_connection.py
                 conn = pymssql.connect(
                     server=params.get('server'),
                     database=params.get('database'),
                     user=params.get('username') or params.get('user'),
                     password=params.get('password'),
-                    tds_version=params.get('tds_version'),
-                    port=params.get('port')
+                    tds_version=params.get('tds_version', '7.3'),
+                    port=params.get('port', '1433')
                 )
             
             return conn
