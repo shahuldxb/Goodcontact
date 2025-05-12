@@ -391,12 +391,22 @@ def direct_transcribe():
         # Check for paragraphs in various possible structures
         logger.info("Checking for paragraphs in response structure...")
         
+        # Log the response structure to debug where paragraphs might be
+        logger.info(f"Response keys: {list(response_data.keys())}")
+        if "results" in response_data:
+            logger.info(f"Results keys: {list(response_data['results'].keys())}")
+        
         # Structure 1: Direct in results
         if "results" in response_data and "paragraphs" in response_data["results"]:
-            if "paragraphs" in response_data["results"]["paragraphs"]:
+            logger.info(f"Paragraphs type: {type(response_data['results']['paragraphs'])}")
+            if isinstance(response_data["results"]["paragraphs"], dict) and "paragraphs" in response_data["results"]["paragraphs"]:
                 paragraphs = response_data["results"]["paragraphs"]["paragraphs"]
                 paragraphs_found = len(paragraphs)
                 logger.info(f"Found {paragraphs_found} paragraphs in structure 1 (direct in results)")
+            elif isinstance(response_data["results"]["paragraphs"], list):
+                paragraphs = response_data["results"]["paragraphs"]
+                paragraphs_found = len(paragraphs)
+                logger.info(f"Found {paragraphs_found} paragraphs in structure 1 (direct list in results)")
                 
                 # Process paragraphs...
                 for i, para in enumerate(paragraphs[:3]):
