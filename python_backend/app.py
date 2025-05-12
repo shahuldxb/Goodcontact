@@ -147,27 +147,45 @@ def direct_transcribe():
         paragraph_details = []
         
         # Analyze Deepgram response to log paragraphs and sentences
-        if "results" in result["result"]:
-            # Look for paragraphs structure
-            if "paragraphs" in result["result"]["results"]:
-                if "paragraphs" in result["result"]["results"]["paragraphs"]:
-                    paragraphs = result["result"]["results"]["paragraphs"]["paragraphs"]
-                    paragraphs_found = len(paragraphs)
+        # Note: According to Deepgram's structure, paragraphs may appear directly in 'results'
+        response_data = result["result"]
+        
+        # First check for utterances (which might be an alternative way to get structured content)
+        utterances_found = False
+        if "results" in response_data and "utterances" in response_data["results"]:
+            utterances = response_data["results"]["utterances"]
+            logger.info(f"Found {len(utterances)} utterances in transcription")
+            utterances_found = len(utterances) > 0
+            
+            # Process first few utterances for logging
+            for i, utterance in enumerate(utterances[:3]):
+                logger.info(f"Utterance {i}: Speaker {utterance.get('speaker', 'unknown')}: {utterance.get('transcript', '')[:100]}...")
+        
+        # Check for paragraphs as per the example script structure
+        if "results" in response_data and "paragraphs" in response_data["results"]:
+            if "paragraphs" in response_data["results"]["paragraphs"]:
+                paragraphs = response_data["results"]["paragraphs"]["paragraphs"]
+                paragraphs_found = len(paragraphs)
+                logger.info(f"Found {paragraphs_found} paragraphs in transcription")
+                
+                # Process first few paragraphs
+                for i, para in enumerate(paragraphs[:3]):  # Only first 3 for brevity
+                    para_text = para.get("text", "")[:100] + "..." if len(para.get("text", "")) > 100 else para.get("text", "")
+                    sentences = para.get("sentences", [])
+                    sentences_found += len(sentences)
                     
-                    # Process first few paragraphs
-                    for i, para in enumerate(paragraphs[:3]):  # Only first 3 for brevity
-                        para_text = para.get("text", "")[:100] + "..." if len(para.get("text", "")) > 100 else para.get("text", "")
-                        sentences = para.get("sentences", [])
-                        sentences_found += len(sentences)
-                        
-                        # Get first sentence if available
-                        first_sentence = sentences[0].get("text", "") if sentences else "No sentences"
-                        
-                        paragraph_details.append({
-                            "text": para_text,
-                            "sentences_count": len(sentences),
-                            "first_sentence": first_sentence
-                        })
+                    # Get first sentence if available
+                    first_sentence = sentences[0].get("text", "") if sentences else "No sentences"
+                    
+                    paragraph_details.append({
+                        "text": para_text,
+                        "sentences_count": len(sentences),
+                        "first_sentence": first_sentence
+                    })
+                    
+                    logger.info(f"Paragraph {i}: {para_text}")
+                    if sentences:
+                        logger.info(f"First sentence: {first_sentence}")
         
         logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
         if paragraph_details:
