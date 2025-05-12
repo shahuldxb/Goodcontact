@@ -252,6 +252,348 @@ def get_transcription_method():
         "description": "Uses direct REST API calls to Deepgram with SAS URLs"
     })
 
+@app.route('/direct/transcribe_v2', methods=['POST'])
+def direct_transcribe_v2():
+    """
+    Improved direct transcription with file size handling
+    This endpoint gets the actual file size from the Azure blob
+    """
+    try:
+        # Parse the request data
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+        
+        # Get filename and fileid from request
+        filename = data.get('filename')
+        fileid = data.get('fileid')
+        
+        if not filename:
+            return jsonify({"success": False, "error": "No filename provided"}), 400
+        
+        if not fileid:
+            return jsonify({"success": False, "error": "No fileid provided"}), 400
+        
+        logger.info(f"Processing file {filename} with ID {fileid} using improved direct REST API approach")
+        
+        # Generate SAS URL for the blob
+        from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
+        from datetime import timedelta
+        
+        # Extract account info from connection string
+        conn_parts = {p.split('=')[0]: p.split('=', 1)[1] for p in AZURE_STORAGE_CONNECTION_STRING.split(';') if '=' in p}
+        account_name = conn_parts.get('AccountName')
+        account_key = conn_parts.get('AccountKey')
+        
+        # Check if blob exists first and get properties including size
+        blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+        container_client = blob_service_client.get_container_client(SOURCE_CONTAINER)
+        blob_client = container_client.get_blob_client(filename)
+        
+        if not blob_client.exists():
+            logger.error(f"File {filename} does not exist in container {SOURCE_CONTAINER}")
+            return jsonify({
+                "success": False, 
+                "error": f"File {filename} does not exist in container {SOURCE_CONTAINER}",
+                "fileid": fileid
+            }), 404
+            
+        # Get blob properties including size
+        blob_properties = blob_client.get_blob_properties()
+        file_size = blob_properties.size
+        logger.info(f"File {filename} exists with size {file_size} bytes")
+        
+        # Calculate expiry time (240 hours)
+        expiry = datetime.now() + timedelta(hours=240)
+        
+        # Generate SAS token
+        sas_token = generate_blob_sas(
+            account_name=account_name,
+            container_name=SOURCE_CONTAINER,
+            blob_name=filename,
+            account_key=account_key,
+            permission=BlobSasPermissions(read=True),
+            expiry=expiry
+        )
+        
+        # Construct full URL
+        sas_url = f"https://{account_name}.blob.core.windows.net/{SOURCE_CONTAINER}/{filename}?{sas_token}"
+        logger.info(f"Generated SAS URL for {filename} with 240 hour expiry")
+        
+        # Call the transcribe_audio method with explicit paragraph and sentence support
+        result = transcriber.transcribe_audio(
+            sas_url, 
+            paragraphs=True,
+            punctuate=True,
+            smart_format=True,
+            diarize=True
+        )
+        
+        if not result["success"]:
+            logger.error(f"Transcription failed: {result.get('error', {}).get('message', 'Unknown error')}")
+            return jsonify({
+                "success": False, 
+                "error": result['error']['message'],
+                "fileid": fileid
+            }), 400
+        
+        # Prepare the result format that store_transcription_result expects
+        processing_result = {
+            "blob_name": filename, 
+            "source_container": SOURCE_CONTAINER,
+            "destination_container": "shahulout",
+            "transcription": {
+                "success": result["success"],
+                "result": result["result"],
+                "transcript": result["transcript"],
+                "error": result.get("error")
+            },
+            "file_movement": {
+                "success": True,
+                "destination_url": f"https://infolder.blob.core.windows.net/shahulout/{filename}"
+            },
+            "fileid": fileid,
+            "processing_time": 0,  # We don't track this here
+            "file_size": file_size  # Add the actual file size from Azure blob
+        }
+        
+        # Check if we have paragraphs in the result
+        paragraphs_found = 0
+        sentences_found = 0
+        paragraph_details = []
+        paragraphs = []  # Initialize paragraphs list
+        
+        # Analyze Deepgram response to log paragraphs and sentences
+        # Note: According to Deepgram's structure, paragraphs may appear directly in 'results'
+        response_data = result["result"]
+        
+        # First check for utterances (which might be an alternative way to get structured content)
+        utterances_found = False
+        utterances = []
+        if "results" in response_data and "utterances" in response_data["results"]:
+            utterances = response_data["results"]["utterances"]
+            logger.info(f"Found {len(utterances)} utterances in transcription")
+            utterances_found = len(utterances) > 0
+            
+            # Process first few utterances for logging
+            for i, utterance in enumerate(utterances[:3]):
+                logger.info(f"Utterance {i}: Speaker {utterance.get('speaker', 'unknown')}: {utterance.get('transcript', '')[:100]}...")
+        
+        # Now look for paragraphs and sentences in the response
+        # Search for paragraphs in the typical Deepgram structure
+        # We need to traverse the response structure to find the paragraphs
+        # The structure typically involves results -> channels -> alternatives -> paragraphs/sentences
+        for channel_key, channel_value in response_data.items():
+            if channel_key == "results":
+                for results_key, results_value in channel_value.items():
+                    if results_key == "channels":
+                        for channel in results_value:
+                            for alternative in channel.get("alternatives", []):
+                                # Look for paragraphs in this alternative
+                                if "paragraphs" in alternative:
+                                    paragraphs = alternative["paragraphs"]["paragraphs"]
+                                    paragraphs_found = len(paragraphs)
+                                    logger.info(f"Found {paragraphs_found} paragraphs in response")
+                                    
+                                    # Store first few paragraphs for logging
+                                    paragraph_details = []
+                                    for i, para in enumerate(paragraphs[:3]):
+                                        paragraph_details.append({
+                                            "index": i,
+                                            "text": para.get("text", "")[:100] + "...",
+                                            "sentences": len(para.get("sentences", [])),
+                                            "start_time": para.get("start", 0),
+                                            "end_time": para.get("end", 0)
+                                        })
+                                    
+                                    # Count total sentences across all paragraphs
+                                    sentences = []
+                                    for para in paragraphs:
+                                        para_sentences = para.get("sentences", [])
+                                        sentences.extend(para_sentences)
+                                        sentences_found += len(para_sentences)
+                                    
+                                    # Log the first sentence for verification
+                                    first_sentence = sentences[0].get("text", "No text") if sentences else "No sentences found"
+                                    if sentences:
+                                        logger.info(f"First sentence: {first_sentence}")
+                                
+                                # Break once we've found paragraphs
+                                if paragraphs_found:
+                                    break
+                        
+                        # Break once we've found paragraphs
+                        if paragraphs_found:
+                            break
+                
+                # Break once we've found paragraphs
+                if paragraphs_found:
+                    break
+        
+        # If we didn't find paragraphs, create them from utterances or transcript
+        if not paragraphs_found:
+            logger.warning("No paragraphs found in any structure of the response")
+            
+            # Create paragraphs from utterances if available
+            if utterances_found:
+                logger.info(f"Creating paragraphs from {len(utterances)} utterances")
+                
+                # Group utterances by speaker to create paragraphs
+                paragraphs = []
+                current_speaker = None
+                current_paragraph = {"text": "", "start": 0, "end": 0, "speaker": "", "sentences": []}
+                
+                for utterance in utterances:
+                    speaker = utterance.get("speaker", "unknown")
+                    text = utterance.get("transcript", "").strip()
+                    start_time = utterance.get("start", 0)
+                    end_time = utterance.get("end", 0)
+                    
+                    # Start a new paragraph when speaker changes
+                    if current_speaker is None:
+                        # First utterance
+                        current_speaker = speaker
+                        current_paragraph = {
+                            "text": text,
+                            "start": start_time,
+                            "end": end_time,
+                            "speaker": speaker,
+                            "sentences": [{
+                                "text": text,
+                                "start": start_time,
+                                "end": end_time
+                            }]
+                        }
+                    elif speaker != current_speaker:
+                        # Speaker changed, save current paragraph and start a new one
+                        paragraphs.append(current_paragraph)
+                        current_speaker = speaker
+                        current_paragraph = {
+                            "text": text,
+                            "start": start_time,
+                            "end": end_time,
+                            "speaker": speaker,
+                            "sentences": [{
+                                "text": text,
+                                "start": start_time,
+                                "end": end_time
+                            }]
+                        }
+                    else:
+                        # Same speaker, append to current paragraph
+                        current_paragraph["text"] += " " + text
+                        current_paragraph["end"] = end_time
+                        current_paragraph["sentences"].append({
+                            "text": text,
+                            "start": start_time,
+                            "end": end_time
+                        })
+                
+                # Add the last paragraph if it exists
+                if current_paragraph["text"]:
+                    paragraphs.append(current_paragraph)
+                
+                paragraphs_found = len(paragraphs)
+                sentences_found = sum(len(p.get("sentences", [])) for p in paragraphs)
+                logger.info(f"Created {paragraphs_found} paragraphs with {sentences_found} sentences from utterances")
+                
+                # Update paragraph details for logging
+                paragraph_details = []
+                for i, para in enumerate(paragraphs[:3]):
+                    paragraph_details.append({
+                        "index": i,
+                        "text": para.get("text", "")[:100] + "...",
+                        "sentences": len(para.get("sentences", [])),
+                        "speaker": para.get("speaker", "unknown"),
+                        "start_time": para.get("start", 0),
+                        "end_time": para.get("end", 0)
+                    })
+            else:
+                # No utterances or paragraphs, create a single paragraph from the transcript
+                logger.info("Creating a single paragraph from the transcript")
+                
+                transcript = result.get("transcript", "")
+                paragraphs = [{
+                    "text": transcript,
+                    "start": 0,
+                    "end": 0,
+                    "speaker": "unknown",
+                    "sentences": [{
+                        "text": transcript,
+                        "start": 0,
+                        "end": 0
+                    }]
+                }]
+                
+                paragraphs_found = 1
+                sentences_found = 1
+                
+                paragraph_details = [{
+                    "index": 0,
+                    "text": transcript[:100] + "...",
+                    "sentences": 1,
+                    "speaker": "unknown",
+                    "start_time": 0,
+                    "end_time": 0
+                }]
+        
+        logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
+        if paragraph_details:
+            logger.info(f"First paragraph: {paragraph_details[0]}")
+            
+        # Store transcription with paragraphs and sentences using enhanced database connection
+        logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
+        
+        # Add the paragraphs to the processing result if we found or created any
+        if paragraphs_found > 0:
+            processing_result["paragraphs"] = paragraphs
+            logger.info(f"Added {paragraphs_found} paragraphs to processing_result")
+        
+        # Use enhanced DB connection first (which we know works reliably)
+        enhanced_db_result = db_transcriber_enhanced.store_transcription_result(processing_result)
+        
+        if enhanced_db_result.get("status") == "error":
+            logger.warning(f"Enhanced DB storage failed: {enhanced_db_result.get('message')}. Trying original method...")
+            
+            # Fallback to original method if enhanced fails
+            original_db_result = db_transcriber.store_transcription_result(processing_result)
+            
+            if original_db_result.get("status") == "error":
+                logger.error(f"Error storing transcription in database (both methods failed): {original_db_result.get('message')}")
+                # Continue anyway - we'll return the transcription even if DB storage failed
+            else:
+                logger.info(f"Successfully stored transcription using original method: {original_db_result.get('paragraphs_processed', 0)} paragraphs processed")
+        else:
+            logger.info(f"Successfully stored transcription using enhanced method: {enhanced_db_result.get('paragraphs_processed', 0)} paragraphs, {enhanced_db_result.get('sentences_processed', 0)} sentences")
+        
+        # Extract useful information for response
+        response = {
+            "success": True,
+            "fileid": fileid,
+            "filename": filename,
+            "file_size": file_size,  # Include file size in the response
+            "transcript_length": len(result["transcript"]),
+            "result": result["result"],
+            "transcript": result["transcript"],
+            "paragraphs_found": paragraphs_found,
+            "sentences_found": sentences_found,
+            "paragraph_details": paragraph_details[:3] if paragraph_details else [],
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        logger.error(f"Error in direct_transcribe_v2: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({
+            "success": False, 
+            "error": f"Error processing file: {str(e)}",
+            "fileid": fileid if 'fileid' in locals() else None
+        }), 500
+
 @app.route('/direct/transcribe', methods=['POST'])
 def direct_transcribe():
     try:
