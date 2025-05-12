@@ -161,15 +161,18 @@ def direct_transcribe():
             for i, utterance in enumerate(utterances[:3]):
                 logger.info(f"Utterance {i}: Speaker {utterance.get('speaker', 'unknown')}: {utterance.get('transcript', '')[:100]}...")
         
-        # Check for paragraphs as per the example script structure
+        # Check for paragraphs in various possible structures
+        logger.info("Checking for paragraphs in response structure...")
+        
+        # Structure 1: Direct in results
         if "results" in response_data and "paragraphs" in response_data["results"]:
             if "paragraphs" in response_data["results"]["paragraphs"]:
                 paragraphs = response_data["results"]["paragraphs"]["paragraphs"]
                 paragraphs_found = len(paragraphs)
-                logger.info(f"Found {paragraphs_found} paragraphs in transcription")
+                logger.info(f"Found {paragraphs_found} paragraphs in structure 1 (direct in results)")
                 
-                # Process first few paragraphs
-                for i, para in enumerate(paragraphs[:3]):  # Only first 3 for brevity
+                # Process paragraphs...
+                for i, para in enumerate(paragraphs[:3]):
                     para_text = para.get("text", "")[:100] + "..." if len(para.get("text", "")) > 100 else para.get("text", "")
                     sentences = para.get("sentences", [])
                     sentences_found += len(sentences)
@@ -186,6 +189,55 @@ def direct_transcribe():
                     logger.info(f"Paragraph {i}: {para_text}")
                     if sentences:
                         logger.info(f"First sentence: {first_sentence}")
+        
+        # Structure 2: In channels > alternatives
+        if not paragraphs_found and "results" in response_data and "channels" in response_data["results"]:
+            channels = response_data["results"]["channels"]
+            for channel_idx, channel in enumerate(channels):
+                if "alternatives" in channel:
+                    alternatives = channel["alternatives"]
+                    for alt_idx, alternative in enumerate(alternatives):
+                        if "paragraphs" in alternative:
+                            logger.info(f"Found paragraphs in structure 2 (channel {channel_idx}, alternative {alt_idx})")
+                            
+                            if "paragraphs" in alternative["paragraphs"]:
+                                paragraphs = alternative["paragraphs"]["paragraphs"]
+                                paragraphs_found = len(paragraphs)
+                                logger.info(f"Found {paragraphs_found} paragraphs in alternative structure")
+                                
+                                # Process paragraphs...
+                                for i, para in enumerate(paragraphs[:3]):
+                                    para_text = para.get("text", "")[:100] + "..." if len(para.get("text", "")) > 100 else para.get("text", "")
+                                    sentences = para.get("sentences", [])
+                                    sentences_found += len(sentences)
+                                    
+                                    # Get first sentence if available
+                                    first_sentence = sentences[0].get("text", "") if sentences else "No sentences"
+                                    
+                                    paragraph_details.append({
+                                        "text": para_text,
+                                        "sentences_count": len(sentences),
+                                        "first_sentence": first_sentence
+                                    })
+                                    
+                                    logger.info(f"Paragraph {i}: {para_text}")
+                                    if sentences:
+                                        logger.info(f"First sentence: {first_sentence}")
+                                
+                                # Break once we've found paragraphs
+                                if paragraphs_found:
+                                    break
+                        
+                        # Break once we've found paragraphs
+                        if paragraphs_found:
+                            break
+                
+                # Break once we've found paragraphs
+                if paragraphs_found:
+                    break
+        
+        if not paragraphs_found:
+            logger.warning("No paragraphs found in any structure of the response")
         
         logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
         if paragraph_details:
