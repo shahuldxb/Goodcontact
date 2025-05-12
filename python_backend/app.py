@@ -112,14 +112,28 @@ def direct_transcribe():
                 "fileid": fileid
             }), 400
         
+        # Prepare the result format that store_transcription_result expects
+        processing_result = {
+            "blob_name": filename, 
+            "source_container": SOURCE_CONTAINER,
+            "destination_container": "shahulout",
+            "transcription": {
+                "success": result["success"],
+                "result": result["result"],
+                "transcript": result["transcript"],
+                "error": result.get("error")
+            },
+            "file_movement": {
+                "success": True,
+                "destination_url": f"https://infolder.blob.core.windows.net/shahulout/{filename}"
+            },
+            "fileid": fileid,
+            "processing_time": 0  # We don't track this here
+        }
+        
         # Store transcription with paragraphs and sentences in database
         logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
-        db_result = db_transcriber.store_transcription_result(
-            fileid=fileid,
-            blob_name=filename,
-            transcription_result=result["result"],
-            transcript_text=result["transcript"]
-        )
+        db_result = db_transcriber.store_transcription_result(processing_result)
         
         if db_result.get("status") == "error":
             logger.error(f"Error storing transcription in database: {db_result.get('message')}")
