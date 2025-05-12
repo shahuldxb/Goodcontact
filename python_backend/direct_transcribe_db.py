@@ -251,12 +251,13 @@ class DirectTranscribeDB:
                 total_processing_time,
                 transcription_json,
                 'COMPLETED',
-                now
+                now,
+                processing_result.get("file_size", 0)  # File size in bytes, use 0 if not available
             ))
             
             # Commit the transaction
             conn.commit()
-            logger.info(f"Inserted record into rdt_asset for file {fileid}")
+            logger.info(f"Inserted record into rdt_assets for file {fileid}")
             
             # 2. Process audio metadata
             if transcription_result:

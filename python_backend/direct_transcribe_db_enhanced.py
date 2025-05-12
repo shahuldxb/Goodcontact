@@ -253,9 +253,24 @@ class DirectTranscribeDBEnhanced:
                                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                                 """
                                 
-                                # We don't have the paragraph_id from the database, so use para_idx as a placeholder
-                                # In a real implementation, we would first get the paragraph_id from the database
-                                paragraph_id = para_idx  # This is a simplification
+                                # We need the actual paragraph_id from the database, not just the index
+                                # Get the ID of the recently inserted paragraph
+                                try:
+                                    get_para_id_query = """
+                                    SELECT id FROM rdt_paragraphs 
+                                    WHERE fileid = %s AND paragraph_idx = %s
+                                    """
+                                    result = self.sql.execute_query(get_para_id_query, (fileid, para_idx))
+                                    if result and len(result) > 0:
+                                        paragraph_id = result[0][0]  # Get the actual ID from database
+                                        logger.info(f"Retrieved paragraph_id {paragraph_id} for paragraph {para_idx}")
+                                    else:
+                                        # If we can't find the paragraph ID, skip this sentence
+                                        logger.warning(f"Could not find paragraph_id for paragraph {para_idx}, skipping sentence")
+                                        continue
+                                except Exception as e:
+                                    logger.error(f"Error getting paragraph_id: {str(e)}")
+                                    paragraph_id = para_idx  # Fall back to using index
                                 
                                 sent_params = (
                                     fileid,
