@@ -38,7 +38,7 @@ class DirectTranscribeDB:
         # Set default values from environment variables if not provided
         server = self.sql_conn_params.get('server') or os.environ.get('AZURE_SQL_SERVER', 'callcenter1.database.windows.net')
         database = self.sql_conn_params.get('database') or os.environ.get('AZURE_SQL_DATABASE', 'call')
-        username = self.sql_conn_params.get('username') or os.environ.get('AZURE_SQL_USER', 'shahul')
+        username = self.sql_conn_params.get('user') or self.sql_conn_params.get('username') or os.environ.get('AZURE_SQL_USER', 'shahul')
         password = self.sql_conn_params.get('password') or os.environ.get('AZURE_SQL_PASSWORD', 'apple123!@#')
         
         # Check for connection string (for backward compatibility)
@@ -89,14 +89,27 @@ class DirectTranscribeDB:
                     user=user, 
                     password=password,
                     tds_version='7.3',  # Use TDS version 7.3 which we confirmed works
-                    port=1433
+                    port='1433'  # Port as string to avoid type errors
                 )
             else:
                 # Use explicit parameters with TDS version for Azure SQL
                 params = self.sql_conn_params.copy()
                 params.setdefault('tds_version', '7.3')
-                params.setdefault('port', 1433)
-                conn = pymssql.connect(**params)
+                params.setdefault('port', '1433')  # Port as string to avoid type errors
+                
+                # Ensure key parameter names are correct for pymssql
+                if 'user' in params and 'username' not in params:
+                    params['username'] = params['user']
+                    
+                # Create connection with explicit parameters
+                conn = pymssql.connect(
+                    server=params.get('server'),
+                    database=params.get('database'),
+                    user=params.get('username') or params.get('user'),
+                    password=params.get('password'),
+                    tds_version=params.get('tds_version'),
+                    port=params.get('port')
+                )
             
             return conn
         except Exception as e:

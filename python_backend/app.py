@@ -48,6 +48,15 @@ def db_health_check():
     Database health check endpoint to verify connectivity.
     """
     try:
+        # Explicitly show parameters for debugging
+        conn_params = {
+            'server': AZURE_SQL_SERVER,
+            'database': AZURE_SQL_DATABASE,
+            'user': AZURE_SQL_USER,
+            'password': '******' # Masked for security
+        }
+        logger.info(f"Attempting to connect to Azure SQL Server with params: {conn_params}")
+        
         # Test connection
         conn = db_transcriber._get_connection()
         if conn:
