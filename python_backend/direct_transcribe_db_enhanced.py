@@ -122,27 +122,38 @@ class DirectTranscribeDBEnhanced:
             # id, fileid, filename, source_container, source_path, destination_container, 
             # destination_path, processing_time, transcription, status, created_at, updated_at
             
-            # Use these exact column names from the schema
+            # Use the exact column names from the schema inspection
             query = """
-            INSERT INTO rdt_asset 
-            (fileid, filename, transcription, source_container, destination_container, processing_time)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO rdt_assets 
+            (fileid, filename, transcription, transcription_json, source_path, destination_path, 
+             processing_duration, status, created_dt)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
+            
+            # Create source and destination paths based on containers
+            source_path = f"{source_container}/{blob_name}"
+            destination_path = f"{destination_container}/{blob_name}"
+            
+            # Extract text-only transcript for easy searching
+            transcript_text_only = transcript_text
             
             params = (
                 fileid, 
                 blob_name, 
-                transcription_json_str, 
-                source_container, 
-                destination_container,
-                total_processing_time or 0
+                transcript_text_only,  # Plain text transcript for searching
+                transcription_json_str,  # Full JSON response for detailed analysis
+                source_path,
+                destination_path,
+                total_processing_time or 0,
+                "COMPLETE",  # Status
+                datetime.now()  # Created date
             )
             
             try:
                 self.sql.execute_non_query(query, params)
-                logger.info(f"Successfully inserted record into rdt_asset for {fileid}")
+                logger.info(f"Successfully inserted record into rdt_assets for {fileid}")
             except Exception as e:
-                logger.error(f"Error inserting into rdt_asset: {str(e)}")
+                logger.error(f"Error inserting into rdt_assets: {str(e)}")
                 return {
                     "status": "error",
                     "message": f"Database error: {str(e)}",
@@ -198,13 +209,16 @@ class DirectTranscribeDBEnhanced:
                         paragraph_start = paragraph.get("start", 0)
                         paragraph_end = paragraph.get("end", 0)
                         
-                        # Insert paragraph - use the correct column names from schema
+                        # Insert paragraph - use the correct column names from schema inspection
                         # id, fileid, paragraph_idx, text, start_time, end_time, speaker, num_words, created_dt
                         para_query = """
                         INSERT INTO rdt_paragraphs 
-                        (fileid, paragraph_idx, text, start_time, end_time, created_dt)
-                        VALUES (%s, %s, %s, %s, %s, %s)
+                        (fileid, paragraph_idx, text, start_time, end_time, speaker, created_dt)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                         """
+                        
+                        # Include speaker information if available
+                        speaker = paragraph.get("speaker", "unknown")
                         
                         para_params = (
                             fileid,
@@ -212,6 +226,7 @@ class DirectTranscribeDBEnhanced:
                             paragraph_text,
                             paragraph_start,
                             paragraph_end,
+                            speaker,
                             datetime.now()
                         )
                         
