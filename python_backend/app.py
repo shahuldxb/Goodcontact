@@ -66,6 +66,43 @@ db_transcriber = DirectTranscribeDB(sql_conn_params={
 def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
+@app.route('/schema/tables', methods=['GET'])
+def get_schema_for_tables():
+    """
+    Get the schema for all RDT tables
+    """
+    try:
+        # Get column names for all three tables
+        tables = ['rdt_asset', 'rdt_paragraphs', 'rdt_sentences']
+        schema = {}
+        
+        for table in tables:
+            query = f"""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = '{table}' 
+            ORDER BY ORDINAL_POSITION
+            """
+            
+            result = direct_sql.execute_query(query)
+            
+            if result:
+                column_names = [col[0] for col in result]
+                schema[table] = column_names
+        
+        return jsonify({
+            "status": "ok",
+            "tables": schema,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        logger.error(f"Error getting schema: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": f"Error getting schema: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
 @app.route('/schema/rdt_asset', methods=['GET'])
 def rdt_asset_schema():
     """
