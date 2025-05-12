@@ -9,11 +9,10 @@ import {
   RdtSpeakerDiarization, InsertRdtSpeakerDiarization,
   RdtSpeakerSegments, InsertRdtSpeakerSegments
 } from "@shared/schema";
-// import { sql } from "@neondatabase/serverless";
 import { nanoid } from 'nanoid';
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { DgClassSpeakerDiarization } from "./services/deepgram";
-import { sqlConnect } from "./services/postgres-sql";
+import { sqlConnect } from "./services/sql";
 
 export interface IStorage {
   // RDT Assets methods
@@ -111,7 +110,7 @@ export class MemStorage implements IStorage {
       this.assets.set(asset.fileid, newAsset);
       
       // Then, persist to SQL database
-      const { insertRecord } = await import('./services/postgres-sql');
+      const { insertRecord } = await import('./services/sql');
       
       // Convert property names to SQL column names (camelCase to snake_case)
       const sqlData = {
