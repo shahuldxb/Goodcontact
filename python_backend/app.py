@@ -260,9 +260,10 @@ def direct_transcribe():
         if not data:
             return jsonify({"success": False, "error": "No data provided"}), 400
         
-        # Get filename and fileid from request
+        # Get filename, fileid, and file_size from request
         filename = data.get('filename')
         fileid = data.get('fileid')
+        file_size = data.get('file_size', 0)  # Default to 0 if not provided
         
         if not filename:
             return jsonify({"success": False, "error": "No filename provided"}), 400
@@ -270,7 +271,7 @@ def direct_transcribe():
         if not fileid:
             return jsonify({"success": False, "error": "No fileid provided"}), 400
         
-        logger.info(f"Processing file {filename} with ID {fileid} using direct REST API approach")
+        logger.info(f"Processing file {filename} with ID {fileid} and size {file_size} using direct REST API approach")
         
         # Generate SAS URL for the blob
         from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
@@ -344,7 +345,8 @@ def direct_transcribe():
                 "destination_url": f"https://infolder.blob.core.windows.net/shahulout/{filename}"
             },
             "fileid": fileid,
-            "processing_time": 0  # We don't track this here
+            "processing_time": 0,  # We don't track this here
+            "file_size": file_size  # Add the file size to the processing_result
         }
         
         # Check if we have paragraphs in the result
