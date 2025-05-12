@@ -30,12 +30,36 @@ AZURE_SQL_DATABASE = os.environ.get("AZURE_SQL_DATABASE", "call")
 AZURE_SQL_USER = os.environ.get("AZURE_SQL_USER", "shahul")
 AZURE_SQL_PASSWORD = os.environ.get("AZURE_SQL_PASSWORD", "apple123!@#")
 
-# Initialize DirectTranscribeDB with connection parameters
+# Import the direct SQL test and our enhanced DB classes
+from test_direct_sql import test_direct_connection
+from direct_sql_connection import DirectSQLConnection
+from direct_transcribe_db_enhanced import DirectTranscribeDBEnhanced
+
+# Create a direct SQL connection using our proven working approach
+direct_sql = DirectSQLConnection(
+    server=AZURE_SQL_SERVER,
+    database=AZURE_SQL_DATABASE,
+    user=AZURE_SQL_USER,
+    password=AZURE_SQL_PASSWORD
+)
+
+# Initialize the enhanced DirectTranscribeDB with reliable SQL connection
+db_transcriber_enhanced = DirectTranscribeDBEnhanced(
+    server=AZURE_SQL_SERVER,
+    database=AZURE_SQL_DATABASE,
+    user=AZURE_SQL_USER,
+    password=AZURE_SQL_PASSWORD
+)
+
+# Keep the original DirectTranscribeDB for compatibility
+# Note: Using explicit parameters to match the working test_direct_sql.py
 db_transcriber = DirectTranscribeDB(sql_conn_params={
     'server': AZURE_SQL_SERVER,
     'database': AZURE_SQL_DATABASE,
     'user': AZURE_SQL_USER,
-    'password': AZURE_SQL_PASSWORD
+    'password': AZURE_SQL_PASSWORD,
+    'port': '1433',
+    'tds_version': '7.3'
 })
 
 @app.route('/health', methods=['GET'])
@@ -57,35 +81,85 @@ def db_health_check():
         }
         logger.info(f"Attempting to connect to Azure SQL Server with params: {conn_params}")
         
-        # Test connection
-        conn = db_transcriber._get_connection()
-        if conn:
-            cursor = conn.cursor()
+        # Use our reliable DirectSQLConnection
+        success, message = direct_sql.test_connection()
+        if success:
+            logger.info("Direct SQL connection successful")
             
-            # Check if we can execute a simple query
-            cursor.execute("SELECT 1")
-            result = cursor.fetchone()
-            
-            # Check tables
-            cursor.execute("""
-                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_NAME IN ('rdt_asset', 'rdt_paragraphs', 'rdt_sentences')
-            """)
-            table_count = cursor.fetchone()[0]
-            
-            conn.close()
-            
+            # Check tables using DirectSQLConnection
+            try:
+                conn = direct_sql.get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                    WHERE TABLE_NAME IN ('rdt_asset', 'rdt_paragraphs', 'rdt_sentences')
+                """)
+                table_count = cursor.fetchone()[0]
+                conn.close()
+                
+                return jsonify({
+                    "status": "ok",
+                    "message": "Successfully connected to Azure SQL database using reliable connection",
+                    "connection_message": message,
+                    "tables_found": table_count,
+                    "timestamp": datetime.now().isoformat()
+                })
+            except Exception as e:
+                logger.warning(f"Connected but couldn't check tables: {str(e)}")
+                return jsonify({
+                    "status": "ok",
+                    "message": "Successfully connected to Azure SQL database, but couldn't check tables",
+                    "connection_message": message,
+                    "timestamp": datetime.now().isoformat()
+                })
+        
+        # Fallback approach - try direct test
+        logger.warning("DirectSQLConnection failed, trying test_direct_connection()")
+        success2, message2 = test_direct_connection()
+        if success2:
+            logger.info("test_direct_connection successful")
             return jsonify({
                 "status": "ok",
-                "message": "Successfully connected to Azure SQL database",
-                "query_result": result[0] if result else None,
-                "tables_found": table_count,
+                "message": "Successfully connected to Azure SQL database using test_direct_connection",
+                "connection_message": message2,
                 "timestamp": datetime.now().isoformat()
             })
+            
+        # As a last resort, try the original method
+        logger.warning("All direct methods failed, trying original db_transcriber._get_connection()")
+        try:
+            conn = db_transcriber._get_connection()
+            if conn:
+                cursor = conn.cursor()
+                
+                # Check if we can execute a simple query
+                cursor.execute("SELECT 1")
+                result = cursor.fetchone()
+                
+                # Check tables
+                cursor.execute("""
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                    WHERE TABLE_NAME IN ('rdt_asset', 'rdt_paragraphs', 'rdt_sentences')
+                """)
+                table_count = cursor.fetchone()[0]
+                
+                conn.close()
+                
+                return jsonify({
+                    "status": "ok",
+                    "message": "Successfully connected to Azure SQL database using original method",
+                    "query_result": result[0] if result else None,
+                    "tables_found": table_count,
+                    "timestamp": datetime.now().isoformat()
+                })
+        except Exception as e:
+            logger.error(f"Original connection method failed: {str(e)}")
         
         return jsonify({
             "status": "error",
-            "message": "Failed to connect to Azure SQL database - connection was null",
+            "message": "Failed to connect to Azure SQL database - all methods failed",
+            "direct_sql_error": message,
+            "test_direct_error": message2 if 'message2' in locals() else "Not attempted",
             "timestamp": datetime.now().isoformat()
         }), 500
     
