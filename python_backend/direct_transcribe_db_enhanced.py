@@ -119,11 +119,39 @@ class DirectTranscribeDBEnhanced:
             transcription_json_str = json.dumps(transcription_result)
             
             # Insert into rdt_asset table using our reliable connection
-            query = """
-            INSERT INTO rdt_asset 
-            (fileid, orig_filename, transcription, source_container, dest_container, insert_time, file_size, transcription_duration)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """
+            # Let's first check the actual column names in the table
+            try:
+                # Get column names from the rdt_asset table
+                column_query = """
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_NAME = 'rdt_asset' 
+                ORDER BY ORDINAL_POSITION
+                """
+                columns = self.sql.execute_query(column_query)
+                
+                # Log the actual column names for debugging
+                column_names = [col[0] for col in columns]
+                logger.info(f"Actual rdt_asset columns: {column_names}")
+                
+                # Determine the correct column name for filename
+                filename_column = 'filename'
+                if 'orig_filename' in column_names:
+                    filename_column = 'orig_filename'
+                
+                # Use the correct column names in our query
+                query = f"""
+                INSERT INTO rdt_asset 
+                (fileid, {filename_column}, transcription, source_container, dest_container, insert_time, file_size, transcription_duration)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+            except Exception as e:
+                logger.error(f"Error getting column names: {str(e)}")
+                # Fall back to using 'filename' which is more likely the correct column name
+                query = """
+                INSERT INTO rdt_asset 
+                (fileid, filename, transcription, source_container, dest_container, insert_time, file_size, transcription_duration)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
             
             params = (
                 fileid, 

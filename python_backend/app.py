@@ -66,6 +66,43 @@ db_transcriber = DirectTranscribeDB(sql_conn_params={
 def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
+@app.route('/schema/rdt_asset', methods=['GET'])
+def rdt_asset_schema():
+    """
+    Get the schema of the rdt_asset table
+    """
+    try:
+        query = """
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_NAME = 'rdt_asset' 
+        ORDER BY ORDINAL_POSITION
+        """
+        
+        result = direct_sql.execute_query(query)
+        
+        if result:
+            column_names = [col[0] for col in result]
+            return jsonify({
+                "status": "ok",
+                "table": "rdt_asset",
+                "columns": column_names,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        return jsonify({
+            "status": "error",
+            "message": "Could not retrieve schema for rdt_asset table",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+    
+    except Exception as e:
+        logger.error(f"Error getting rdt_asset schema: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": f"Error getting rdt_asset schema: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
 @app.route('/health/db', methods=['GET'])
 def db_health_check():
     """
@@ -273,15 +310,25 @@ def direct_transcribe():
             "processing_time": 0  # We don't track this here
         }
         
-        # Store transcription with paragraphs and sentences in database
+        # Store transcription with paragraphs and sentences using enhanced database connection
         logger.info(f"Storing transcription with paragraphs and sentences for {fileid}")
-        db_result = db_transcriber.store_transcription_result(processing_result)
+        
+        # Use enhanced DB connection first (which we know works reliably)
+        db_result = db_transcriber_enhanced.store_transcription_result(processing_result)
         
         if db_result.get("status") == "error":
-            logger.error(f"Error storing transcription in database: {db_result.get('message')}")
-            # Continue anyway - we'll return the transcription even if DB storage failed
+            logger.warning(f"Enhanced DB storage failed: {db_result.get('message')}. Trying original method...")
+            
+            # Fallback to original method if enhanced fails
+            db_result = db_transcriber.store_transcription_result(processing_result)
+            
+            if db_result.get("status") == "error":
+                logger.error(f"Error storing transcription in database (both methods failed): {db_result.get('message')}")
+                # Continue anyway - we'll return the transcription even if DB storage failed
+            else:
+                logger.info(f"Successfully stored transcription using original method: {db_result.get('paragraphs_processed', 0)} paragraphs processed")
         else:
-            logger.info(f"Successfully stored transcription in database: {db_result.get('paragraphs_processed', 0)} paragraphs processed")
+            logger.info(f"Successfully stored transcription using enhanced method: {db_result.get('paragraphs_processed', 0)} paragraphs, {db_result.get('sentences_processed', 0)} sentences")
         
         # Check if we have paragraphs in the result
         paragraphs_found = 0
