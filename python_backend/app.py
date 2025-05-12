@@ -639,8 +639,9 @@ def direct_transcribe():
             "sentences_found": sentences_found,
             "paragraph_details": paragraph_details[:3] if paragraph_details else [],
             "db_storage": {
-                "success": db_result.get("status") == "success",
-                "paragraphs_processed": db_result.get("paragraphs_processed", 0)
+                "success": enhanced_db_result.get("status") == "success" if "status" in enhanced_db_result else False,
+                "paragraphs_processed": enhanced_db_result.get("paragraphs_processed", 0),
+                "sentences_processed": enhanced_db_result.get("sentences_processed", 0)
             }
         }
         
