@@ -395,6 +395,24 @@ def direct_transcribe():
         logger.info(f"Response keys: {list(response_data.keys())}")
         if "results" in response_data:
             logger.info(f"Results keys: {list(response_data['results'].keys())}")
+            
+            # Examine channels structure if present
+            if "channels" in response_data["results"]:
+                channels = response_data["results"]["channels"]
+                logger.info(f"Found {len(channels)} channels in response")
+                
+                # Log first channel structure
+                if channels and len(channels) > 0:
+                    logger.info(f"First channel keys: {list(channels[0].keys())}")
+                    
+                    # Check alternatives if present
+                    if "alternatives" in channels[0]:
+                        alternatives = channels[0]["alternatives"]
+                        logger.info(f"Found {len(alternatives)} alternatives in first channel")
+                        
+                        # Log first alternative structure
+                        if alternatives and len(alternatives) > 0:
+                            logger.info(f"First alternative keys: {list(alternatives[0].keys())}")
         
         # Structure 1: Direct in results
         if "results" in response_data and "paragraphs" in response_data["results"]:
@@ -473,28 +491,135 @@ def direct_transcribe():
                 if paragraphs_found:
                     break
         
-        # Simply log if we didn't find paragraphs
+        # If we didn't find paragraphs, create them from utterances or transcript
         if not paragraphs_found:
             logger.warning("No paragraphs found in any structure of the response")
             
-            # Check for utterances as an alternative structure to log
+            # Create paragraphs from utterances if available
             if utterances_found:
-                logger.info(f"No paragraphs, but found {len(utterances)} utterances in transcription")
+                logger.info(f"Creating paragraphs from {len(utterances)} utterances")
                 
-                # Just log the first few utterances for information purposes
-                for i, utterance in enumerate(utterances[:3]):
-                    speaker = utterance.get('speaker', 0)
-                    text = utterance.get('transcript', '')
-                    logger.info(f"Utterance {i}: Speaker {speaker}: {text[:100]}...")
+                # Group utterances by speaker to create paragraphs
+                paragraphs = []
+                current_speaker = None
+                current_paragraph = {"text": "", "start": 0, "end": 0, "speaker": "", "sentences": []}
+                
+                for utterance in utterances:
+                    speaker = utterance.get("speaker", "unknown")
+                    text = utterance.get("transcript", "").strip()
+                    start_time = utterance.get("start", 0)
+                    end_time = utterance.get("end", 0)
+                    
+                    # Start a new paragraph when speaker changes
+                    if current_speaker is None:
+                        # First utterance
+                        current_speaker = speaker
+                        current_paragraph = {
+                            "text": text,
+                            "start": start_time,
+                            "end": end_time,
+                            "speaker": speaker,
+                            "sentences": []
+                        }
+                    elif current_speaker != speaker:
+                        # Speaker changed, save current paragraph and start a new one
+                        if current_paragraph["text"]:
+                            paragraphs.append(current_paragraph)
+                        
+                        current_speaker = speaker
+                        current_paragraph = {
+                            "text": text,
+                            "start": start_time,
+                            "end": end_time,
+                            "speaker": speaker,
+                            "sentences": []
+                        }
+                    else:
+                        # Same speaker, append to current paragraph
+                        current_paragraph["text"] += " " + text
+                        current_paragraph["end"] = end_time
+                
+                # Add the last paragraph
+                if current_paragraph["text"]:
+                    paragraphs.append(current_paragraph)
+                
+                paragraphs_found = len(paragraphs)
+                logger.info(f"Created {paragraphs_found} paragraphs from {utterances_found} utterances")
+                
+                # Now create sentences from paragraphs
+                import re
+                for paragraph in paragraphs:
+                    # Split text by periods, question marks, and exclamation marks
+                    text = paragraph["text"]
+                    sentence_texts = re.split(r'(?<=[.!?])\s+', text)
+                    
+                    # Create sentence objects
+                    for sentence_text in sentence_texts:
+                        if sentence_text.strip():
+                            # Approximate timing - we don't have precise timing for sentences
+                            sentence = {
+                                "text": sentence_text.strip(),
+                                "start": paragraph["start"],
+                                "end": paragraph["end"]
+                            }
+                            paragraph["sentences"].append(sentence)
+                            sentences_found += 1
+                
+                logger.info(f"Created {sentences_found} sentences from paragraphs")
+            
+            # If we still don't have paragraphs and we have the full transcript, create paragraphs by sentence segmentation
+            elif not paragraphs_found and "results" in response_data and "channels" in response_data["results"]:
+                channels = response_data["results"]["channels"]
+                if channels and len(channels) > 0 and "alternatives" in channels[0] and len(channels[0]["alternatives"]) > 0:
+                    alternative = channels[0]["alternatives"][0]
+                    if "transcript" in alternative:
+                        logger.info("Creating paragraphs from full transcript")
+                        import re
+                        transcript = alternative["transcript"]
+                        
+                        # Split by periods, question marks, and exclamation marks followed by space
+                        sentence_texts = re.split(r'(?<=[.!?])\s+', transcript)
+                        
+                        # Group sentences into paragraphs (every 3-5 sentences)
+                        paragraphs = []
+                        paragraph_size = 3  # Sentences per paragraph
+                        
+                        for i in range(0, len(sentence_texts), paragraph_size):
+                            # Get a group of sentences
+                            group = sentence_texts[i:i+paragraph_size]
+                            if group and any(s.strip() for s in group):
+                                # Create paragraph
+                                paragraph_text = " ".join(s for s in group if s.strip())
+                                paragraph = {
+                                    "text": paragraph_text,
+                                    "start": 0,  # We don't have timing info
+                                    "end": 0,    # We don't have timing info
+                                    "sentences": []
+                                }
+                                
+                                # Add individual sentences
+                                for sentence_text in group:
+                                    if sentence_text.strip():
+                                        sentence = {
+                                            "text": sentence_text.strip(),
+                                            "start": 0,  # We don't have timing info
+                                            "end": 0     # We don't have timing info
+                                        }
+                                        paragraph["sentences"].append(sentence)
+                                        sentences_found += 1
+                                
+                                paragraphs.append(paragraph)
+                        
+                        paragraphs_found = len(paragraphs)
+                        logger.info(f"Created {paragraphs_found} paragraphs with {sentences_found} sentences from transcript")
         
+        # Log the final results
         if not paragraphs_found:
             logger.warning("Could not extract or create any paragraphs from the transcription")
         
         logger.info(f"Found {paragraphs_found} paragraphs and {sentences_found} sentences in transcription")
         if paragraph_details:
             logger.info(f"First paragraph: {paragraph_details[0]}")
-            
-        # No artificial paragraphs - we just log what we found or didn't find
         
         # Extract useful information for response
         response = {
