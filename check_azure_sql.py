@@ -53,92 +53,46 @@ def check_azure_sql_connection():
         conn = pymssql.connect(server=server, database=database, user=user, password=password)
         
         # If connection successful, check tables
-        if conn is not None:
-            cursor = conn.cursor()
+        cursor = conn.cursor()
+        
+        # Check Azure SQL tables
+        logger.info("Checking Azure SQL tables...")
+        cursor.execute("""
+            SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_NAME = 'rdt_asset'
+        """)
+        
+        table_exists = cursor.fetchone()[0] > 0
+        logger.info(f"rdt_asset table exists: {table_exists}")
+        
+        if table_exists:
+            # Get row count
+            cursor.execute("SELECT COUNT(*) FROM rdt_asset")
+            row_count = cursor.fetchone()[0]
+            logger.info(f"rdt_asset table row count: {row_count}")
             
-            if db_type == "azuresql":
-                # Check Azure SQL tables
-                # Check if rdt_asset table exists
-                logger.info("Checking Azure SQL tables...")
-                cursor.execute("""
-                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
-                    WHERE TABLE_NAME = 'rdt_asset'
-                """)
-                
-                table_exists = cursor.fetchone()[0] > 0
-                logger.info(f"rdt_asset table exists: {table_exists}")
-                
-                if table_exists:
-                    # Get row count
-                    cursor.execute("SELECT COUNT(*) FROM rdt_asset")
-                    row_count = cursor.fetchone()[0]
-                    logger.info(f"rdt_asset table row count: {row_count}")
-                    
-                    # Get first record (if any)
-                    if row_count > 0:
-                        cursor.execute("SELECT TOP 1 fileid, filename, status FROM rdt_asset")
-                        sample_row = cursor.fetchone()
-                        logger.info(f"Sample record - fileid: {sample_row[0]}, filename: {sample_row[1]}, status: {sample_row[2]}")
-                
-                # Check if paragraphs and sentences tables exist
-                for table in ['rdt_paragraphs', 'rdt_sentences']:
-                    cursor.execute(f"""
-                        SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
-                        WHERE TABLE_NAME = '{table}'
-                    """)
-                    table_exists = cursor.fetchone()[0] > 0
-                    logger.info(f"{table} table exists: {table_exists}")
-                    
-                    if table_exists:
-                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                        row_count = cursor.fetchone()[0]
-                        logger.info(f"{table} table row count: {row_count}")
+            # Get first record (if any)
+            if row_count > 0:
+                cursor.execute("SELECT TOP 1 fileid, filename, status FROM rdt_asset")
+                sample_row = cursor.fetchone()
+                logger.info(f"Sample record - fileid: {sample_row[0]}, filename: {sample_row[1]}, status: {sample_row[2]}")
+        
+        # Check if paragraphs and sentences tables exist
+        for table in ['rdt_paragraphs', 'rdt_sentences']:
+            cursor.execute(f"""
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                WHERE TABLE_NAME = '{table}'
+            """)
+            table_exists = cursor.fetchone()[0] > 0
+            logger.info(f"{table} table exists: {table_exists}")
             
-            elif db_type == "postgresql":
-                # Check PostgreSQL tables
-                logger.info("Checking PostgreSQL tables...")
-                cursor.execute("""
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public'
-                        AND table_name = 'rdt_asset'
-                    )
-                """)
-                
-                table_exists = cursor.fetchone()[0]
-                logger.info(f"rdt_asset table exists: {table_exists}")
-                
-                if table_exists:
-                    # Get row count
-                    cursor.execute("SELECT COUNT(*) FROM rdt_asset")
-                    row_count = cursor.fetchone()[0]
-                    logger.info(f"rdt_asset table row count: {row_count}")
-                    
-                    # Get first record (if any)
-                    if row_count > 0:
-                        cursor.execute("SELECT fileid, filename, status FROM rdt_asset LIMIT 1")
-                        sample_row = cursor.fetchone()
-                        logger.info(f"Sample record - fileid: {sample_row[0]}, filename: {sample_row[1]}, status: {sample_row[2]}")
-                
-                # Check if paragraphs and sentences tables exist
-                for table in ['rdt_paragraphs', 'rdt_sentences']:
-                    cursor.execute(f"""
-                        SELECT EXISTS (
-                            SELECT FROM information_schema.tables 
-                            WHERE table_schema = 'public'
-                            AND table_name = '{table}'
-                        )
-                    """)
-                    table_exists = cursor.fetchone()[0]
-                    logger.info(f"{table} table exists: {table_exists}")
-                    
-                    if table_exists:
-                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                        row_count = cursor.fetchone()[0]
-                        logger.info(f"{table} table row count: {row_count}")
-            
-            # Close connection
-            conn.close()
+            if table_exists:
+                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                row_count = cursor.fetchone()[0]
+                logger.info(f"{table} table row count: {row_count}")
+        
+        # Close connection
+        conn.close()
         
         elapsed_time = time.time() - start_time
         logger.info(f"Azure SQL connection check completed successfully in {elapsed_time:.2f} seconds")
@@ -151,6 +105,6 @@ def check_azure_sql_connection():
         return False, f"Connection failed: {str(e)}"
 
 if __name__ == "__main__":
-    success, message = check_db_connection()
+    success, message = check_azure_sql_connection()
     print(f"Connection status: {'SUCCESS' if success else 'FAILED'}")
     print(f"Message: {message}")

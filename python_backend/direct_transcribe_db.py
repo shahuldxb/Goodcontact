@@ -36,16 +36,16 @@ class DirectTranscribeDB:
         self.sql_conn_params = sql_conn_params or {}
         
         # Set default values from environment variables if not provided
-        server = self.sql_conn_params.get('server') or os.environ.get('PGHOST', 'callcenter1.database.windows.net')
-        database = self.sql_conn_params.get('database') or os.environ.get('PGDATABASE', 'call')
-        username = self.sql_conn_params.get('username') or os.environ.get('PGUSER', 'shahul')
-        password = self.sql_conn_params.get('password') or os.environ.get('PGPASSWORD', 'apple123!@#')
+        server = self.sql_conn_params.get('server') or os.environ.get('AZURE_SQL_SERVER', 'callcenter1.database.windows.net')
+        database = self.sql_conn_params.get('database') or os.environ.get('AZURE_SQL_DATABASE', 'call')
+        username = self.sql_conn_params.get('username') or os.environ.get('AZURE_SQL_USER', 'shahul')
+        password = self.sql_conn_params.get('password') or os.environ.get('AZURE_SQL_PASSWORD', 'apple123!@#')
         
-        # Override with full connection string if provided
-        self.conn_string = os.environ.get('DATABASE_URL')
+        # Check for connection string (for backward compatibility)
+        self.conn_string = os.environ.get('AZURE_SQL_CONNECTION_STRING') or os.environ.get('DATABASE_URL')
         
         if self.conn_string:
-            logger.info("Using DATABASE_URL connection string for SQL database")
+            logger.info("Using connection string for Azure SQL database")
         else:
             # Use individual connection parameters
             self.sql_conn_params = {
@@ -54,7 +54,7 @@ class DirectTranscribeDB:
                 'user': username,
                 'password': password
             }
-            logger.info(f"Using explicit connection parameters for SQL database: {server}/{database}")
+            logger.info(f"Using explicit parameters for Azure SQL database: {server}/{database}")
     
     def _get_connection(self):
         """
