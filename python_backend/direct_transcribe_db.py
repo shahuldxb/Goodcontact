@@ -83,10 +83,20 @@ class DirectTranscribeDB:
                 password = params.get('Password', '')
                 
                 # Create connection
-                conn = pymssql.connect(server=server, database=database, user=user, password=password)
+                conn = pymssql.connect(
+                    server=server, 
+                    database=database, 
+                    user=user, 
+                    password=password,
+                    tds_version='7.3',  # Use TDS version 7.3 which we confirmed works
+                    port=1433
+                )
             else:
-                # Use explicit parameters
-                conn = pymssql.connect(**self.sql_conn_params)
+                # Use explicit parameters with TDS version for Azure SQL
+                params = self.sql_conn_params.copy()
+                params.setdefault('tds_version', '7.3')
+                params.setdefault('port', 1433)
+                conn = pymssql.connect(**params)
             
             return conn
         except Exception as e:
