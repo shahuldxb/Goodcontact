@@ -237,91 +237,19 @@ def direct_transcribe():
                 if paragraphs_found:
                     break
         
-        # If no paragraphs found but we have utterances, use those
-        if not paragraphs_found and utterances_found:
-            logger.info(f"No paragraphs found, using {len(utterances)} utterances as paragraphs")
+        # Simply log if we didn't find paragraphs
+        if not paragraphs_found:
+            logger.warning("No paragraphs found in any structure of the response")
             
-            # Process utterances as paragraphs
-            for i, utterance in enumerate(utterances[:3]):  # Just log the first 3
-                speaker = utterance.get('speaker', 0)
-                text = utterance.get('transcript', '')
+            # Check for utterances as an alternative structure to log
+            if utterances_found:
+                logger.info(f"No paragraphs, but found {len(utterances)} utterances in transcription")
                 
-                paragraph_details.append({
-                    "text": text[:100] + "..." if len(text) > 100 else text,
-                    "sentences_count": 1,  # Each utterance is one "sentence"
-                    "first_sentence": text,
-                    "speaker": speaker
-                })
-                
-                logger.info(f"Utterance {i} used as paragraph: Speaker {speaker}: {text[:100]}...")
-            
-            paragraphs_found = len(utterances)
-            sentences_found = len(utterances)  # Each utterance counts as one sentence
-        
-        # If still no structure, create artificial paragraphs from transcript
-        if not paragraphs_found and not utterances_found:
-            logger.warning("No paragraphs or utterances found, creating artificial paragraphs from transcript")
-            
-            # Get the full transcript
-            full_transcript = result["transcript"].strip()
-            
-            # Try to split by speaker changes if available
-            if ":" in full_transcript and ("Speaker" in full_transcript or "Agent" in full_transcript or "Customer" in full_transcript):
-                logger.info("Transcript appears to have speaker changes, splitting by speakers")
-                
-                # Simple regex split by speaker indicators
-                import re
-                speaker_segments = re.split(r'(?:\n|^)(Speaker \d+:|Agent:|Customer:)', full_transcript)
-                
-                # Merge the segments back into pairs of (speaker, text)
-                artificial_paragraphs = []
-                for i in range(1, len(speaker_segments), 2):
-                    if i < len(speaker_segments) - 1:
-                        speaker = speaker_segments[i].strip(':')
-                        text = speaker_segments[i+1].strip()
-                        artificial_paragraphs.append((speaker, text))
-                
-                if artificial_paragraphs:
-                    logger.info(f"Created {len(artificial_paragraphs)} artificial paragraphs from speaker segments")
-                    
-                    # Log the first few
-                    for i, (speaker, text) in enumerate(artificial_paragraphs[:3]):
-                        paragraph_details.append({
-                            "text": text[:100] + "..." if len(text) > 100 else text,
-                            "sentences_count": 1,
-                            "first_sentence": text,
-                            "speaker": speaker
-                        })
-                        
-                        logger.info(f"Artificial paragraph {i}: {speaker}: {text[:100]}...")
-                    
-                    paragraphs_found = len(artificial_paragraphs)
-                    sentences_found = len(artificial_paragraphs)  # Each paragraph counts as one sentence
-            
-            # If no speaker changes or empty result, split into chunks
-            if not paragraphs_found:
-                logger.info("No speaker segments found, splitting transcript into chunks")
-                
-                # Split into chunks of roughly 150 words each
-                words = full_transcript.split()
-                chunk_size = 150
-                chunks = [' '.join(words[i:i+chunk_size]) for i in range(0, len(words), chunk_size)]
-                
-                if chunks:
-                    logger.info(f"Created {len(chunks)} artificial paragraphs from transcript chunks")
-                    
-                    # Log the first few
-                    for i, chunk in enumerate(chunks[:3]):
-                        paragraph_details.append({
-                            "text": chunk[:100] + "..." if len(chunk) > 100 else chunk,
-                            "sentences_count": 1,
-                            "first_sentence": chunk
-                        })
-                        
-                        logger.info(f"Artificial paragraph {i}: {chunk[:100]}...")
-                    
-                    paragraphs_found = len(chunks)
-                    sentences_found = len(chunks)  # Each chunk counts as one sentence
+                # Just log the first few utterances for information purposes
+                for i, utterance in enumerate(utterances[:3]):
+                    speaker = utterance.get('speaker', 0)
+                    text = utterance.get('transcript', '')
+                    logger.info(f"Utterance {i}: Speaker {speaker}: {text[:100]}...")
         
         if not paragraphs_found:
             logger.warning("Could not extract or create any paragraphs from the transcription")
@@ -330,6 +258,8 @@ def direct_transcribe():
         if paragraph_details:
             logger.info(f"First paragraph: {paragraph_details[0]}")
             
+        # No artificial paragraphs - we just log what we found or didn't find
+        
         # Extract useful information for response
         response = {
             "success": True,

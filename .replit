@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["ffmpeg", "glibcLocales", "jq", "unixODBC"]
+packages = ["ffmpeg", "glibcLocales", "jq", "openssl", "postgresql", "unixODBC"]
 
 [deployment]
 deploymentTarget = "autoscale"
